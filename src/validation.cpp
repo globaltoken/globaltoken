@@ -16,6 +16,7 @@
 #include <consensus/tx_verify.h>
 #include <consensus/validation.h>
 #include <cuckoocache.h>
+#include <globaltoken/hardfork.h>
 #include <hash.h>
 #include <init.h>
 #include <policy/fees.h>
@@ -219,6 +220,8 @@ size_t nCoinCacheUsage = 5000 * 300;
 uint64_t nPruneTarget = 0;
 int64_t nMaxTipAge = DEFAULT_MAX_TIP_AGE;
 bool fEnableReplacement = DEFAULT_ENABLE_REPLACEMENT;
+
+std::atomic<bool> fHardforkSizingActiveAtTip{false};
 
 uint256 hashAssumeValid;
 arith_uint256 nMinimumChainWork;
@@ -707,7 +710,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
         // itself can contain sigops MAX_STANDARD_TX_SIGOPS is less than
         // MAX_BLOCK_SIGOPS; we still consider this an invalid rather than
         // merely non-standard transaction.
-        if (nSigOpsCost > MAX_STANDARD_TX_SIGOPS_COST)
+        if (nSigOpsCost > MaxStandardTransactionSigOps(fHardforkSizingActiveAtTip))
             return state.DoS(0, false, REJECT_NONSTANDARD, "bad-txns-too-many-sigops", false,
                 strprintf("%d", nSigOpsCost));
 
@@ -1106,10 +1109,36 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
     catch (const std::exception& e) {
         return error("%s: Deserialize or I/O error - %s at %s", __func__, e.what(), pos.ToString());
     }
-
-    // Check the header
-    if (!CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
-        return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
+	
+    bool hardfork = IsHardForkActivated(block.nHeight);
+	if(hardfork)
+	{
+		int nAlgo = block.GetAlgo();
+		if(nAlgo == ALGO_EQUIHASH)
+		{
+			// Check Equihash solution
+			if (!CheckEquihashSolution(&block, Params())) {
+				return error("ReadBlockFromDisk: Errors in block header at %s (Algo: Equihash - bad Equihash solution)", pos.ToString());
+			}
+			
+			// Check the header
+			// Also check the Block Header after Equihash solution check.
+			if (!CheckProofOfWork(block.GetPoWHash(nAlgo), block.nBits, consensusParams, nAlgo))
+				return error("ReadBlockFromDisk: Errors in block header at %s (Algo: %s)", pos.ToString(), GetAlgoName(nAlgo));
+		}
+		else
+		{
+			// Check the header
+			if (!CheckProofOfWork(block.GetPoWHash(nAlgo), block.nBits, consensusParams, nAlgo))
+				return error("ReadBlockFromDisk: Errors in block header at %s (Algo: %s)", pos.ToString(), GetAlgoName(nAlgo));
+		}
+	}
+	else
+	{
+		// Check the header
+		if (!CheckProofOfWork(block.GetPoWHash(ALGO_SHA256D), block.nBits, consensusParams, ALGO_SHA256D))
+			return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
+	}
 
     return true;
 }
@@ -1679,7 +1708,7 @@ void ThreadScriptCheck() {
 // Protected by cs_main
 VersionBitsCache versionbitscache;
 
-int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Params& params)
+int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Params& params, int algo)
 {
     LOCK(cs_main);
     int32_t nVersion = VERSIONBITS_TOP_BITS;
@@ -1690,9 +1719,44 @@ int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Para
             nVersion |= VersionBitsMask(params, static_cast<Consensus::DeploymentPos>(i));
         }
     }
+	
+	switch (algo)
+    {
+        case ALGO_SHA256D:
+			break;
+        case ALGO_SCRYPT:
+			nVersion |= BLOCK_VERSION_SCRYPT;
+			break;
+        case ALGO_X11:
+			nVersion |= BLOCK_VERSION_X11;
+			break;
+        case ALGO_NEOSCRYPT:
+			nVersion |= BLOCK_VERSION_NEOSCRYPT;
+			break;
+        case ALGO_EQUIHASH:
+			nVersion |= BLOCK_VERSION_EQUIHASH;
+			break;
+        case ALGO_YESCRYPT:
+			nVersion |= BLOCK_VERSION_YESCRYPT;
+			break;
+        case ALGO_HMQ1725:
+			nVersion |= BLOCK_VERSION_HMQ1725;
+			break;
+        default:
+			return nVersion;
+    }  
 
     return nVersion;
 }
+
+bool isMultiAlgoVersion(int nVersion)
+{
+     if((nVersion & 0xfffU) == 512 || (nVersion & 0xfffU) == 1024 || (nVersion & 0xfffU) == 1536 || (nVersion & 0xfffU) == 2048 || (nVersion & 0xfffU) == 2560 || (nVersion & 0xfffU) == 3072) 
+	 {
+         return true;
+     }
+     return false;
+ }
 
 /**
  * Threshold condition checker that triggers when unknown versionbits are seen on the network.
@@ -1712,9 +1776,10 @@ public:
 
     bool Condition(const CBlockIndex* pindex, const Consensus::Params& params) const override
     {
+		int nAlgo = pindex->GetAlgo();
         return ((pindex->nVersion & VERSIONBITS_TOP_MASK) == VERSIONBITS_TOP_BITS) &&
                ((pindex->nVersion >> bit) & 1) != 0 &&
-               ((ComputeBlockVersion(pindex->pprev, params) >> bit) & 1) == 0;
+               ((ComputeBlockVersion(pindex->pprev, params, nAlgo) >> bit) & 1) == 0;
     }
 };
 
@@ -1936,7 +2001,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
         // * p2sh (when P2SH enabled in flags and excludes coinbase)
         // * witness (when witness enabled in flags and excludes coinbase)
         nSigOpsCost += GetTransactionSigOpCost(tx, view, flags);
-        if (nSigOpsCost > MAX_BLOCK_SIGOPS_COST)
+        if (nSigOpsCost > MaxBlockSigOps(IsHardForkActivated(pindex->nHeight)))
             return state.DoS(100, error("ConnectBlock(): too many sigops"),
                              REJECT_INVALID, "bad-blk-sigops");
 
@@ -2163,8 +2228,9 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
         // Check the version of the last 100 blocks to see if we need to upgrade:
         for (int i = 0; i < 100 && pindex != nullptr; i++)
         {
-            int32_t nExpectedVersion = ComputeBlockVersion(pindex->pprev, chainParams.GetConsensus());
-            if (pindex->nVersion > VERSIONBITS_LAST_OLD_BLOCK_VERSION && (pindex->nVersion & ~nExpectedVersion) != 0)
+			int nAlgo = pindex->GetAlgo();
+            int32_t nExpectedVersion = ComputeBlockVersion(pindex->pprev, chainParams.GetConsensus(), nAlgo);
+            if (pindex->nVersion > VERSIONBITS_LAST_OLD_BLOCK_VERSION && (pindex->nVersion & ~nExpectedVersion) != 0 && !isMultiAlgoVersion(pindex->nVersion))
                 ++nUpgraded;
             pindex = pindex->pprev;
         }
@@ -2177,8 +2243,9 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
             DoWarning(strWarning);
         }
     }
-    LogPrintf("%s: new best=%s height=%d version=0x%08x log2_work=%.8g tx=%lu date='%s' progress=%f cache=%.1fMiB(%utxo)", __func__,
+    LogPrintf("%s: new best=%s height=%d version=0x%08x algo=%d (%s) log2_work=%.8g tx=%lu date='%s' progress=%f cache=%.1fMiB(%utxo)", __func__,
       pindexNew->GetBlockHash().ToString(), pindexNew->nHeight, pindexNew->nVersion,
+	  pindexNew->GetAlgo(), GetAlgoName(pindexNew->GetAlgo()),
       log(pindexNew->nChainWork.getdouble())/log(2.0), (unsigned long)pindexNew->nChainTx,
       DateTimeStrFormat("%Y-%m-%d %H:%M:%S", pindexNew->GetBlockTime()),
       GuessVerificationProgress(chainParams.TxData(), pindexNew), pcoinsTip->DynamicMemoryUsage() * (1.0 / (1<<20)), pcoinsTip->GetCacheSize());
@@ -2949,9 +3016,39 @@ static bool FindUndoPos(CValidationState &state, int nFile, CDiskBlockPos &pos, 
 
 static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW = true)
 {
-    // Check proof of work matches claimed amount
-    if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
-        return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
+    bool hardfork = IsHardForkActivated(block.nHeight);
+	if(hardfork)
+	{
+		int nAlgo = block.GetAlgo();
+		if(nAlgo == ALGO_EQUIHASH)
+		{
+			// Check Equihash solution is valid
+			if (fCheckPOW && !CheckEquihashSolution(&block, Params())) 
+			{
+				LogPrintf("CheckBlockHeader(): Equihash solution invalid at height %d\n", block.nHeight);
+				return state.DoS(100, error("CheckBlockHeader(): Equihash solution invalid"),
+								 REJECT_INVALID, "invalid-solution");
+			}
+			
+			// Check proof of work matches claimed amount
+			// Also check the block POW after Equihash Solution check.
+			if (fCheckPOW && !CheckProofOfWork(block.GetPoWHash(nAlgo), block.nBits, consensusParams, nAlgo))
+				return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
+			
+		}
+		else
+		{
+			// Check proof of work matches claimed amount	
+			if (fCheckPOW && !CheckProofOfWork(block.GetPoWHash(nAlgo), block.nBits, consensusParams, nAlgo))
+				return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
+		}
+	}
+	else
+	{
+		// Check proof of work matches claimed amount	
+		if (fCheckPOW && !CheckProofOfWork(block.GetPoWHash(ALGO_SHA256D), block.nBits, consensusParams, ALGO_SHA256D))
+			return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
+	}
 
     return true;
 }
@@ -2989,7 +3086,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
     // checks that use witness data may be performed here.
 
     // Size limits
-    if (block.vtx.empty() || block.vtx.size() * WITNESS_SCALE_FACTOR > MAX_BLOCK_WEIGHT || ::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) * WITNESS_SCALE_FACTOR > MAX_BLOCK_WEIGHT)
+    if (block.vtx.empty() || block.vtx.size() * WITNESS_SCALE_FACTOR > MaxBlockWeight(IsHardForkActivated(block.nHeight)) || ::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) * WITNESS_SCALE_FACTOR > MaxBlockWeight(IsHardForkActivated(block.nHeight)))
         return state.DoS(100, false, REJECT_INVALID, "bad-blk-length", false, "size limits failed");
 
     // First transaction must be coinbase, the rest must not be
@@ -3010,7 +3107,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
     {
         nSigOps += GetLegacySigOpCount(*tx);
     }
-    if (nSigOps * WITNESS_SCALE_FACTOR > MAX_BLOCK_SIGOPS_COST)
+    if (nSigOps * WITNESS_SCALE_FACTOR > MaxBlockSigOps(IsHardForkActivated(block.nHeight)))
         return state.DoS(100, false, REJECT_INVALID, "bad-blk-sigops", false, "out-of-bounds SigOpCount");
 
     if (fCheckPOW && fCheckMerkleRoot)
@@ -3097,7 +3194,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
 
     // Check proof of work
     const Consensus::Params& consensusParams = params.GetConsensus();
-    if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
+    if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams, block.GetAlgo()))
         return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");
 
     // Check against checkpoints
@@ -3209,7 +3306,7 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     // large by filling up the coinbase witness, which doesn't change
     // the block hash, so we couldn't mark the block as permanently
     // failed).
-    if (GetBlockWeight(block) > MAX_BLOCK_WEIGHT) {
+    if (GetBlockWeight(block) > MaxBlockWeight(IsHardForkActivated(block.nHeight))) {
         return state.DoS(100, false, REJECT_INVALID, "bad-blk-weight", false, strprintf("%s : weight limit failed", __func__));
     }
 
@@ -4208,8 +4305,9 @@ bool LoadExternalBlockFile(const CChainParams& chainparams, FILE* fileIn, CDiskB
 
     int nLoaded = 0;
     try {
+		unsigned int nMaxBlockSerializedSize = MaxBlockSerializedSize(true);
         // This takes over fileIn and calls fclose() on it in the CBufferedFile destructor
-        CBufferedFile blkdat(fileIn, 2*MAX_BLOCK_SERIALIZED_SIZE, MAX_BLOCK_SERIALIZED_SIZE+8, SER_DISK, CLIENT_VERSION);
+        CBufferedFile blkdat(fileIn, 2*nMaxBlockSerializedSize, nMaxBlockSerializedSize+8, SER_DISK, CLIENT_VERSION);
         uint64_t nRewind = blkdat.GetPos();
         while (!blkdat.eof()) {
             boost::this_thread::interruption_point();
@@ -4228,7 +4326,7 @@ bool LoadExternalBlockFile(const CChainParams& chainparams, FILE* fileIn, CDiskB
                     continue;
                 // read size
                 blkdat >> nSize;
-                if (nSize < 80 || nSize > MAX_BLOCK_SERIALIZED_SIZE)
+                if (nSize < 80 || nSize > nMaxBlockSerializedSize)
                     continue;
             } catch (const std::exception&) {
                 // no valid block header found; don't complain

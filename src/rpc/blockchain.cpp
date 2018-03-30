@@ -11,6 +11,7 @@
 #include <checkpoints.h>
 #include <coins.h>
 #include <consensus/validation.h>
+#include <globaltoken/hardfork.h>
 #include <validation.h>
 #include <core_io.h>
 #include <policy/feerate.h>
@@ -51,19 +52,31 @@ extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& 
 /* Calculate the difficulty for a given block index,
  * or the block index of the given chain.
  */
-double GetDifficulty(const CChain& chain, const CBlockIndex* blockindex)
+double GetDifficulty(const CChain& chain, const CBlockIndex* blockindex, int algo)
 {
-    if (blockindex == nullptr)
+	unsigned int nBits;
+    unsigned int powLimit = GetAlgoPowLimit(algo).GetCompact();
+	
+	if (blockindex == nullptr)
     {
         if (chain.Tip() == nullptr)
-            return 1.0;
+            nBits = powLimit;
         else
-            blockindex = chain.Tip();
+        {
+            //blockindex = chainActive.Tip();
+            blockindex = GetLastBlockIndexForAlgo(chain.Tip(), algo);
+            if (blockindex == nullptr)
+                nBits = powLimit;
+            else
+                nBits = blockindex->nBits;
+        }  
     }
+    else
+        nBits = blockindex->nBits;
 
-    int nShift = (blockindex->nBits >> 24) & 0xff;
+    int nShift = (nBits >> 24) & 0xff;
     double dDiff =
-        (double)0x0000ffff / (double)(blockindex->nBits & 0x00ffffff);
+        (double)0x0000ffff / (double)(nBits & 0x00ffffff);
 
     while (nShift < 29)
     {
@@ -79,16 +92,20 @@ double GetDifficulty(const CChain& chain, const CBlockIndex* blockindex)
     return dDiff;
 }
 
-double GetDifficulty(const CBlockIndex* blockindex)
+double GetDifficulty(const CBlockIndex* blockindex, int algo)
 {
-    return GetDifficulty(chainActive, blockindex);
+    return GetDifficulty(chainActive, blockindex, algo);
 }
 
 UniValue blockheaderToJSON(const CBlockIndex* blockindex)
 {
     AssertLockHeld(cs_main);
     UniValue result(UniValue::VOBJ);
+	int algo = blockindex->GetAlgo();
     result.pushKV("hash", blockindex->GetBlockHash().GetHex());
+	result.pushKV("algo", GetAlgoName(algo));
+	result.pushKV("algoid", algo);
+	result.pushKV("algopowhash", blockindex->GetBlockPoWHash().GetHex());
     int confirmations = -1;
     // Only report confirmations if the block is on the main chain
     if (chainActive.Contains(blockindex))
@@ -100,9 +117,11 @@ UniValue blockheaderToJSON(const CBlockIndex* blockindex)
     result.pushKV("merkleroot", blockindex->hashMerkleRoot.GetHex());
     result.pushKV("time", (int64_t)blockindex->nTime);
     result.pushKV("mediantime", (int64_t)blockindex->GetMedianTimePast());
-    result.pushKV("nonce", (uint64_t)blockindex->nNonce);
+    result.pushKV("nonce", blockindex->nNonce.GetHex());
+	result.pushKV("nonce_uint32", (uint64_t)((uint32_t)blockindex->nNonce.GetUint64(0)));
+	result.pushKV("solution", HexStr(blockindex->nSolution));
     result.pushKV("bits", strprintf("%08x", blockindex->nBits));
-    result.pushKV("difficulty", GetDifficulty(blockindex));
+    result.pushKV("difficulty", GetDifficulty(blockindex, algo));
     result.pushKV("chainwork", blockindex->nChainWork.GetHex());
 
     if (blockindex->pprev)
@@ -117,6 +136,7 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
 {
     AssertLockHeld(cs_main);
     UniValue result(UniValue::VOBJ);
+	int algo = block.GetAlgo();
     result.pushKV("hash", blockindex->GetBlockHash().GetHex());
     int confirmations = -1;
     // Only report confirmations if the block is on the main chain
@@ -129,6 +149,9 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     result.pushKV("height", blockindex->nHeight);
     result.pushKV("version", block.nVersion);
     result.pushKV("versionHex", strprintf("%08x", block.nVersion));
+	result.pushKV("algo", GetAlgoName(algo));
+	result.pushKV("algoid", algo);
+    result.pushKV("algopowhash", block.GetPoWHash(algo).GetHex());
     result.pushKV("merkleroot", block.hashMerkleRoot.GetHex());
     UniValue txs(UniValue::VARR);
     for(const auto& tx : block.vtx)
@@ -145,9 +168,11 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     result.pushKV("tx", txs);
     result.pushKV("time", block.GetBlockTime());
     result.pushKV("mediantime", (int64_t)blockindex->GetMedianTimePast());
-    result.pushKV("nonce", (uint64_t)block.nNonce);
+    result.pushKV("nonce", block.nNonce.GetHex());
+	result.pushKV("nonce_uint32", (uint64_t)((uint32_t)block.nNonce.GetUint64(0)));
+	result.pushKV("solution", HexStr(blockindex->nSolution));
     result.pushKV("bits", strprintf("%08x", block.nBits));
-    result.pushKV("difficulty", GetDifficulty(blockindex));
+    result.pushKV("difficulty", GetDifficulty(blockindex, algo));
     result.pushKV("chainwork", blockindex->nChainWork.GetHex());
 
     if (blockindex->pprev)
@@ -1206,7 +1231,7 @@ UniValue getblockchaininfo(const JSONRPCRequest& request)
     obj.pushKV("blocks",                (int)chainActive.Height());
     obj.pushKV("headers",               pindexBestHeader ? pindexBestHeader->nHeight : -1);
     obj.pushKV("bestblockhash",         chainActive.Tip()->GetBlockHash().GetHex());
-    obj.pushKV("difficulty",            (double)GetDifficulty());
+    obj.pushKV("difficulty",            (double)GetDifficulty(NULL, currentAlgo));
     obj.pushKV("mediantime",            (int64_t)chainActive.Tip()->GetMedianTimePast());
     obj.pushKV("verificationprogress",  GuessVerificationProgress(Params().TxData(), chainActive.Tip()));
     obj.pushKV("initialblockdownload",  IsInitialBlockDownload());
@@ -1234,6 +1259,12 @@ UniValue getblockchaininfo(const JSONRPCRequest& request)
     CBlockIndex* tip = chainActive.Tip();
     UniValue softforks(UniValue::VARR);
     UniValue bip9_softforks(UniValue::VOBJ);
+	UniValue globaltoken_hardfork(UniValue::VARR);
+	UniValue globaltoken_hardfork_id_1(UniValue::VARR);
+	globaltoken_hardfork_id_1.pushKV("activated", IsHardForkActivated(chainActive.Height()));
+	globaltoken_hardfork_id_1.pushKV("softfork_activated", fHardforkSizingActiveAtTip);
+	globaltoken_hardfork_id_1.pushKV("activation_height", consensusParams.HardforkHeight);
+	globaltoken_hardfork.pushKV("1", globaltoken_hardfork_id_1);
     softforks.push_back(SoftForkDesc("bip34", 2, tip, consensusParams));
     softforks.push_back(SoftForkDesc("bip66", 3, tip, consensusParams));
     softforks.push_back(SoftForkDesc("bip65", 4, tip, consensusParams));
@@ -1242,6 +1273,7 @@ UniValue getblockchaininfo(const JSONRPCRequest& request)
     }
     obj.pushKV("softforks",             softforks);
     obj.pushKV("bip9_softforks", bip9_softforks);
+	obj.pushKV("hardforks", globaltoken_hardfork);
 
     obj.pushKV("warnings", GetWarnings("statusbar"));
     return obj;

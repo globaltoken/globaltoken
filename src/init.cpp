@@ -493,11 +493,12 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageGroup(_("Block creation options:"));
     if (showDebug)
         strUsage += HelpMessageOpt("-blockmaxsize=<n>", "Set maximum BIP141 block weight to this * 4. Deprecated, use blockmaxweight");
-    strUsage += HelpMessageOpt("-blockmaxweight=<n>", strprintf(_("Set maximum BIP141 block weight (default: %d)"), DEFAULT_BLOCK_MAX_WEIGHT));
+    strUsage += HelpMessageOpt("-blockmaxweight=<n>", strprintf(_("Set maximum BIP141 block weight (default: %d)"), DefaultMaxBlockWeight(false)));
     strUsage += HelpMessageOpt("-blockmintxfee=<amt>", strprintf(_("Set lowest fee rate (in %s/kB) for transactions to be included in block creation. (default: %s)"), CURRENCY_UNIT, FormatMoney(DEFAULT_BLOCK_MIN_TX_FEE)));
     if (showDebug)
         strUsage += HelpMessageOpt("-blockversion=<n>", "Override block version to test forking scenarios");
-
+		
+	strUsage += HelpMessageOpt("-algo=<algo>", _("Mining algorithm: sha256d, scrypt, x11, neoscrypt, equihash, yescrypt, hmq1725"));
     strUsage += HelpMessageGroup(_("RPC server options:"));
     strUsage += HelpMessageOpt("-rest", strprintf(_("Accept public REST requests (default: %u)"), DEFAULT_REST_ENABLE));
     strUsage += HelpMessageOpt("-rpcallowip=<ip>", _("Allow JSON-RPC connections from specified source. Valid for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24). This option can be specified multiple times"));
@@ -1367,6 +1368,28 @@ bool AppInitMain()
             SetLimited(NET_TOR, false);
         }
     }
+	
+	// Algo
+    std::string strAlgo = gArgs.GetArg("-algo", "sha256d");
+    transform(strAlgo.begin(),strAlgo.end(),strAlgo.begin(),::tolower);
+    if (strAlgo == "sha" || strAlgo == "sha256" || strAlgo == "sha256d")
+        currentAlgo = ALGO_SHA256D;
+    else if (strAlgo == "scrypt")
+        currentAlgo = ALGO_SCRYPT;
+    else if (strAlgo == "x11")
+        currentAlgo = ALGO_X11;
+    else if (strAlgo == "neoscrypt")
+        currentAlgo = ALGO_NEOSCRYPT;
+    else if (strAlgo == "equihash")
+        currentAlgo = ALGO_EQUIHASH;
+    else if (strAlgo == "yescrypt")
+        currentAlgo = ALGO_YESCRYPT;
+	else if (strAlgo == "hmq1725")
+        currentAlgo = ALGO_HMQ1725;
+    else
+        currentAlgo = ALGO_SHA256D;
+
+    LogPrintf("POW Algo %s selected.\n", strAlgo);
 
     // see Step 2: parameter interactions for more information about these
     fListen = gArgs.GetBoolArg("-listen", DEFAULT_LISTEN);

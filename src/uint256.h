@@ -12,16 +12,15 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
-#include <crypto/common.h>
+#include "crypto/common.h"
 
 /** Template base class for fixed-sized opaque blobs. */
 template<unsigned int BITS>
 class base_blob
 {
-protected:
+public:
     static constexpr int WIDTH = BITS / 8;
     uint8_t data[WIDTH];
-public:
     base_blob()
     {
         memset(data, 0, sizeof(data));
@@ -133,6 +132,20 @@ public:
     {
         return ReadLE64(data);
     }
+
+	// convert the contents of two arrays x1 and x2 to 256
+	uint256 convert32To256(uint32_t *x1, uint32_t *x2, int size) const
+    {
+        uint256 ret;
+		int x = 0;
+        for (x = 0; x < size; x++) {
+            ret.data[x] = x1[x];
+        }
+		for (; x < size*2; x++) {
+			ret.data[x] = x2[x];
+		}
+        return ret;
+    }
 };
 
 /* uint256 from const char *.
@@ -156,4 +169,21 @@ inline uint256 uint256S(const std::string& str)
     return rv;
 }
 
+class uint512 : public base_blob<512>
+{
+public:
+    uint512() {}
+    uint512(const base_blob<512>& b) : base_blob<512>(b) {}
+    explicit uint512(const std::vector<unsigned char>& vch) : base_blob<512>(vch) {}
+
+    uint256 trim256() const
+    {
+        uint256 ret;
+        for (unsigned int i = 0; i < uint256::WIDTH; i++) {
+            ret.data[i] = data[i];
+        }
+        return ret;
+    }
+
+};
 #endif // BITCOIN_UINT256_H

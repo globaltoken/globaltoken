@@ -3018,7 +3018,7 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
         wtxNew.SetTx(MakeTransactionRef(std::move(txNew)));
 
         // Limit size
-        if (GetTransactionWeight(*wtxNew.tx) >= MAX_STANDARD_TX_WEIGHT)
+        if (GetTransactionWeight(*wtxNew.tx) >= MaxStandardTransactionWeight(fHardforkSizingActiveAtTip))
         {
             strFailReason = _("Transaction too large");
             return false;

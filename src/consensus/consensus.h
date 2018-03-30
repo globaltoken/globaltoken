@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2017 The Bitcoin Core developers
+// Copyright (c) 2018 The Globaltoken Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -15,6 +16,26 @@ static const unsigned int MAX_BLOCK_SERIALIZED_SIZE = 4000000;
 static const unsigned int MAX_BLOCK_WEIGHT = 4000000;
 /** The maximum allowed number of signature check operations in a block (network rule) */
 static const int64_t MAX_BLOCK_SIGOPS_COST = 80000;
+/** Coinbase transaction outputs can only be spent after this number of new blocks (network rule) */
+/** The maximum allowed size for a serialized block, in bytes (only for buffer size limits) */
+static const unsigned int MAX_BLOCK_SERIALIZED_SIZE_HARDFORK = 4000000 * 10;
+/** The maximum allowed weight for a block, see BIP 141 (network rule) */
+static const unsigned int MAX_BLOCK_WEIGHT_HARDFORK = 4000000 * 10;
+/** The maximum allowed number of signature check operations in a block (network rule) */
+static const int64_t MAX_BLOCK_SIGOPS_COST_HARDFORK = 80000 * 10;
+inline unsigned int MaxBlockWeight(bool HardForkActive)
+{
+    return HardForkActive ? MAX_BLOCK_WEIGHT_HARDFORK : MAX_BLOCK_WEIGHT;
+}
+inline unsigned int MaxBlockSerializedSize(bool HardForkActive)
+{
+    return HardForkActive ? MAX_BLOCK_SERIALIZED_SIZE_HARDFORK : MAX_BLOCK_SERIALIZED_SIZE;
+}
+/** The maximum allowed number of signature check operations in a block (network rule) */
+inline int64_t MaxBlockSigOps(bool HardForkActive)
+{
+    return HardForkActive ? MAX_BLOCK_SIGOPS_COST_HARDFORK : MAX_BLOCK_SIGOPS_COST;
+}
 /** Coinbase transaction outputs can only be spent after this number of new blocks (network rule) */
 static const int COINBASE_MATURITY = 100;
 

@@ -12,6 +12,8 @@
 #include <consensus/params.h>
 #include <consensus/validation.h>
 #include <core_io.h>
+#include <crypto/algos/equihash/equihash.h>
+#include <globaltoken/hardfork.h>
 #include <init.h>
 #include <validation.h>
 #include <miner.h>
@@ -107,6 +109,8 @@ UniValue getnetworkhashps(const JSONRPCRequest& request)
 UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGenerate, uint64_t nMaxTries, bool keepScript)
 {
     static const int nInnerLoopCount = 0x10000;
+	static const int nInnerLoopEquihashMask = 0xFFFF;
+    static const int nInnerLoopEquihashCount = 0xFFFF;
     int nHeightEnd = 0;
     int nHeight = 0;
 
@@ -117,9 +121,12 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
     }
     unsigned int nExtraNonce = 0;
     UniValue blockHashes(UniValue::VARR);
+	const CChainParams& params = Params();
+	unsigned int n = params.EquihashN();
+    unsigned int k = params.EquihashK();
     while (nHeight < nHeightEnd)
     {
-        std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript));
+        std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript, currentAlgo));
         if (!pblocktemplate.get())
             throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't create new block");
         CBlock *pblock = &pblocktemplate->block;
@@ -127,10 +134,66 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             LOCK(cs_main);
             IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
         }
-        while (nMaxTries > 0 && pblock->nNonce < nInnerLoopCount && !CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus())) {
-            ++pblock->nNonce;
-            --nMaxTries;
-        }
+		if(IsHardForkActivated((pblock->nHeight) +1))
+		{
+			if(currentAlgo == ALGO_EQUIHASH)
+			{
+				// Solve Equihash.
+				crypto_generichash_blake2b_state eh_state;
+				EhInitialiseState(n, k, eh_state);
+
+				// I = the block header minus nonce and solution.
+				CEquihashInput I{*pblock};
+				CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+				ss << I;
+
+				// H(I||...
+				crypto_generichash_blake2b_update(&eh_state, (unsigned char*)&ss[0], ss.size());
+
+				while (nMaxTries > 0 &&
+					   ((int)pblock->nNonce.GetUint64(0) & nInnerLoopEquihashMask) < nInnerLoopEquihashCount) {
+					// Yes, there is a chance every nonce could fail to satisfy the -regtest
+					// target -- 1 in 2^(2^256). That ain't gonna happen
+					pblock->nNonce = ArithToUint256(UintToArith256(pblock->nNonce) + 1);
+
+					// H(I||V||...
+					crypto_generichash_blake2b_state curr_state;
+					curr_state = eh_state;
+					crypto_generichash_blake2b_update(&curr_state,
+													  pblock->nNonce.begin(),
+													  pblock->nNonce.size());
+
+					// (x_1, x_2, ...) = A(I, V, n, k)
+					std::function<bool(std::vector<unsigned char>)> validBlock =
+							[&pblock](std::vector<unsigned char> soln) {
+						pblock->nSolution = soln;
+						// TODO(h4x3rotab): Add metrics counter like Zcash? `solutionTargetChecks.increment();`
+						// TODO(h4x3rotab): Maybe switch to EhBasicSolve and better deal with `nMaxTries`?
+						return CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus(), currentAlgo);
+					};
+					bool found = EhBasicSolveUncancellable(n, k, curr_state, validBlock);
+					--nMaxTries;
+					// TODO(h4x3rotab): Add metrics counter like Zcash? `ehSolverRuns.increment();`
+					if (found) {
+						break;
+					}
+				}
+			}
+			else
+			{
+				while (nMaxTries > 0 && (int)pblock->nNonce.GetUint64(0) < nInnerLoopCount && !CheckProofOfWork(pblock->GetPoWHash(currentAlgo), pblock->nBits, Params().GetConsensus(), currentAlgo)) {
+					pblock->nNonce = ArithToUint256(UintToArith256(pblock->nNonce) + 1);
+					--nMaxTries;
+				}
+			}
+		}
+		else
+		{
+			while (nMaxTries > 0 && (int)pblock->nNonce.GetUint64(0) < nInnerLoopCount && !CheckProofOfWork(pblock->GetPoWHash(ALGO_SHA256D), pblock->nBits, Params().GetConsensus(), ALGO_SHA256D)) {
+				pblock->nNonce = ArithToUint256(UintToArith256(pblock->nNonce) + 1);
+				--nMaxTries;
+			}
+		}
         if (nMaxTries == 0) {
             break;
         }
@@ -215,8 +278,17 @@ UniValue getmininginfo(const JSONRPCRequest& request)
     obj.pushKV("blocks",           (int)chainActive.Height());
     obj.pushKV("currentblockweight", (uint64_t)nLastBlockWeight);
     obj.pushKV("currentblocktx",   (uint64_t)nLastBlockTx);
-    obj.pushKV("difficulty",       (double)GetDifficulty());
-    obj.pushKV("networkhashps",    getnetworkhashps(request));
+	obj.pushKV("algoid",        currentAlgo);
+	obj.pushKV("algo",           GetAlgoName(currentAlgo));
+    obj.pushKV("difficulty",       (double)GetDifficulty(NULL, currentAlgo));
+	obj.pushKV("difficulty_SHA256D",       (double)GetDifficulty(NULL, ALGO_SHA256D));
+	obj.pushKV("difficulty_SCRYPT",       (double)GetDifficulty(NULL, ALGO_SCRYPT));
+	obj.pushKV("difficulty_X11",       (double)GetDifficulty(NULL, ALGO_X11));
+	obj.pushKV("difficulty_NEOSCRYPT",       (double)GetDifficulty(NULL, ALGO_NEOSCRYPT));
+	obj.pushKV("difficulty_EQUIHASH",       (double)GetDifficulty(NULL, ALGO_EQUIHASH));
+	obj.pushKV("difficulty_YESCRYPT",       (double)GetDifficulty(NULL, ALGO_YESCRYPT));
+	obj.pushKV("difficulty_HMQ1725",       (double)GetDifficulty(NULL, ALGO_HMQ1725));
+    // obj.pushKV("networkhashps",    getnetworkhashps(request)); currently not usable with multialgo
     obj.pushKV("pooledtx",         (uint64_t)mempool.size());
     obj.pushKV("chain",            Params().NetworkIDString());
     obj.pushKV("warnings",         GetWarnings("statusbar"));
@@ -519,7 +591,7 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
 
         // Create new block
         CScript scriptDummy = CScript() << OP_TRUE;
-        pblocktemplate = BlockAssembler(Params()).CreateNewBlock(scriptDummy, fSupportsSegwit);
+        pblocktemplate = BlockAssembler(Params()).CreateNewBlock(scriptDummy, currentAlgo, fSupportsSegwit);
         if (!pblocktemplate)
             throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
 
@@ -530,8 +602,9 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
     const Consensus::Params& consensusParams = Params().GetConsensus();
 
     // Update nTime
-    UpdateTime(pblock, consensusParams, pindexPrev);
-    pblock->nNonce = 0;
+    UpdateTime(pblock, consensusParams, pindexPrev, currentAlgo);
+    pblock->nNonce = uint256();
+	pblock->nSolution.clear();
 
     // NOTE: If at some point we support pre-segwit miners post-segwit-activation, this needs to take segwit support into consideration
     const bool fPreSegWit = (THRESHOLD_ACTIVE != VersionBitsState(pindexPrev, consensusParams, Consensus::DEPLOYMENT_SEGWIT, versionbitscache));
@@ -653,8 +726,8 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
     result.pushKV("mintime", (int64_t)pindexPrev->GetMedianTimePast()+1);
     result.pushKV("mutable", aMutable);
     result.pushKV("noncerange", "00000000ffffffff");
-    int64_t nSigOpLimit = MAX_BLOCK_SIGOPS_COST;
-    int64_t nSizeLimit = MAX_BLOCK_SERIALIZED_SIZE;
+    int64_t nSigOpLimit = MaxBlockSigOps(IsHardForkActivated(pindexPrev->nHeight+1));
+    int64_t nSizeLimit = MaxBlockSerializedSize(IsHardForkActivated(pindexPrev->nHeight+1));
     if (fPreSegWit) {
         assert(nSigOpLimit % WITNESS_SCALE_FACTOR == 0);
         nSigOpLimit /= WITNESS_SCALE_FACTOR;
@@ -664,7 +737,7 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
     result.pushKV("sigoplimit", nSigOpLimit);
     result.pushKV("sizelimit", nSizeLimit);
     if (!fPreSegWit) {
-        result.pushKV("weightlimit", (int64_t)MAX_BLOCK_WEIGHT);
+        result.pushKV("weightlimit", (int64_t)MaxBlockWeight(IsHardForkActivated(pindexPrev->nHeight+1)));
     }
     result.pushKV("curtime", pblock->GetBlockTime());
     result.pushKV("bits", strprintf("%08x", pblock->nBits));
