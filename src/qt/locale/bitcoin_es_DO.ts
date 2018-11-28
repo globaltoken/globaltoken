@@ -2,10 +2,6 @@
 <context>
     <name>AddressBookPage</name>
     <message>
-        <source>Right-click to edit address or label</source>
-        <translation>Haga clic con el botón derecho para editar una dirección o etiqueta</translation>
-    </message>
-    <message>
         <source>Create a new address</source>
         <translation>Crear una nueva dirección</translation>
     </message>
@@ -30,10 +26,6 @@
         <translation>Borrar de la lista la dirección seleccionada</translation>
     </message>
     <message>
-        <source>Enter address or label to search</source>
-        <translation>Introduzca una dirección o etiqueta que buscar</translation>
-    </message>
-    <message>
         <source>Export the data in the current tab to a file</source>
         <translation>Exportar a un archivo los datos de esta pestaña</translation>
     </message>
@@ -45,57 +37,9 @@
         <source>&amp;Delete</source>
         <translation>&amp;Eliminar</translation>
     </message>
-    <message>
-        <source>Choose the address to send coins to</source>
-        <translation>Escoja la dirección a la que se enviarán monedas</translation>
-    </message>
-    <message>
-        <source>Choose the address to receive coins with</source>
-        <translation>Escoja la dirección donde quiere recibir monedas</translation>
-    </message>
-    <message>
-        <source>Sending addresses</source>
-        <translation>Direcciones de envío</translation>
-    </message>
-    <message>
-        <source>Receiving addresses</source>
-        <translation>Direcciones de recepción</translation>
-    </message>
-    <message>
-        <source>These are your Bitcoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>Estas son sus direcciones Bitcoin para enviar pagos. Compruebe siempre la cantidad y la dirección de recibo antes de transferir monedas.</translation>
-    </message>
-    <message>
-        <source>These are your Bitcoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation>Estas son sus direcciones de Bitcoin para recibir pagos. Se recomienda utilizar una nueva dirección de recepción para cada transacción.</translation>
-    </message>
-    <message>
-        <source>Export Address List</source>
-        <translation>Exportar la Lista de Direcciones </translation>
-    </message>
-    <message>
-        <source>Comma separated file (*.csv)</source>
-        <translation>Archivo de columnas separadas por coma (*.csv)</translation>
-    </message>
-    <message>
-        <source>Exporting Failed</source>
-        <translation>La exportación falló</translation>
-    </message>
-    <message>
-        <source>There was an error trying to save the address list to %1. Please try again.</source>
-        <translation>Hubo un error al intentar guardar la lista de direcciones a %1. Por favor trate de nuevo.</translation>
-    </message>
-</context>
+    </context>
 <context>
     <name>AddressTableModel</name>
-    <message>
-        <source>Label</source>
-        <translation>Etiqueta</translation>
-    </message>
-    <message>
-        <source>Address</source>
-        <translation>Dirección</translation>
-    </message>
     </context>
 <context>
     <name>AskPassphraseDialog</name>
@@ -114,58 +58,6 @@
     <message>
         <source>Repeat new passphrase</source>
         <translation>Repita la nueva contraseña</translation>
-    </message>
-    <message>
-        <source>Show password</source>
-        <translation>Mostrar contraseña</translation>
-    </message>
-    <message>
-        <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
-        <translation>Introduzca la nueva contraseña para el monedero. &lt;br/&gt;Por favor use una contraseña de &lt;b&gt;diez o más caracteres aleatorios&lt;/b&gt;, u &lt;b&gt;ocho o más palabras&lt;/b&gt;.</translation>
-    </message>
-    <message>
-        <source>Encrypt wallet</source>
-        <translation>Cifrar monedero</translation>
-    </message>
-    <message>
-        <source>This operation needs your wallet passphrase to unlock the wallet.</source>
-        <translation>Esta operación requiere su contraseña para desbloquear el monedero.</translation>
-    </message>
-    <message>
-        <source>Unlock wallet</source>
-        <translation>Desbloquear monedero</translation>
-    </message>
-    <message>
-        <source>This operation needs your wallet passphrase to decrypt the wallet.</source>
-        <translation>Esta operación requiere su contraseña para descifrar el monedero.</translation>
-    </message>
-    <message>
-        <source>Decrypt wallet</source>
-        <translation>Descifrar monedero</translation>
-    </message>
-    <message>
-        <source>Enter the old passphrase and new passphrase to the wallet.</source>
-        <translation>Introduzca la contraseña anterior y la contraseña nueva para este monedero.</translation>
-    </message>
-    <message>
-        <source>Confirm wallet encryption</source>
-        <translation>Confirme cifrado del monedero</translation>
-    </message>
-    <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR BITCOINS&lt;/b&gt;!</source>
-        <translation>Atención: Si cifra su monedero y pierde la contraseña, perderá ¡&lt;b&gt;TODOS SUS BITCOINS&lt;/b&gt;!</translation>
-    </message>
-    <message>
-        <source>Are you sure you wish to encrypt your wallet?</source>
-        <translation>¿Está seguro que desea cifrar su monedero?</translation>
-    </message>
-    <message>
-        <source>Wallet encrypted</source>
-        <translation>Monedero cifrado</translation>
-    </message>
-    <message>
-        <source>%1 will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your bitcoins from being stolen by malware infecting your computer.</source>
-        <translation>%1 se cerrará ahora para finalizar el proceso de cifrado. Recuerde que el cifrado de su monedero no puede proteger de manera completa su Bitcoin de robo por malware que esté infectando su sistema.</translation>
     </message>
     </context>
 <context>
@@ -250,8 +142,8 @@
         <translation>Reindexando bloques en disco...</translation>
     </message>
     <message>
-        <source>Send coins to a Bitcoin address</source>
-        <translation>Enviar monedas a una dirección Bitcoin</translation>
+        <source>Send coins to a Globaltoken address</source>
+        <translation>Enviar monedas a una dirección Globaltoken</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -274,8 +166,8 @@
         <translation>&amp;Verificar mensaje...</translation>
     </message>
     <message>
-        <source>Bitcoin</source>
-        <translation>Bitcoin</translation>
+        <source>Globaltoken</source>
+        <translation>Globaltoken</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -302,12 +194,12 @@
         <translation>Cifrar las claves privadas de su monedero</translation>
     </message>
     <message>
-        <source>Sign messages with your Bitcoin addresses to prove you own them</source>
-        <translation>Firmar mensajes con sus direcciones Bitcoin para demostrar la propiedad</translation>
+        <source>Sign messages with your Globaltoken addresses to prove you own them</source>
+        <translation>Firmar mensajes con sus direcciones Globaltoken para demostrar la propiedad</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Bitcoin addresses</source>
-        <translation>Verificar mensajes comprobando que están firmados con direcciones Bitcoin concretas</translation>
+        <source>Verify messages to ensure they were signed with specified Globaltoken addresses</source>
+        <translation>Verificar mensajes comprobando que están firmados con direcciones Globaltoken concretas</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -326,8 +218,8 @@
         <translation>Barra de pestañas</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and bitcoin: URIs)</source>
-        <translation>Solicitar pagos (genera codigo QR y URL's de Bitcoin)</translation>
+        <source>Request payments (generates QR codes and globaltoken: URIs)</source>
+        <translation>Solicitar pagos (genera codigo QR y URL's de Globaltoken)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -338,8 +230,8 @@
         <translation>Muestra la lista de direcciones de recepción y etiquetas</translation>
     </message>
     <message>
-        <source>Open a bitcoin: URI or payment request</source>
-        <translation>Abrir un bitcoin: URI o petición de pago</translation>
+        <source>Open a globaltoken: URI or payment request</source>
+        <translation>Abrir un globaltoken: URI o petición de pago</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -505,7 +397,15 @@
         <source>Command-line options</source>
         <translation>Opciones de la línea de órdenes</translation>
     </message>
-</context>
+    <message>
+        <source>Usage:</source>
+        <translation>Uso:</translation>
+    </message>
+    <message>
+        <source>command-line options</source>
+        <translation>opciones de la línea de órdenes</translation>
+    </message>
+    </context>
 <context>
     <name>Intro</name>
     <message>
@@ -523,6 +423,10 @@
     <message>
         <source>Bitcoin</source>
         <translation>Bitcoin</translation>
+    </message>
+	<message>
+        <source>Globaltoken</source>
+        <translation>Globaltoken</translation>
     </message>
     <message>
         <source>Error</source>
@@ -598,8 +502,8 @@
         <translation>Experto</translation>
     </message>
     <message>
-        <source>Automatically open the Bitcoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>Abrir automáticamente el puerto del cliente Bitcoin en el router. Esta opción solo funciona si el router admite UPnP y está activado.</translation>
+        <source>Automatically open the Globaltoken client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <translation>Abrir automáticamente el puerto del cliente Globaltoken en el router. Esta opción solo funciona si el router admite UPnP y está activado.</translation>
     </message>
     <message>
         <source>Map port using &amp;UPnP</source>
@@ -697,8 +601,8 @@
         <translation>Desde</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Bitcoin network after a connection is established, but this process has not completed yet.</source>
-        <translation>La información mostrada puede estar desactualizada. Su monedero se sincroniza automáticamente con la red Bitcoin después de que se haya establecido una conexión, pero este proceso aún no se ha completado.</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Globaltoken network after a connection is established, but this process has not completed yet.</source>
+        <translation>La información mostrada puede estar desactualizada. Su monedero se sincroniza automáticamente con la red Globaltoken después de que se haya establecido una conexión, pero este proceso aún no se ha completado.</translation>
     </message>
     <message>
         <source>Your current spendable balance</source>
@@ -920,25 +824,9 @@
         <source>&amp;Save Image...</source>
         <translation>Guardar Imagen...</translation>
     </message>
-    <message>
-        <source>Address</source>
-        <translation>Dirección</translation>
-    </message>
-    <message>
-        <source>Label</source>
-        <translation>Etiqueta</translation>
-    </message>
-    <message>
-        <source>Wallet</source>
-        <translation>Monedero</translation>
-    </message>
     </context>
 <context>
     <name>RecentRequestsTableModel</name>
-    <message>
-        <source>Label</source>
-        <translation>Etiqueta</translation>
-    </message>
     </context>
 <context>
     <name>SendCoinsDialog</name>
@@ -1025,10 +913,6 @@
     <message>
         <source>S&amp;end</source>
         <translation>&amp;Enviar</translation>
-    </message>
-    <message>
-        <source>Transaction fee</source>
-        <translation>Comisión de transacción</translation>
     </message>
     </context>
 <context>
@@ -1131,8 +1015,8 @@
         <translation>Copiar la firma actual al portapapeles del sistema</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Bitcoin address</source>
-        <translation>Firmar el mensaje para demostrar que se posee esta dirección Bitcoin</translation>
+        <source>Sign the message to prove you own this Globaltoken address</source>
+        <translation>Firmar el mensaje para demostrar que se posee esta dirección Globaltoken</translation>
     </message>
     <message>
         <source>Sign &amp;Message</source>
@@ -1151,8 +1035,8 @@
         <translation>&amp;Verificar mensaje</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Bitcoin address</source>
-        <translation>Verificar el mensaje para comprobar que fue firmado con la dirección Bitcoin indicada</translation>
+        <source>Verify the message to ensure it was signed with the specified Globaltoken address</source>
+        <translation>Verificar el mensaje para comprobar que fue firmado con la dirección Globaltoken indicada</translation>
     </message>
     <message>
         <source>Verify &amp;Message</source>
@@ -1189,29 +1073,9 @@
     </context>
 <context>
     <name>TransactionTableModel</name>
-    <message>
-        <source>Label</source>
-        <translation>Etiqueta</translation>
-    </message>
     </context>
 <context>
     <name>TransactionView</name>
-    <message>
-        <source>Comma separated file (*.csv)</source>
-        <translation>Archivo de columnas separadas por coma (*.csv)</translation>
-    </message>
-    <message>
-        <source>Label</source>
-        <translation>Etiqueta</translation>
-    </message>
-    <message>
-        <source>Address</source>
-        <translation>Dirección</translation>
-    </message>
-    <message>
-        <source>Exporting Failed</source>
-        <translation>La exportación falló</translation>
-    </message>
     </context>
 <context>
     <name>UnitDisplayStatusBarControl</name>
@@ -1228,8 +1092,59 @@
 <context>
     <name>bitcoin-core</name>
     <message>
+        <source>Options:</source>
+        <translation>Opciones:
+</translation>
+    </message>
+    <message>
+        <source>Specify data directory</source>
+        <translation>Especificar directorio para los datos</translation>
+    </message>
+    <message>
+        <source>Connect to a node to retrieve peer addresses, and disconnect</source>
+        <translation>Conectar a un nodo para obtener direcciones de pares y desconectar</translation>
+    </message>
+    <message>
+        <source>Specify your own public address</source>
+        <translation>Especifique su propia dirección pública</translation>
+    </message>
+    <message>
+        <source>Accept command line and JSON-RPC commands</source>
+        <translation>Aceptar comandos consola y JSON-RPC
+</translation>
+    </message>
+    <message>
+        <source>Run in the background as a daemon and accept commands</source>
+        <translation>Ejecutar en segundo plano como daemon y aceptar comandos
+</translation>
+    </message>
+    <message>
+        <source>Globaltoken Core</source>
+        <translation>Núcleo de Globaltoken</translation>
+    </message>
+	<message>
         <source>Bitcoin Core</source>
         <translation>Núcleo de Bitcoin</translation>
+    </message>
+    <message>
+        <source>Bind to given address and always listen on it. Use [host]:port notation for IPv6</source>
+        <translation>Vincular a la dirección dada y escuchar siempre en ella. Utilice la notación [host]:port para IPv6</translation>
+    </message>
+    <message>
+        <source>Execute command when a wallet transaction changes (%s in cmd is replaced by TxID)</source>
+        <translation>Ejecutar comando cuando una transacción del monedero cambia (%s en cmd se remplazará por TxID)</translation>
+    </message>
+    <message>
+        <source>&lt;category&gt; can be:</source>
+        <translation>&lt;category&gt; puede ser:</translation>
+    </message>
+    <message>
+        <source>Accept connections from outside (default: 1 if no -proxy or -connect)</source>
+        <translation>Aceptar conexiones desde el exterior (predeterminado: 1 si no -proxy o -connect)</translation>
+    </message>
+    <message>
+        <source>Block creation options:</source>
+        <translation>Opciones de creación de bloques:</translation>
     </message>
     <message>
         <source>Corrupted block database detected</source>
@@ -1272,12 +1187,36 @@
         <translation>No hay suficientes descriptores de archivo disponibles. </translation>
     </message>
     <message>
+        <source>Specify wallet file (within data directory)</source>
+        <translation>Especificar archivo de monedero (dentro del directorio de datos)</translation>
+    </message>
+    <message>
         <source>Verifying blocks...</source>
         <translation>Verificando bloques...</translation>
     </message>
     <message>
+        <source>Execute command when a relevant alert is received or we see a really long fork (%s in cmd is replaced by message)</source>
+        <translation>Ejecutar un comando cuando se reciba una alerta importante o cuando veamos un fork demasiado largo (%s en cmd se reemplazará por el mensaje)</translation>
+    </message>
+    <message>
         <source>Information</source>
         <translation>Información</translation>
+    </message>
+    <message>
+        <source>RPC server options:</source>
+        <translation>Opciones del sservidor RPC:</translation>
+    </message>
+    <message>
+        <source>Send trace/debug info to console instead of debug.log file</source>
+        <translation>Enviar información de trazas/depuración a la consola en lugar de al archivo debug.log</translation>
+    </message>
+    <message>
+        <source>Show all debugging options (usage: --help -help-debug)</source>
+        <translation>Mostrar todas las opciones de depuración (uso: --help -help-debug)</translation>
+    </message>
+    <message>
+        <source>Shrink debug.log file on client startup (default: 1 when no -debug)</source>
+        <translation>Reducir el archivo debug.log al iniciar el cliente (predeterminado: 1 sin -debug)</translation>
     </message>
     <message>
         <source>Signing transaction failed</source>
@@ -1292,8 +1231,26 @@
         <translation>Transacción demasiado grande</translation>
     </message>
     <message>
+        <source>Username for JSON-RPC connections</source>
+        <translation>Nombre de usuario para las conexiones JSON-RPC
+</translation>
+    </message>
+    <message>
         <source>Warning</source>
         <translation>Aviso</translation>
+    </message>
+    <message>
+        <source>Password for JSON-RPC connections</source>
+        <translation>Contraseña para las conexiones JSON-RPC
+</translation>
+    </message>
+    <message>
+        <source>Execute command when the best block changes (%s in cmd is replaced by block hash)</source>
+        <translation>Ejecutar un comando cuando cambia el mejor bloque (%s en cmd se sustituye por el hash de bloque)</translation>
+    </message>
+    <message>
+        <source>Allow DNS lookups for -addnode, -seednode and -connect</source>
+        <translation>Permitir búsquedas DNS para -addnode, -seednode y -connect</translation>
     </message>
     <message>
         <source>Unknown network specified in -onlynet: '%s'</source>

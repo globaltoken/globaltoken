@@ -1,38 +1,43 @@
-Bitcoin Core integration/staging tree
+Globaltoken Core integration/staging tree
 =====================================
 
-[![Build Status](https://travis-ci.org/bitcoin/bitcoin.svg?branch=master)](https://travis-ci.org/bitcoin/bitcoin)
+[![Build Status](https://travis-ci.org/globaltoken/globaltoken.svg?branch=master)](https://travis-ci.org/globaltoken/globaltoken)
 
-https://bitcoincore.org
+https://globaltoken.org
 
-What is Bitcoin?
+What is Globaltoken?
 ----------------
 
-Bitcoin is an experimental digital currency that enables instant payments to
-anyone, anywhere in the world. Bitcoin uses peer-to-peer technology to operate
+Globaltoken is an experimental digital currency that enables instant payments to
+anyone, anywhere in the world. Globaltoken uses peer-to-peer technology to operate
 with no central authority: managing transactions and issuing money are carried
-out collectively by the network. Bitcoin Core is the name of open source
+out collectively by the network. Globaltoken Core is the name of open source
 software which enables the use of this currency.
 
 For more information, as well as an immediately useable, binary version of
-the Bitcoin Core software, see https://bitcoincore.org/en/download/, or read the
-[original whitepaper](https://bitcoincore.org/bitcoin.pdf).
+the Globaltoken Core software, see https://globaltoken.org/#downloads, or read the
+[original Bitcoin whitepaper](https://bitcoincore.org/bitcoin.pdf).
 
 License
 -------
 
-Bitcoin Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
+Globaltoken Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
 information or see https://opensource.org/licenses/MIT.
 
 Development Process
 -------------------
 
 The `master` branch is regularly built and tested, but is not guaranteed to be
-completely stable. [Tags](https://github.com/bitcoin/bitcoin/tags) are created
-regularly to indicate new official, stable release versions of Bitcoin Core.
+completely stable. [Tags](https://github.com/globaltoken/globaltoken/tags) are created
+regularly to indicate new official, stable release versions of Globaltoken Core.
 
-The contribution workflow is described in [CONTRIBUTING.md](CONTRIBUTING.md)
-and useful hints for developers can be found in [doc/developer-notes.md](doc/developer-notes.md).
+The contribution workflow is described in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+The developer [mailing list](https://lists.linuxfoundation.org/mailman/listinfo/bitcoin-dev)
+should be used to discuss complicated or controversial changes before working
+on a patch set.
+
+Developer IRC can be found on Freenode at #bitcoin-core-dev.
 
 Testing
 -------
@@ -53,7 +58,7 @@ There are also [regression and integration tests](/test), written
 in Python, that are run automatically on the build server.
 These tests can be run (if the [test dependencies](/test) are installed) with: `test/functional/test_runner.py`
 
-The Travis CI system makes sure that every pull request is built for Windows, Linux, and macOS, and that unit/sanity tests are run automatically.
+The Travis CI system makes sure that every pull request is built for Windows, Linux, and OS X, and that unit/sanity tests are run automatically.
 
 ### Manual Quality Assurance (QA) Testing
 

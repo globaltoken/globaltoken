@@ -30,10 +30,6 @@
         <translation>Kustuta märgistatud aadress loetelust</translation>
     </message>
     <message>
-        <source>Enter address or label to search</source>
-        <translation>Otsimiseks sisesta märgis või aadress</translation>
-    </message>
-    <message>
         <source>Export the data in the current tab to a file</source>
         <translation>Ekspordi kuvatava vahelehe sisu faili</translation>
     </message>
@@ -66,12 +62,12 @@
         <translation>Vastuvõtvad aadressid</translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>Need on sinu Bitcoin aadressid maksete saatmiseks. Ennem müntide saatmist kontrolli alati summat ja makse saaja aadressi.</translation>
+        <source>These are your Globaltoken addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation>Need on sinu Globaltoken aadressid maksete saatmiseks. Ennem müntide saatmist kontrolli alati summat ja makse saaja aadressi.</translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation>Need on sinu Bitcoin aadressid sisenevate maksete vastu võtmiseks. Soovitav on iga tehingu tarbeks kasutada uut aadressi.</translation>
+        <source>These are your Globaltoken addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <translation>Need on sinu Globaltoken aadressid sisenevate maksete vastu võtmiseks. Soovitav on iga tehingu tarbeks kasutada uut aadressi.</translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -172,8 +168,8 @@
         <translation>Kinnita rahakoti krüpteerimine.</translation>
     </message>
     <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR BITCOINS&lt;/b&gt;!</source>
-        <translation>Hoiatus:Kui sa krüpteerid oma rahakoti ja kaotad salafraasi, siis sa&lt;b&gt;KAOTAD OMA BITCOINID&lt;/b&gt;!</translation>
+        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR GLOBALTOKENS&lt;/b&gt;!</source>
+        <translation>Hoiatus:Kui sa krüpteerid oma rahakoti ja kaotad salafraasi, siis sa&lt;b&gt;KAOTAD OMA GLOBALTOKENID&lt;/b&gt;!</translation>
     </message>
     <message>
         <source>Are you sure you wish to encrypt your wallet?</source>
@@ -294,8 +290,8 @@
         <translation>Kettal olevate blokkide re-indekseerimine...</translation>
     </message>
     <message>
-        <source>Send coins to a Bitcoin address</source>
-        <translation>Saada münte Bitcoini aadressile</translation>
+        <source>Send coins to a Globaltoken address</source>
+        <translation>Saada münte Globaltokeni aadressile</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -318,8 +314,8 @@
         <translation>&amp;Kontrolli sõnumit...</translation>
     </message>
     <message>
-        <source>Bitcoin</source>
-        <translation>Bitcoin</translation>
+        <source>Globaltoken</source>
+        <translation>Globaltoken</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -346,12 +342,12 @@
         <translation>Krüpteeri oma rahakoti privaatvõtmed</translation>
     </message>
     <message>
-        <source>Sign messages with your Bitcoin addresses to prove you own them</source>
-        <translation>Omandi tõestamiseks allkirjasta sõnumid oma Bitcoini aadressiga</translation>
+        <source>Sign messages with your Globaltoken addresses to prove you own them</source>
+        <translation>Omandi tõestamiseks allkirjasta sõnumid oma Globaltokeni aadressiga</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Bitcoin addresses</source>
-        <translation>Kinnita sõnumid kindlustamaks et need allkirjastati määratud Bitcoini aadressiga</translation>
+        <source>Verify messages to ensure they were signed with specified Globaltoken addresses</source>
+        <translation>Kinnita sõnumid kindlustamaks et need allkirjastati määratud Globaltokeni aadressiga</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -370,20 +366,20 @@
         <translation>Vahelehe tööriistariba</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and bitcoin: URIs)</source>
-        <translation>Loo maksepäring (genereerib QR koodid ja bitcoini: URId)</translation>
+        <source>Request payments (generates QR codes and globaltoken: URIs)</source>
+        <translation>Loo maksepäring (genereerib QR koodid ja globaltokeni: URId)</translation>
     </message>
     <message>
-        <source>Open a bitcoin: URI or payment request</source>
-        <translation>Ava bitcoini: URI või maksepäring</translation>
+        <source>Open a globaltoken: URI or payment request</source>
+        <translation>Ava globaltokeni: URI või maksepäring</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
         <translation>Käsurea valikud</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Bitcoin network</source>
-        <translation><numerusform>%n aktiivne ühendus Bitcoini võrku</numerusform><numerusform>%n aktiivset ühendust Bitcoini võrku</numerusform></translation>
+        <source>%n active connection(s) to Globaltoken network</source>
+        <translation><numerusform>%n aktiivne ühendus Globaltokeni võrku</numerusform><numerusform>%n aktiivset ühendust Globaltokeni võrku</numerusform></translation>
     </message>
     <message>
         <source>Indexing blocks on disk...</source>
@@ -614,6 +610,10 @@
         <translation>&amp;Aadress</translation>
     </message>
     <message>
+        <source>New receiving address</source>
+        <translation>Uus vastu võttev aadress</translation>
+    </message>
+    <message>
         <source>New sending address</source>
         <translation>Uus saatev aadress</translation>
     </message>
@@ -626,8 +626,12 @@
         <translation>Muuda saatvat aadressi</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Bitcoin address.</source>
-        <translation>Sisestatud aadress "%1" ei ole korrektne Bitcoin aadress.</translation>
+        <source>The entered address "%1" is not a valid Globaltoken address.</source>
+        <translation>Sisestatud aadress "%1" ei ole korrektne Globaltoken aadress.</translation>
+    </message>
+    <message>
+        <source>The entered address "%1" is already in the address book.</source>
+        <translation>Sisestatud aadress "%1" on juba aadressi raamatus.</translation>
     </message>
     <message>
         <source>Could not unlock wallet.</source>
@@ -655,7 +659,23 @@
         <source>Command-line options</source>
         <translation>Käsurea valikud</translation>
     </message>
-</context>
+    <message>
+        <source>Usage:</source>
+        <translation>Kasutus:</translation>
+    </message>
+    <message>
+        <source>command-line options</source>
+        <translation>käsurea valikud</translation>
+    </message>
+    <message>
+        <source>UI Options:</source>
+        <translation>Kasutajaliidese Suvandid:</translation>
+    </message>
+    <message>
+        <source>Show splash screen on startup (default: %u)</source>
+        <translation>Käivitamisel kuva laadimisekraani (vaikimisi %u)</translation>
+    </message>
+    </context>
 <context>
     <name>Intro</name>
     <message>
@@ -665,6 +685,10 @@
     <message>
         <source>Bitcoin</source>
         <translation>Bitcoin</translation>
+    </message>
+	<message>
+        <source>Globaltoken</source>
+        <translation>Globaltoken</translation>
     </message>
     <message>
         <source>Error</source>
@@ -740,8 +764,8 @@
         <translation>Ekspert</translation>
     </message>
     <message>
-        <source>Automatically open the Bitcoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>Bitcoini kliendi pordi automaatne avamine ruuteris. Toimib, kui sinu ruuter aktsepteerib UPnP ühendust.</translation>
+        <source>Automatically open the Globaltoken client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <translation>Globaltokeni kliendi pordi automaatne avamine ruuteris. Toimib, kui sinu ruuter aktsepteerib UPnP ühendust.</translation>
     </message>
     <message>
         <source>Map port using &amp;UPnP</source>
@@ -839,7 +863,7 @@
         <translation>Vorm</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Bitcoin network after a connection is established, but this process has not completed yet.</source>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Globaltoken network after a connection is established, but this process has not completed yet.</source>
         <translation>Kuvatav info ei pruugi olla ajakohane. Ühenduse loomisel süngitakse sinu rahakott automaatselt Bitconi võrgustikuga, kuid see toiming on hetkel lõpetamata.</translation>
     </message>
     <message>
@@ -1155,10 +1179,6 @@
         <translation>Sõnum</translation>
     </message>
     <message>
-        <source>Wallet</source>
-        <translation>Rahakott</translation>
-    </message>
-    <message>
         <source>Resulting URI too long, try to reduce the text for label / message.</source>
         <translation>URI liiga pikk, proovi vähendada märke / sõnumi pikkust.</translation>
     </message>
@@ -1313,12 +1333,12 @@
         <translation>Oled kindel, et soovid saata?</translation>
     </message>
     <message>
-        <source>or</source>
-        <translation>või</translation>
+        <source>added as transaction fee</source>
+        <translation>lisatud kui tehingutasu</translation>
     </message>
     <message>
-        <source>Transaction fee</source>
-        <translation>Tehingutasu</translation>
+        <source>or</source>
+        <translation>või</translation>
     </message>
     <message>
         <source>Confirm send coins</source>
@@ -1345,8 +1365,8 @@
         <translation>Maksepäring aegunud.</translation>
     </message>
     <message>
-        <source>Warning: Invalid Bitcoin address</source>
-        <translation>Hoiatus: Ebakorrektne Bitcoin aadress</translation>
+        <source>Warning: Invalid Globaltoken address</source>
+        <translation>Hoiatus: Ebakorrektne Globaltoken aadress</translation>
     </message>
     <message>
         <source>(no label)</source>
@@ -1429,8 +1449,8 @@
         <translation>&amp;Allkirjastamise teade</translation>
     </message>
     <message>
-        <source>The Bitcoin address to sign the message with</source>
-        <translation>Bitcoin aadress millega sõnum allkirjastada</translation>
+        <source>The Globaltoken address to sign the message with</source>
+        <translation>Globaltoken aadress millega sõnum allkirjastada</translation>
     </message>
     <message>
         <source>Choose previously used address</source>
@@ -1461,8 +1481,8 @@
         <translation>Kopeeri praegune signatuur vahemällu</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Bitcoin address</source>
-        <translation>Allkirjasta sõnum Bitcoini aadressi sulle kuulumise tõestamiseks</translation>
+        <source>Sign the message to prove you own this Globaltoken address</source>
+        <translation>Allkirjasta sõnum Globaltokeni aadressi sulle kuulumise tõestamiseks</translation>
     </message>
     <message>
         <source>Sign &amp;Message</source>
@@ -1481,12 +1501,12 @@
         <translation>&amp;Kinnita Sõnum</translation>
     </message>
     <message>
-        <source>The Bitcoin address the message was signed with</source>
-        <translation>Bitcoin aadress millega sõnum on allkirjastatud</translation>
+        <source>The Globaltoken address the message was signed with</source>
+        <translation>Globaltoken aadress millega sõnum on allkirjastatud</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Bitcoin address</source>
-        <translation>Kinnita sõnum tõestamaks selle allkirjastatust määratud Bitcoini aadressiga.</translation>
+        <source>Verify the message to ensure it was signed with the specified Globaltoken address</source>
+        <translation>Kinnita sõnum tõestamaks selle allkirjastatust määratud Globaltokeni aadressiga.</translation>
     </message>
     <message>
         <source>Verify &amp;Message</source>
@@ -1570,6 +1590,10 @@
         <translation>Avatud kuni %1</translation>
     </message>
     <message>
+        <source>%1/offline</source>
+        <translation>%1/offline'is</translation>
+    </message>
+    <message>
         <source>%1/unconfirmed</source>
         <translation>%1/kinnitamata</translation>
     </message>
@@ -1580,6 +1604,10 @@
     <message>
         <source>Status</source>
         <translation>Olek</translation>
+    </message>
+    <message>
+        <source>, has not been successfully broadcast yet</source>
+        <translation>, veel esitlemata</translation>
     </message>
     <message>
         <source>Date</source>
@@ -1706,6 +1734,10 @@
     <message>
         <source>Confirmed (%1 confirmations)</source>
         <translation>Kinnitatud (%1 kinnitust)</translation>
+    </message>
+    <message>
+        <source>This block was not received by any other nodes and will probably not be accepted!</source>
+        <translation>Antud klotsi pole saanud ükski osapool ning tõenäoliselt seda ei aktsepteerita!</translation>
     </message>
     <message>
         <source>Generated but not accepted</source>
@@ -1918,12 +1950,56 @@
 <context>
     <name>bitcoin-core</name>
     <message>
+        <source>Options:</source>
+        <translation>Valikud:</translation>
+    </message>
+    <message>
+        <source>Specify data directory</source>
+        <translation>Täpsusta andmekataloog</translation>
+    </message>
+    <message>
+        <source>Connect to a node to retrieve peer addresses, and disconnect</source>
+        <translation>Peeri aadressi saamiseks ühendu korraks node'iga</translation>
+    </message>
+    <message>
+        <source>Specify your own public address</source>
+        <translation>Täpsusta enda avalik aadress</translation>
+    </message>
+    <message>
+        <source>Accept command line and JSON-RPC commands</source>
+        <translation>Luba käsurea ning JSON-RPC käsklusi</translation>
+    </message>
+    <message>
+        <source>Run in the background as a daemon and accept commands</source>
+        <translation>Tööta taustal ning aktsepteeri käsklusi</translation>
+    </message>
+    <message>
+        <source>Globaltoken Core</source>
+        <translation>Globaltokeni tuumik</translation>
+    </message>
+	<message>
         <source>Bitcoin Core</source>
         <translation>Bitcoini tuumik</translation>
     </message>
     <message>
+        <source>Bind to given address and always listen on it. Use [host]:port notation for IPv6</source>
+        <translation>Määratud aadressiga sidumine ning sellelt kuulamine. IPv6 jaoks kasuta vormingut [host]:port</translation>
+    </message>
+    <message>
+        <source>Execute command when a wallet transaction changes (%s in cmd is replaced by TxID)</source>
+        <translation>Käivita käsklus, kui rahakoti tehing muutub (%s cmd's muudetakse TxID'ks)</translation>
+    </message>
+    <message>
         <source>This is a pre-release test build - use at your own risk - do not use for mining or merchant applications</source>
         <translation>See on test-versioon - kasutamine omal riisikol - ära kasuta mining'uks ega kaupmeeste programmides</translation>
+    </message>
+    <message>
+        <source>Accept connections from outside (default: 1 if no -proxy or -connect)</source>
+        <translation>Luba välisühendusi (vaikeväärtus: 1 kui puudub -proxy või -connect)</translation>
+    </message>
+    <message>
+        <source>Block creation options:</source>
+        <translation>Blokeeri loomise valikud:</translation>
     </message>
     <message>
         <source>Corrupted block database detected</source>
@@ -1962,8 +2038,28 @@
         <translation>Kontrollin blokke...</translation>
     </message>
     <message>
+        <source>Wallet options:</source>
+        <translation>Rahakoti valikud:</translation>
+    </message>
+    <message>
+        <source>(default: %u)</source>
+        <translation>(vaikimisi: %u)</translation>
+    </message>
+    <message>
         <source>Information</source>
         <translation>Informatsioon</translation>
+    </message>
+    <message>
+        <source>RPC server options:</source>
+        <translation>RPC serveri valikud:</translation>
+    </message>
+    <message>
+        <source>Send trace/debug info to console instead of debug.log file</source>
+        <translation>Saada jälitus/debug, debug.log faili asemel, konsooli</translation>
+    </message>
+    <message>
+        <source>Shrink debug.log file on client startup (default: 1 when no -debug)</source>
+        <translation>Kahanda programmi käivitamisel debug.log faili (vaikeväärtus: 1, kui ei ole -debug)</translation>
     </message>
     <message>
         <source>Signing transaction failed</source>
@@ -1982,8 +2078,28 @@
         <translation>Tehing liiga suur</translation>
     </message>
     <message>
+        <source>Username for JSON-RPC connections</source>
+        <translation>JSON-RPC ühenduste kasutajatunnus</translation>
+    </message>
+    <message>
         <source>Warning</source>
         <translation>Hoiatus</translation>
+    </message>
+    <message>
+        <source>Password for JSON-RPC connections</source>
+        <translation>JSON-RPC ühenduste salasõna</translation>
+    </message>
+    <message>
+        <source>Execute command when the best block changes (%s in cmd is replaced by block hash)</source>
+        <translation>Käivita käsklus, kui parim plokk muutub (käskluse %s asendatakse ploki hash'iga)</translation>
+    </message>
+    <message>
+        <source>Allow DNS lookups for -addnode, -seednode and -connect</source>
+        <translation>-addnode, -seednode ja -connect tohivad kasutada DNS lookup'i</translation>
+    </message>
+    <message>
+        <source>(default: %s)</source>
+        <translation>(vaikimisi: %s)</translation>
     </message>
     <message>
         <source>Unknown network specified in -onlynet: '%s'</source>

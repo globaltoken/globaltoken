@@ -1,4 +1,4 @@
-<TS language="vi_VN" version="2.1">
+﻿<TS language="vi_VN" version="2.1">
 <context>
     <name>AddressBookPage</name>
     <message>
@@ -11,7 +11,7 @@
     </message>
     <message>
         <source>&amp;New</source>
-        <translation>&amp;Tạo mới</translation>
+        <translation>&amp;Mới</translation>
     </message>
     <message>
         <source>Copy the currently selected address to the system clipboard</source>
@@ -60,14 +60,6 @@
     <message>
         <source>Receiving addresses</source>
         <translation>Địa chỉ nhận</translation>
-    </message>
-    <message>
-        <source>These are your Bitcoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>Đây là các địa chỉ Bitcoin để gửi bạn gửi tiền. Trước khi gửi bạn nên kiểm tra lại số tiền bạn muốn gửi và địa chỉ bitcoin của người nhận.</translation>
-    </message>
-    <message>
-        <source>These are your Bitcoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation>Đây là các địa chỉ Bitcoin để bạn nhận tiền. Với mỗi giao dịch, bạn nên dùng một địa chỉ Bitcoin mới để nhận tiền.</translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -126,14 +118,6 @@
     <message>
         <source>Repeat new passphrase</source>
         <translation>Điền lại passphrase</translation>
-    </message>
-    <message>
-        <source>Show password</source>
-        <translation>Hiện mật khẩu</translation>
-    </message>
-    <message>
-        <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
-        <translation>Nhập passphrase mới cho Ví của bạn.&lt;br/&gt;Vui long dùng  passphrase gồm&lt;b&gt;ít nhất 10 ký tự bất kỳ &lt;/b&gt;, hoặc &lt;b&gt;ít nhất 8 chữ&lt;/b&gt;.</translation>
     </message>
     <message>
         <source>Encrypt wallet</source>
@@ -331,8 +315,8 @@ Ví của bạn chưa được mã hóa.</translation>
         <translation>Đánh chỉ số (indexing) lại các khối (blocks) trên ổ đĩa ...</translation>
     </message>
     <message>
-        <source>Send coins to a Bitcoin address</source>
-        <translation>Gửi coins đến tài khoản Bitcoin</translation>
+        <source>Send coins to a Globaltoken address</source>
+        <translation>Gửi coins đến tài khoản Globaltoken</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -355,8 +339,8 @@ Ví của bạn chưa được mã hóa.</translation>
         <translation>&amp;Tin nhắn xác thực</translation>
     </message>
     <message>
-        <source>Bitcoin</source>
-        <translation>Bitcoin</translation>
+        <source>Globaltoken</source>
+        <translation>Globaltoken</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -383,12 +367,12 @@ Ví của bạn chưa được mã hóa.</translation>
         <translation>Mã hoá các khoá bí mật trong Ví của bạn.</translation>
     </message>
     <message>
-        <source>Sign messages with your Bitcoin addresses to prove you own them</source>
-        <translation>Dùng địa chỉ Bitcoin của bạn ký các tin nhắn để xác minh những nội dung tin nhắn đó là của bạn.</translation>
+        <source>Sign messages with your Globaltoken addresses to prove you own them</source>
+        <translation>Dùng địa chỉ Globaltoken của bạn ký các tin nhắn để xác minh những nội dung tin nhắn đó là của bạn.</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Bitcoin addresses</source>
-        <translation>Kiểm tra các tin nhắn để chắc chắn rằng chúng được ký bằng các địa chỉ Bitcoin xác định.</translation>
+        <source>Verify messages to ensure they were signed with specified Globaltoken addresses</source>
+        <translation>Kiểm tra các tin nhắn để chắc chắn rằng chúng được ký bằng các địa chỉ Globaltoken xác định.</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -407,8 +391,8 @@ Ví của bạn chưa được mã hóa.</translation>
         <translation>Thanh công cụ (toolbar)</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and bitcoin: URIs)</source>
-        <translation>Yêu cầu thanh toán(tạo mã QR và địa chỉ Bitcoin: URLs)</translation>
+        <source>Request payments (generates QR codes and globaltoken: URIs)</source>
+        <translation>Yêu cầu thanh toán(tạo mã QR và địa chỉ Globaltoken: URLs)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -419,16 +403,16 @@ Ví của bạn chưa được mã hóa.</translation>
         <translation>Hiện thỉ danh sách các địa chỉ và nhãn đã dùng để nhận.</translation>
     </message>
     <message>
-        <source>Open a bitcoin: URI or payment request</source>
-        <translation>Mở bitcoin:URL hoặc yêu cầu thanh toán</translation>
+        <source>Open a globaltoken: URI or payment request</source>
+        <translation>Mở globaltoken:URL hoặc yêu cầu thanh toán</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
         <translation>7Tùy chọn dòng lệnh</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Bitcoin network</source>
-        <translation><numerusform>%n liên kết hoạt động với mạng lưới Bitcoin</numerusform></translation>
+        <source>%n active connection(s) to Globaltoken network</source>
+        <translation><numerusform>%n liên kết hoạt động với mạng lưới Globaltoken</numerusform></translation>
     </message>
     <message>
         <source>Indexing blocks on disk...</source>
@@ -471,8 +455,8 @@ Ví của bạn chưa được mã hóa.</translation>
         <translation>Đã cập nhật</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Bitcoin command-line options</source>
-        <translation>Hiển thị tin nhắn trợ giúp %1 để có được danh sách với các tùy chọn dòng lệnh Bitcoin.</translation>
+        <source>Show the %1 help message to get a list with possible Globaltoken command-line options</source>
+        <translation>Hiển thị tin nhắn trợ giúp %1 để có được danh sách với các tùy chọn dòng lệnh Globaltoken.</translation>
     </message>
     <message>
         <source>Connecting to peers...</source>
@@ -624,7 +608,23 @@ Ví của bạn chưa được mã hóa.</translation>
         <source>Command-line options</source>
         <translation>&amp;Tùy chọn dòng lệnh</translation>
     </message>
-</context>
+    <message>
+        <source>Usage:</source>
+        <translation>Mức sử dụng</translation>
+    </message>
+    <message>
+        <source>command-line options</source>
+        <translation>tùy chọn dòng lệnh</translation>
+    </message>
+    <message>
+        <source>Set language, for example "de_DE" (default: system locale)</source>
+        <translation>Chọn ngôn ngữ, ví dụ "de_DE" (mặc định: Vị trí hệ thống)</translation>
+    </message>
+    <message>
+        <source>Set SSL root certificates for payment request (default: -system-)</source>
+        <translation>Đặt chứng nhận SSL gốc cho yêu cầu giao dịch (mặc định: -hệ thống-)</translation>
+    </message>
+    </context>
 <context>
     <name>Intro</name>
     <message>
@@ -638,6 +638,10 @@ Ví của bạn chưa được mã hóa.</translation>
     <message>
         <source>Bitcoin</source>
         <translation>Bitcoin</translation>
+    </message>
+    <message>
+        <source>Globaltoken</source>
+        <translation>Globaltoken</translation>
     </message>
     <message>
         <source>Error</source>
@@ -689,8 +693,8 @@ Ví của bạn chưa được mã hóa.</translation>
         <translation>Ví</translation>
     </message>
     <message>
-        <source>Connect to the Bitcoin network through a SOCKS5 proxy.</source>
-        <translation>Kết nối đến máy chủ Bitcoin thông qua SOCKS5 proxy.</translation>
+        <source>Connect to the Globaltoken network through a SOCKS5 proxy.</source>
+        <translation>Kết nối đến máy chủ Globaltoken thông qua SOCKS5 proxy.</translation>
     </message>
     <message>
         <source>Proxy &amp;IP:</source>
@@ -964,10 +968,6 @@ Ví của bạn chưa được mã hóa.</translation>
         <translation>Tin nhắn</translation>
     </message>
     <message>
-        <source>Wallet</source>
-        <translation>Ví</translation>
-    </message>
-    <message>
         <source>Error encoding URI into QR Code.</source>
         <translation>Lỗi khi encode từ URI thành QR Code</translation>
     </message>
@@ -1090,6 +1090,10 @@ Ví của bạn chưa được mã hóa.</translation>
         <translation>%1 đến %2</translation>
     </message>
     <message>
+        <source>Total Amount %1</source>
+        <translation>Tổng cộng %1</translation>
+    </message>
+    <message>
         <source>or</source>
         <translation>hoặc</translation>
     </message>
@@ -1203,8 +1207,20 @@ Ví của bạn chưa được mã hóa.</translation>
 <context>
     <name>bitcoin-core</name>
     <message>
+        <source>Options:</source>
+        <translation>Lựa chọn:</translation>
+    </message>
+    <message>
         <source>Bitcoin Core</source>
         <translation>Bitcoin Core</translation>
+    </message>
+    <message>
+        <source>Globaltoken Core</source>
+        <translation>Globaltoken Core</translation>
+    </message>
+    <message>
+        <source>(default: %u)</source>
+        <translation>(mặc định: %u)</translation>
     </message>
     <message>
         <source>Information</source>
@@ -1217,6 +1233,10 @@ Ví của bạn chưa được mã hóa.</translation>
     <message>
         <source>Warning</source>
         <translation>Chú ý</translation>
+    </message>
+    <message>
+        <source>(default: %s)</source>
+        <translation>(mặc định: %s)</translation>
     </message>
     <message>
         <source>Insufficient funds</source>

@@ -1,4 +1,5 @@
-// Copyright (c) 2012-2018 The Bitcoin Core developers
+// Copyright (c) 2012-2017 The Bitcoin Core developers
+// Copyright (c) 2017-2018 The Globaltoken Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -9,7 +10,7 @@
  * network protocol versioning
  */
 
-static const int PROTOCOL_VERSION = 70015;
+static const int PROTOCOL_VERSION = 80000;
 
 //! initial proto version, to be increased after version/verack negotiation
 static const int INIT_PROTO_VERSION = 209;
@@ -28,18 +29,18 @@ static const int CADDR_TIME_VERSION = 31402;
 static const int BIP0031_VERSION = 60000;
 
 //! "filter*" commands are disabled without NODE_BLOOM after and including this version
-static const int NO_BLOOM_VERSION = 70011;
+static const int NO_BLOOM_VERSION = 70001;
 
 //! "sendheaders" command and announcing blocks with headers starts with this version
-static const int SENDHEADERS_VERSION = 70012;
+static const int SENDHEADERS_VERSION = 70001;
 
 //! "feefilter" tells peers to filter invs to you by fee starts with this version
-static const int FEEFILTER_VERSION = 70013;
+static const int FEEFILTER_VERSION = 70001;
 
 //! short-id-based block download starts with this version
-static const int SHORT_IDS_BLOCKS_VERSION = 70014;
+static const int SHORT_IDS_BLOCKS_VERSION = 70001;
 
 //! not banning for invalid compact blocks starts with this version
-static const int INVALID_CB_NO_BAN_VERSION = 70015;
+static const int INVALID_CB_NO_BAN_VERSION = 70002;
 
 #endif // BITCOIN_VERSION_H

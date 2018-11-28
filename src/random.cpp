@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2018 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -11,16 +11,15 @@
 #include <compat.h> // for Windows API
 #include <wincrypt.h>
 #endif
-#include <logging.h>  // for LogPrint()
-#include <sync.h>     // for WAIT_LOCK
-#include <util/time.h> // for GetTime()
+#include <util.h>             // for LogPrint()
+#include <utilstrencodings.h> // for GetTime()
 
 #include <stdlib.h>
+#include <limits>
 #include <chrono>
 #include <thread>
 
 #ifndef WIN32
-#include <fcntl.h>
 #include <sys/time.h>
 #endif
 
@@ -35,7 +34,6 @@
 #include <sys/random.h>
 #endif
 #ifdef HAVE_SYSCTL_ARND
-#include <util/strencodings.h> // for ARRAYLEN
 #include <sys/sysctl.h>
 #endif
 
@@ -181,7 +179,7 @@ static void RandAddSeedPerfmon()
 /** Fallback: get 32 bytes of system entropy from /dev/urandom. The most
  * compatible way to get cryptographic randomness on UNIX-ish platforms.
  */
-static void GetDevURandom(unsigned char *ent32)
+void GetDevURandom(unsigned char *ent32)
 {
     int f = open("/dev/urandom", O_RDONLY);
     if (f == -1) {
@@ -296,7 +294,7 @@ void RandAddSeedSleep()
 }
 
 
-static Mutex cs_rng_state;
+static std::mutex cs_rng_state;
 static unsigned char rng_state[32] = {0};
 static uint64_t rng_counter = 0;
 
@@ -306,7 +304,7 @@ static void AddDataToRng(void* data, size_t len) {
     hasher.Write((const unsigned char*)data, len);
     unsigned char buf[64];
     {
-        WAIT_LOCK(cs_rng_state, lock);
+        std::unique_lock<std::mutex> lock(cs_rng_state);
         hasher.Write(rng_state, sizeof(rng_state));
         hasher.Write((const unsigned char*)&rng_counter, sizeof(rng_counter));
         ++rng_counter;
@@ -338,7 +336,7 @@ void GetStrongRandBytes(unsigned char* out, int num)
 
     // Combine with and update state
     {
-        WAIT_LOCK(cs_rng_state, lock);
+        std::unique_lock<std::mutex> lock(cs_rng_state);
         hasher.Write(rng_state, sizeof(rng_state));
         hasher.Write((const unsigned char*)&rng_counter, sizeof(rng_counter));
         ++rng_counter;

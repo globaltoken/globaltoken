@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2018 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -65,7 +65,7 @@ public:
     COutPoint prevout;
     CScript scriptSig;
     uint32_t nSequence;
-    CScriptWitness scriptWitness; //!< Only serialized through CTransaction
+    CScriptWitness scriptWitness; //! Only serialized through CTransaction
 
     /* Setting nSequence to this value for every input in a transaction
      * disables nLockTime. */
@@ -74,7 +74,7 @@ public:
     /* Below flags apply in the context of BIP 68*/
     /* If this flag set, CTxIn::nSequence is NOT interpreted as a
      * relative lock-time. */
-    static const uint32_t SEQUENCE_LOCKTIME_DISABLE_FLAG = (1U << 31);
+    static const uint32_t SEQUENCE_LOCKTIME_DISABLE_FLAG = (1 << 31);
 
     /* If CTxIn::nSequence encodes a relative lock-time and this flag
      * is set, the relative lock-time has units of 512 seconds,
@@ -475,10 +475,8 @@ public:
 private:
     /** Memory only. */
     const uint256 hash;
-    const uint256 m_witness_hash;
 
     uint256 ComputeHash() const;
-    uint256 ComputeWitnessHash() const;
 
 public:
     /** Construct a CTransaction that qualifies as IsNull() */
@@ -502,8 +500,12 @@ public:
         return vin.empty() && vout.empty();
     }
 
-    const uint256& GetHash() const { return hash; }
-    const uint256& GetWitnessHash() const { return m_witness_hash; };
+    const uint256& GetHash() const {
+        return hash;
+    }
+
+    // Compute a hash that includes both transaction and witness data
+    uint256 GetWitnessHash() const;
 
     // Return sum of txouts.
     CAmount GetValueOut() const;
@@ -554,7 +556,7 @@ struct CMutableTransaction
     uint32_t nLockTime;
 
     CMutableTransaction();
-    explicit CMutableTransaction(const CTransaction& tx);
+    CMutableTransaction(const CTransaction& tx);
 
     template <typename Stream>
     inline void Serialize(Stream& s) const {
@@ -577,6 +579,11 @@ struct CMutableTransaction
      */
     uint256 GetHash() const;
     std::string ToString() const;
+
+    friend bool operator==(const CMutableTransaction& a, const CMutableTransaction& b)
+    {
+        return a.GetHash() == b.GetHash();
+    }
 
     bool HasWitness() const
     {

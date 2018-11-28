@@ -1,5 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2018 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The DigiByte Core developers
+// Copyright (c) 2018 The Globaltoken Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -49,8 +51,16 @@ struct BIP9Deployment {
 struct Params {
     uint256 hashGenesisBlock;
     int nSubsidyHalvingInterval;
-    /* Block hash that is excepted from BIP16 enforcement */
-    uint256 BIP16Exception;
+    int nMasternodeMinimumConfirmations;
+    int nMasternodeColleteralPaymentAmount;
+    int nMasternodePayeeReward;
+    int nInstantSendConfirmationsRequired;
+    int nInstantSendKeepLock;
+    int nTreasuryAddressChange;
+    int nTreasuryAddressChangeStart;
+    int nTreasuryAmount;
+    /** Block height at which BIP16 becomes active */
+    int BIP16Height;
     /** Block height and hash at which BIP34 becomes active */
     int BIP34Height;
     uint256 BIP34Hash;
@@ -63,18 +73,66 @@ struct Params {
      * (nPowTargetTimespan / nPowTargetSpacing) which is also used for BIP9 deployments.
      * Examples: 1916 for 95%, 1512 for testchains.
      */
+	/** Block height at which BIP66 becomes active */
+    int HardforkHeight;
+    uint256 HardforkHash;
+    uint32_t HardforkTime;
     uint32_t nRuleChangeActivationThreshold;
     uint32_t nMinerConfirmationWindow;
     BIP9Deployment vDeployments[MAX_VERSION_BITS_DEPLOYMENTS];
     /** Proof of work parameters */
-    uint256 powLimit;
+    uint256 powLimit_SHA256;
+    uint256 powLimit_SCRYPT;
+    uint256 powLimit_X11;
+    uint256 powLimit_NEOSCRYPT;
+    uint256 powLimit_EQUIHASH;
+    uint256 powLimit_YESCRYPT;
+    uint256 powLimit_HMQ1725;
+    uint256 powLimit_XEVAN;
+    uint256 powLimit_NIST5;
+    uint256 powLimit_TIMETRAVEL10;
+    uint256 powLimit_PAWELHASH;
+    uint256 powLimit_X13;
+    uint256 powLimit_X14;
+    uint256 powLimit_X15;
+    uint256 powLimit_X17;
+    uint256 powLimit_LYRA2RE;
+    uint256 powLimit_BLAKE2S;
+    uint256 powLimit_BLAKE2B;
+    uint256 powLimit_ASTRALHASH;
+    uint256 powLimit_PADIHASH;
+    uint256 powLimit_JEONGHASH;
+    uint256 powLimit_KECCAK;
+    uint256 powLimit_ZHASH;
+    uint256 powLimit_GLOBALHASH;
+    uint256 powLimit_QUBIT;
+    uint256 powLimit_SKEIN;
+    uint256 powLimit_GROESTL;
+    uint256 powLimit_SKUNKHASH;
+    uint256 powLimit_QUARK;
+    uint256 powLimit_X16R;
     bool fPowAllowMinDifficultyBlocks;
     bool fPowNoRetargeting;
+    int64_t nTargetTimespan;
+    int64_t nTargetSpacing;
+    int64_t nInterval;
+    int64_t nAveragingInterval;
+    int64_t nAveragingTargetTimespan;
     int64_t nPowTargetSpacing;
+    int64_t nPowTargetSpacingV2;
     int64_t nPowTargetTimespan;
+    int64_t nMaxAdjustDown;
+    int64_t nMaxAdjustUp;
+    int64_t nMinActualTimespan;
+    int64_t nMaxActualTimespan;
+    int64_t nLocalTargetAdjustment;
     int64_t DifficultyAdjustmentInterval() const { return nPowTargetTimespan / nPowTargetSpacing; }
     uint256 nMinimumChainWork;
     uint256 defaultAssumeValid;
+    
+    /** Auxpow parameters */
+    int32_t nAuxpowChainId;
+    bool fStrictChainId;
 };
 } // namespace Consensus
 

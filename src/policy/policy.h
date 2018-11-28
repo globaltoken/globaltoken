@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2018 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -18,16 +18,32 @@ class CTxOut;
 
 /** Default for -blockmaxweight, which controls the range of block weights the mining code will create **/
 static const unsigned int DEFAULT_BLOCK_MAX_WEIGHT = MAX_BLOCK_WEIGHT - 4000;
+/** Default for -blockmaxweight, which controls the range of block weights the mining code will create **/
+static const unsigned int DEFAULT_BLOCK_MAX_WEIGHT_HARDFORK = MAX_BLOCK_WEIGHT_HARDFORK - 4000;
+inline unsigned int DefaultMaxBlockWeight(bool HardForkActive)
+{
+    return HardForkActive ? DEFAULT_BLOCK_MAX_WEIGHT_HARDFORK : DEFAULT_BLOCK_MAX_WEIGHT;
+}
 /** Default for -blockmintxfee, which sets the minimum feerate for a transaction in blocks created by mining code **/
 static const unsigned int DEFAULT_BLOCK_MIN_TX_FEE = 1000;
 /** The maximum weight for transactions we're willing to relay/mine */
 static const unsigned int MAX_STANDARD_TX_WEIGHT = 400000;
-/** The minimum non-witness size for transactions we're willing to relay/mine (1 segwit input + 1 P2WPKH output = 82 bytes) */
-static const unsigned int MIN_STANDARD_TX_NONWITNESS_SIZE = 82;
+/** The maximum weight for transactions we're willing to relay/mine */
+static const unsigned int MAX_STANDARD_TX_WEIGHT_HARDFORK = 400000 * 10;
+inline unsigned int MaxStandardTransactionWeight(bool HardForkActive)
+{
+    return HardForkActive ? MAX_STANDARD_TX_WEIGHT_HARDFORK : MAX_STANDARD_TX_WEIGHT;
+}
 /** Maximum number of signature check operations in an IsStandard() P2SH script */
 static const unsigned int MAX_P2SH_SIGOPS = 15;
 /** The maximum number of sigops we're willing to relay/mine in a single tx */
 static const unsigned int MAX_STANDARD_TX_SIGOPS_COST = MAX_BLOCK_SIGOPS_COST/5;
+/** The maximum number of sigops we're willing to relay/mine in a single tx */
+static const unsigned int MAX_STANDARD_TX_SIGOPS_COST_HARDFORK = MAX_BLOCK_SIGOPS_COST_HARDFORK/5;
+inline unsigned int MaxStandardTransactionSigOps(bool HardForkActive)
+{
+    return HardForkActive ? MAX_STANDARD_TX_SIGOPS_COST_HARDFORK : MAX_STANDARD_TX_SIGOPS_COST;
+}
 /** Default for -maxmempool, maximum megabytes of mempool memory usage */
 static const unsigned int DEFAULT_MAX_MEMPOOL_SIZE = 300;
 /** Default for -incrementalrelayfee, which sets the minimum feerate increase for mempool limiting or BIP 125 replacement **/
@@ -65,8 +81,7 @@ static constexpr unsigned int STANDARD_SCRIPT_VERIFY_FLAGS = MANDATORY_SCRIPT_VE
                                                              SCRIPT_VERIFY_LOW_S |
                                                              SCRIPT_VERIFY_WITNESS |
                                                              SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_WITNESS_PROGRAM |
-                                                             SCRIPT_VERIFY_WITNESS_PUBKEYTYPE |
-                                                             SCRIPT_VERIFY_CONST_SCRIPTCODE;
+                                                             SCRIPT_VERIFY_WITNESS_PUBKEYTYPE;
 
 /** For convenience, standard but not mandatory verify flags. */
 static constexpr unsigned int STANDARD_NOT_MANDATORY_VERIFY_FLAGS = STANDARD_SCRIPT_VERIFY_FLAGS & ~MANDATORY_SCRIPT_VERIFY_FLAGS;
@@ -79,12 +94,12 @@ CAmount GetDustThreshold(const CTxOut& txout, const CFeeRate& dustRelayFee);
 
 bool IsDust(const CTxOut& txout, const CFeeRate& dustRelayFee);
 
-bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType);
+bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType, const bool witnessEnabled = false);
     /**
      * Check for standard transaction types
      * @return True if all outputs (scriptPubKeys) use only standard transaction forms
      */
-bool IsStandardTx(const CTransaction& tx, std::string& reason);
+bool IsStandardTx(const CTransaction& tx, std::string& reason, const bool witnessEnabled = false);
     /**
      * Check for standard transaction types
      * @param[in] mapInputs    Map of previous transactions that have outputs we're spending
@@ -105,6 +120,5 @@ extern unsigned int nBytesPerSigOp;
 /** Compute the virtual transaction size (weight reinterpreted as bytes). */
 int64_t GetVirtualTransactionSize(int64_t nWeight, int64_t nSigOpCost);
 int64_t GetVirtualTransactionSize(const CTransaction& tx, int64_t nSigOpCost = 0);
-int64_t GetVirtualTransactionInputSize(const CTxIn& tx, int64_t nSigOpCost = 0);
 
 #endif // BITCOIN_POLICY_POLICY_H

@@ -26,10 +26,6 @@
         <translation>Izdzēst iezīmētās adreses no saraksta</translation>
     </message>
     <message>
-        <source>Enter address or label to search</source>
-        <translation>Ierakstiet meklējamo nosaukumu vai adresi</translation>
-    </message>
-    <message>
         <source>Export the data in the current tab to a file</source>
         <translation>Datus no tekošā ieliktņa eksportēt uz failu</translation>
     </message>
@@ -43,19 +39,15 @@
     </message>
     <message>
         <source>Choose the address to send coins to</source>
-        <translation>Izvēlies adresi uz kuru sūtīt bitcoins</translation>
+        <translation>Izvēlies adresi uz kuru sūtīt globaltokens</translation>
     </message>
     <message>
         <source>Choose the address to receive coins with</source>
-        <translation>Izvēlies adresi ar kuru saņemt bitcoins</translation>
+        <translation>Izvēlies adresi ar kuru saņemt globaltokens</translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
         <translation>&amp;Kopēt adresi</translation>
-    </message>
-    <message>
-        <source>Copy &amp;Label</source>
-        <translation>Kopēt &amp;Marķējumu</translation>
     </message>
     <message>
         <source>&amp;Edit</source>
@@ -102,10 +94,6 @@
     <message>
         <source>Repeat new passphrase</source>
         <translation>Jaunā parole vēlreiz</translation>
-    </message>
-    <message>
-        <source>Show password</source>
-        <translation>Rādīt paroli</translation>
     </message>
     <message>
         <source>Encrypt wallet</source>
@@ -214,8 +202,8 @@
         <translation>Bloku reindeksēšana no diska...</translation>
     </message>
     <message>
-        <source>Send coins to a Bitcoin address</source>
-        <translation>Nosūtīt bitkoinus uz Bitcoin adresi</translation>
+        <source>Send coins to a Globaltoken address</source>
+        <translation>Nosūtīt bitkoinus uz Globaltoken adresi</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -238,8 +226,8 @@
         <translation>&amp;Pārbaudīt ziņojumu...</translation>
     </message>
     <message>
-        <source>Bitcoin</source>
-        <translation>Bitcoin</translation>
+        <source>Globaltoken</source>
+        <translation>Globaltoken</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -266,12 +254,12 @@
         <translation>Šifrēt privātās atslēgas kuras pieder tavam maciņam</translation>
     </message>
     <message>
-        <source>Sign messages with your Bitcoin addresses to prove you own them</source>
-        <translation>Parakstīt ziņojumus ar savām Bitcoin adresēm lai pierādītu ka tās pieder tev</translation>
+        <source>Sign messages with your Globaltoken addresses to prove you own them</source>
+        <translation>Parakstīt ziņojumus ar savām Globaltoken adresēm lai pierādītu ka tās pieder tev</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Bitcoin addresses</source>
-        <translation>Pārbaudīt ziņojumus lai pārliecinātos, ka tie tika parakstīti ar norādītajām Bitcoin adresēm</translation>
+        <source>Verify messages to ensure they were signed with specified Globaltoken addresses</source>
+        <translation>Pārbaudīt ziņojumus lai pārliecinātos, ka tie tika parakstīti ar norādītajām Globaltoken adresēm</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -290,12 +278,12 @@
         <translation>Ciļņu rīkjosla</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and bitcoin: URIs)</source>
-        <translation>Pieprasīt maksājumus (izveido QR kodu un bitcoin: URIs)</translation>
+        <source>Request payments (generates QR codes and globaltoken: URIs)</source>
+        <translation>Pieprasīt maksājumus (izveido QR kodu un globaltoken: URIs)</translation>
     </message>
     <message>
-        <source>Open a bitcoin: URI or payment request</source>
-        <translation>Atvērt bitcoin URI vai maksājuma pieprasījumu</translation>
+        <source>Open a globaltoken: URI or payment request</source>
+        <translation>Atvērt globaltoken URI vai maksājuma pieprasījumu</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -453,7 +441,15 @@
         <source>Command-line options</source>
         <translation>Komandrindas iespējas</translation>
     </message>
-</context>
+    <message>
+        <source>Usage:</source>
+        <translation>Lietojums:</translation>
+    </message>
+    <message>
+        <source>command-line options</source>
+        <translation>komandrindas izvēles</translation>
+    </message>
+    </context>
 <context>
     <name>Intro</name>
     <message>
@@ -471,6 +467,10 @@
     <message>
         <source>Bitcoin</source>
         <translation>Bitcoin</translation>
+    </message>
+	<message>
+        <source>Globaltoken</source>
+        <translation>Globaltoken</translation>
     </message>
     <message>
         <source>Error</source>
@@ -563,15 +563,15 @@
     </message>
     <message>
         <source>Enable coin &amp;control features</source>
-        <translation>Ieslēgt bitcoin &amp;kontroles funkcijas</translation>
+        <translation>Ieslēgt globaltoken &amp;kontroles funkcijas</translation>
     </message>
     <message>
         <source>&amp;Spend unconfirmed change</source>
         <translation>&amp;Tērēt neapstiprinātu atlikumu</translation>
     </message>
     <message>
-        <source>Automatically open the Bitcoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>Uz rūtera automātiski atvērt Bitcoin klienta portu. Tas strādā tikai tad, ja rūteris atbalsta UPnP un tas ir ieslēgts.</translation>
+        <source>Automatically open the Globaltoken client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <translation>Uz rūtera automātiski atvērt Globaltoken klienta portu. Tas strādā tikai tad, ja rūteris atbalsta UPnP un tas ir ieslēgts.</translation>
     </message>
     <message>
         <source>Map port using &amp;UPnP</source>
@@ -623,7 +623,7 @@
     </message>
     <message>
         <source>Whether to show coin control features or not.</source>
-        <translation>Vai rādīt Bitcoin kontroles funkcijas vai nē.</translation>
+        <translation>Vai rādīt Globaltoken kontroles funkcijas vai nē.</translation>
     </message>
     <message>
         <source>&amp;OK</source>
@@ -661,8 +661,8 @@
         <translation>Forma</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Bitcoin network after a connection is established, but this process has not completed yet.</source>
-        <translation>Attēlotā informācija var būt novecojusi. Jūsu maciņš pēc savienojuma izveides automātiski sinhronizējas ar Bitcoin tīklu, taču šis process vēl nav beidzies.</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Globaltoken network after a connection is established, but this process has not completed yet.</source>
+        <translation>Attēlotā informācija var būt novecojusi. Jūsu maciņš pēc savienojuma izveides automātiski sinhronizējas ar Globaltoken tīklu, taču šis process vēl nav beidzies.</translation>
     </message>
     <message>
         <source>Available:</source>
@@ -904,10 +904,6 @@
         <source>Label</source>
         <translation>Nosaukums</translation>
     </message>
-    <message>
-        <source>Wallet</source>
-        <translation>Maciņš</translation>
-    </message>
     </context>
 <context>
     <name>RecentRequestsTableModel</name>
@@ -928,7 +924,7 @@
     </message>
     <message>
         <source>Coin Control Features</source>
-        <translation>Bitcoin Kontroles Funkcijas</translation>
+        <translation>Globaltoken Kontroles Funkcijas</translation>
     </message>
     <message>
         <source>Inputs...</source>
@@ -1001,10 +997,6 @@
     <message>
         <source>S&amp;end</source>
         <translation>&amp;Sūtīt</translation>
-    </message>
-    <message>
-        <source>Transaction fee</source>
-        <translation>Transakcijas maksa</translation>
     </message>
     <message>
         <source>(no label)</source>
@@ -1111,8 +1103,8 @@
         <translation>Kopēt parakstu uz sistēmas starpliktuvi</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Bitcoin address</source>
-        <translation>Parakstīt ziņojumu lai pierādītu, ka esi šīs Bitcoin adreses īpašnieks.</translation>
+        <source>Sign the message to prove you own this Globaltoken address</source>
+        <translation>Parakstīt ziņojumu lai pierādītu, ka esi šīs Globaltoken adreses īpašnieks.</translation>
     </message>
     <message>
         <source>Sign &amp;Message</source>
@@ -1204,8 +1196,52 @@
 <context>
     <name>bitcoin-core</name>
     <message>
+        <source>Options:</source>
+        <translation>Iespējas:</translation>
+    </message>
+    <message>
+        <source>Specify data directory</source>
+        <translation>Norādiet datu direktoriju</translation>
+    </message>
+    <message>
+        <source>Connect to a node to retrieve peer addresses, and disconnect</source>
+        <translation>Pievienoties mezglam, lai iegūtu citu mezglu adreses, un atvienoties</translation>
+    </message>
+    <message>
+        <source>Specify your own public address</source>
+        <translation>Norādiet savu publisko adresi</translation>
+    </message>
+    <message>
+        <source>Accept command line and JSON-RPC commands</source>
+        <translation>Pieņemt komandrindas un JSON-RPC komandas</translation>
+    </message>
+    <message>
+        <source>Run in the background as a daemon and accept commands</source>
+        <translation>Darbināt fonā kā servisu un pieņemt komandas</translation>
+    </message>
+    <message>
+        <source>Globaltoken Core</source>
+        <translation>Globaltoken Core</translation>
+    </message>
+	<message>
         <source>Bitcoin Core</source>
         <translation>Bitcoin Core</translation>
+    </message>
+    <message>
+        <source>&lt;category&gt; can be:</source>
+        <translation>&lt;category&gt; var būt:</translation>
+    </message>
+    <message>
+        <source>Block creation options:</source>
+        <translation>Bloka izveidošanas iestatījumi:</translation>
+    </message>
+    <message>
+        <source>Connection options:</source>
+        <translation>Savienojuma iestatījumi:</translation>
+    </message>
+    <message>
+        <source>Debugging/Testing options:</source>
+        <translation>Atkļūdošanas/Testēšanas iestatījumi:</translation>
     </message>
     <message>
         <source>Error loading block database</source>
@@ -1224,8 +1260,20 @@
         <translation>Pārbauda blokus...</translation>
     </message>
     <message>
+        <source>Wallet options:</source>
+        <translation>Maciņa iespējas:</translation>
+    </message>
+    <message>
         <source>Information</source>
         <translation>Informācija</translation>
+    </message>
+    <message>
+        <source>RPC server options:</source>
+        <translation>RPC servera iestatījumi:</translation>
+    </message>
+    <message>
+        <source>Send trace/debug info to console instead of debug.log file</source>
+        <translation>Debug/trace informāciju izvadīt konsolē, nevis debug.log failā</translation>
     </message>
     <message>
         <source>Signing transaction failed</source>
@@ -1240,8 +1288,24 @@
         <translation>Transakcija ir pārāk liela</translation>
     </message>
     <message>
+        <source>Username for JSON-RPC connections</source>
+        <translation>JSON-RPC savienojumu lietotājvārds</translation>
+    </message>
+    <message>
         <source>Warning</source>
         <translation>Brīdinājums</translation>
+    </message>
+    <message>
+        <source>Password for JSON-RPC connections</source>
+        <translation>JSON-RPC savienojumu parole</translation>
+    </message>
+    <message>
+        <source>Execute command when the best block changes (%s in cmd is replaced by block hash)</source>
+        <translation>Izpildīt komandu, kad labāk atbilstošais bloks izmainās (%s cmd aizvieto ar bloka hešu)</translation>
+    </message>
+    <message>
+        <source>Allow DNS lookups for -addnode, -seednode and -connect</source>
+        <translation>Atļaut DNS uzmeklēšanu priekš -addnode, -seednode un -connect</translation>
     </message>
     <message>
         <source>Unknown network specified in -onlynet: '%s'</source>

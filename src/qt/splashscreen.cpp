@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2018 The Bitcoin Core developers
+// Copyright (c) 2011-2017 The Bitcoin Core developers
+// Copyright (c) 2017 The Globaltoken Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -11,12 +12,14 @@
 #include <qt/networkstyle.h>
 
 #include <clientversion.h>
-#include <interfaces/handler.h>
-#include <interfaces/node.h>
-#include <interfaces/wallet.h>
+#include <init.h>
+#include <util.h>
 #include <ui_interface.h>
-#include <util/system.h>
 #include <version.h>
+
+#ifdef ENABLE_WALLET
+#include <wallet/wallet.h>
+#endif
 
 #include <QApplication>
 #include <QCloseEvent>
@@ -24,10 +27,8 @@
 #include <QPainter>
 #include <QRadialGradient>
 
-#include <boost/bind.hpp>
-
-SplashScreen::SplashScreen(interfaces::Node& node, Qt::WindowFlags f, const NetworkStyle *networkStyle) :
-    QWidget(0, f), curAlignment(0), m_node(node)
+SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) :
+    QWidget(0, f), curAlignment(0)
 {
     // set reference point, paddings
     int paddingRight            = 50;
@@ -37,22 +38,27 @@ SplashScreen::SplashScreen(interfaces::Node& node, Qt::WindowFlags f, const Netw
 
     float fontFactor            = 1.0;
     float devicePixelRatio      = 1.0;
+#if QT_VERSION > 0x050100
     devicePixelRatio = static_cast<QGuiApplication*>(QCoreApplication::instance())->devicePixelRatio();
+#endif
 
     // define text to place
     QString titleText       = tr(PACKAGE_NAME);
     QString versionText     = QString("Version %1").arg(QString::fromStdString(FormatFullVersion()));
     QString copyrightText   = QString::fromUtf8(CopyrightHolders(strprintf("\xc2\xA9 %u-%u ", 2009, COPYRIGHT_YEAR)).c_str());
+	QString globaltokenText = QString::fromUtf8(CopyrightHoldersGLT(strprintf("\xc2\xA9 %u-%u ", COPYRIGHT_GLT_START, COPYRIGHT_YEAR)).c_str());
     QString titleAddText    = networkStyle->getTitleAddText();
 
     QString font            = QApplication::font().toString();
 
     // create a bitmap according to device pixelratio
-    QSize splashSize(480*devicePixelRatio,320*devicePixelRatio);
+    QSize splashSize(520*devicePixelRatio,320*devicePixelRatio);
     pixmap = QPixmap(splashSize);
 
+#if QT_VERSION > 0x050100
     // change to HiDPI if it makes sense
     pixmap.setDevicePixelRatio(devicePixelRatio);
+#endif
 
     QPainter pixPaint(&pixmap);
     pixPaint.setPen(QColor(100,100,100));
@@ -64,7 +70,7 @@ SplashScreen::SplashScreen(interfaces::Node& node, Qt::WindowFlags f, const Netw
     QRect rGradient(QPoint(0,0), splashSize);
     pixPaint.fillRect(rGradient, gradient);
 
-    // draw the bitcoin icon, expected size of PNG: 1024x1024
+    // draw the globaltoken icon, expected size of PNG: 1024x1024
     QRect rectIcon(QPoint(-150,-122), QSize(430,430));
 
     const QSize requiredSize(1024,1024);
@@ -87,7 +93,7 @@ SplashScreen::SplashScreen(interfaces::Node& node, Qt::WindowFlags f, const Netw
 
     pixPaint.setFont(QFont(font, 15*fontFactor));
 
-    // if the version string is too long, reduce size
+    // if the version string is to long, reduce size
     fm = pixPaint.fontMetrics();
     int versionTextWidth  = fm.width(versionText);
     if(versionTextWidth > titleTextWidth+paddingRight-10) {
@@ -98,11 +104,14 @@ SplashScreen::SplashScreen(interfaces::Node& node, Qt::WindowFlags f, const Netw
 
     // draw copyright stuff
     {
-        pixPaint.setFont(QFont(font, 10*fontFactor));
+        pixPaint.setFont(QFont(font, 16*fontFactor));
         const int x = pixmap.width()/devicePixelRatio-titleTextWidth-paddingRight;
         const int y = paddingTop+titleCopyrightVSpace;
+		const int y_glt = paddingTop+titleCopyrightVSpace+25;
         QRect copyrightRect(x, y, pixmap.width() - x - paddingRight, pixmap.height() - y);
+		QRect copyrightRect_GLT(x, y_glt, pixmap.width() - x - paddingRight, pixmap.height() - y_glt);
         pixPaint.drawText(copyrightRect, Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, copyrightText);
+		pixPaint.drawText(copyrightRect_GLT, Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, globaltokenText);
     }
 
     // draw additional text if special network
@@ -139,7 +148,7 @@ bool SplashScreen::eventFilter(QObject * obj, QEvent * ev) {
     if (ev->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(ev);
         if(keyEvent->text()[0] == 'q') {
-            m_node.startShutdown();
+            StartShutdown();
         }
     }
     return QObject::eventFilter(obj, ev);
@@ -173,34 +182,35 @@ static void ShowProgress(SplashScreen *splash, const std::string &title, int nPr
                                 : _("press q to shutdown")) +
             strprintf("\n%d", nProgress) + "%");
 }
+
 #ifdef ENABLE_WALLET
-void SplashScreen::ConnectWallet(std::unique_ptr<interfaces::Wallet> wallet)
+void SplashScreen::ConnectWallet(CWallet* wallet)
 {
-    m_connected_wallet_handlers.emplace_back(wallet->handleShowProgress(boost::bind(ShowProgress, this, _1, _2, false)));
-    m_connected_wallets.emplace_back(std::move(wallet));
+    wallet->ShowProgress.connect(boost::bind(ShowProgress, this, _1, _2, false));
+    connectedWallets.push_back(wallet);
 }
 #endif
 
 void SplashScreen::subscribeToCoreSignals()
 {
     // Connect signals to client
-    m_handler_init_message = m_node.handleInitMessage(boost::bind(InitMessage, this, _1));
-    m_handler_show_progress = m_node.handleShowProgress(boost::bind(ShowProgress, this, _1, _2, _3));
+    uiInterface.InitMessage.connect(boost::bind(InitMessage, this, _1));
+    uiInterface.ShowProgress.connect(boost::bind(ShowProgress, this, _1, _2, _3));
 #ifdef ENABLE_WALLET
-    m_handler_load_wallet = m_node.handleLoadWallet([this](std::unique_ptr<interfaces::Wallet> wallet) { ConnectWallet(std::move(wallet)); });
+    uiInterface.LoadWallet.connect(boost::bind(&SplashScreen::ConnectWallet, this, _1));
 #endif
 }
 
 void SplashScreen::unsubscribeFromCoreSignals()
 {
     // Disconnect signals from client
-    m_handler_init_message->disconnect();
-    m_handler_show_progress->disconnect();
-    for (const auto& handler : m_connected_wallet_handlers) {
-        handler->disconnect();
+    uiInterface.InitMessage.disconnect(boost::bind(InitMessage, this, _1));
+    uiInterface.ShowProgress.disconnect(boost::bind(ShowProgress, this, _1, _2, _3));
+#ifdef ENABLE_WALLET
+    for (CWallet* const & pwallet : connectedWallets) {
+        pwallet->ShowProgress.disconnect(boost::bind(ShowProgress, this, _1, _2, false));
     }
-    m_connected_wallet_handlers.clear();
-    m_connected_wallets.clear();
+#endif
 }
 
 void SplashScreen::showMessage(const QString &message, int alignment, const QColor &color)
@@ -222,6 +232,6 @@ void SplashScreen::paintEvent(QPaintEvent *event)
 
 void SplashScreen::closeEvent(QCloseEvent *event)
 {
-    m_node.startShutdown(); // allows an "emergency" shutdown during startup
+    StartShutdown(); // allows an "emergency" shutdown during startup
     event->ignore();
 }

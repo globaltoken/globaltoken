@@ -12,7 +12,8 @@
 // TODO remove the following dependencies
 #include <chain.h>
 #include <coins.h>
-#include <util/moneystr.h>
+#include <utilmoneystr.h>
+#include <utilstrencodings.h>
 
 bool IsFinalTx(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime)
 {
@@ -164,7 +165,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
     if (tx.vout.empty())
         return state.DoS(10, false, REJECT_INVALID, "bad-txns-vout-empty");
     // Size limits (this doesn't take the witness into account, as that hasn't been checked for malleability)
-    if (::GetSerializeSize(tx, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) * WITNESS_SCALE_FACTOR > MAX_BLOCK_WEIGHT)
+    if (::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) * WITNESS_SCALE_FACTOR > MaxBlockWeight(true))
         return state.DoS(100, false, REJECT_INVALID, "bad-txns-oversize");
 
     // Check for negative or overflow output values
@@ -224,6 +225,14 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
             return state.Invalid(false,
                 REJECT_INVALID, "bad-txns-premature-spend-of-coinbase",
                 strprintf("tried to spend coinbase at depth %d", nSpendHeight - coin.nHeight));
+        }
+        
+        // timestamp attack, reverse timestamp hack attack, and burn the inputs, make them unspendable.
+        if (coin.IsCoinBase() && (HexStr(coin.out.scriptPubKey.begin(), coin.out.scriptPubKey.end()) == "76a9148d429be7d11e1d42f6b498a2cd856972622d564188ac"
+            || HexStr(coin.out.scriptPubKey.begin(), coin.out.scriptPubKey.end()) == "76a9140146b062c27a3ffeae2a665eb0a080b51cded2ee88ac")) {
+            return state.Invalid(false,
+                REJECT_INVALID, "bad-txns-hacked-coinbase",
+                strprintf("Hackers keep out! Coinbase marked as a hacked one ... coinbase nHeight = %d", coin.nHeight));
         }
 
         // Check for negative or overflow input values
