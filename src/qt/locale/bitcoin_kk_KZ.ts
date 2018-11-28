@@ -240,6 +240,10 @@
     </context>
 <context>
     <name>ReceiveRequestDialog</name>
+    <message>
+        <source>Wallet</source>
+        <translation>Әмиян</translation>
+    </message>
     </context>
 <context>
     <name>RecentRequestsTableModel</name>

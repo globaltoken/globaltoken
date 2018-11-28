@@ -1,5 +1,4 @@
-// Copyright (c) 2016-2017 The Bitcoin Core developers
-// Copyright (c) 2017 The Globaltoken Core developers
+// Copyright (c) 2016-2018 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -47,10 +46,10 @@ static void Base58CheckEncode(benchmark::State& state)
 
 static void Base58Decode(benchmark::State& state)
 {
-    const char* addr = "Gbgpx5gAB4wUr1ps7o8RydZsgeVnuHL97Y";
+    const char* addr = "17VZNX1SN5NtKa8UQFxwQbFeFc3iqRYhem";
     std::vector<unsigned char> vch;
     while (state.KeepRunning()) {
-        DecodeBase58(addr, vch);
+        (void) DecodeBase58(addr, vch);
     }
 }
 

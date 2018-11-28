@@ -30,6 +30,10 @@
         <translation>Изтрий избрания адрес от списъка</translation>
     </message>
     <message>
+        <source>Enter address or label to search</source>
+        <translation>Търсене по адрес или име</translation>
+    </message>
+    <message>
         <source>Export the data in the current tab to a file</source>
         <translation>Запишете данните от текущия раздел във файл</translation>
     </message>
@@ -62,11 +66,11 @@
         <translation>Получаване на адреси</translation>
     </message>
     <message>
-        <source>These are your Globaltoken addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <source>These are your Bitcoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
         <translation>Това са адресите на получателите на плащания. Винаги проверявайте размера на сумата и адреса на получателя, преди да изпратите монети.</translation>
     </message>
     <message>
-        <source>These are your Globaltoken addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <source>These are your Bitcoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
         <translation>Това са Вашите Биткойн адреси,благодарение на които ще получавате плащания.Препоръчително е да използвате нови адреси за получаване на всяка транзакция.</translation>
     </message>
     <message>
@@ -168,7 +172,7 @@
         <translation>Потвърдете на шифрирането на портфейла</translation>
     </message>
     <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR GLOBALTOKENS&lt;/b&gt;!</source>
+        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR BITCOINS&lt;/b&gt;!</source>
         <translation>ВНИМАНИЕ: Ако шифрирате вашият портфейл и изгубите паролата си, &lt;b&gt;ЩЕ ИЗГУБИТЕ ВСИЧКИТЕ СИ БИТКОИНИ&lt;/b&gt;!</translation>
     </message>
     <message>
@@ -258,14 +262,6 @@
         <translation>История на транзакциите</translation>
     </message>
     <message>
-        <source>&amp;Masternodes</source>
-        <translation>&amp;Masternodes</translation>
-    </message>
-    <message>
-        <source>Browse masternodes</source>
-        <translation>Разглеждане на masternodes</translation>
-    </message>
-    <message>
         <source>E&amp;xit</source>
         <translation>Из&amp;ход</translation>
     </message>
@@ -309,14 +305,6 @@
         <source>&amp;Change Passphrase...</source>
         <translation>&amp;Смяна на паролата...</translation>
     </message>
-     <message>
-        <source>Open &amp;Masternode Configuration File</source>
-        <translation>Отвори &amp;Masternode конфигурационен файл</translation>
-    </message>
-    <message>
-        <source>Open Masternode configuration file</source>
-        <translation>Отвори Masternode конфигурационен файл</translation>
-    </message>
     <message>
         <source>&amp;Sending addresses...</source>
         <translation>&amp;Изпращане на адресите...</translation>
@@ -346,7 +334,7 @@
         <translation>Повторно индексиране на блоковете на диска...</translation>
     </message>
     <message>
-        <source>Send coins to a Globaltoken address</source>
+        <source>Send coins to a Bitcoin address</source>
         <translation>Изпращане към Биткоин адрес</translation>
     </message>
     <message>
@@ -370,7 +358,7 @@
         <translation>&amp;Проверка на съобщение...</translation>
     </message>
     <message>
-        <source>Globaltoken</source>
+        <source>Bitcoin</source>
         <translation>Биткоин</translation>
     </message>
     <message>
@@ -398,11 +386,11 @@
         <translation>Шифроване на личните ключове,които принадлежат на портфейла Ви.</translation>
     </message>
     <message>
-        <source>Sign messages with your Globaltoken addresses to prove you own them</source>
+        <source>Sign messages with your Bitcoin addresses to prove you own them</source>
         <translation>Пишете съобщения със своя Биткойн адрес за да докажете,че е ваш.</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Globaltoken addresses</source>
+        <source>Verify messages to ensure they were signed with specified Bitcoin addresses</source>
         <translation>Потвърждаване на съобщения  за да се знае,че са написани с дадените Биткойн адреси.</translation>
     </message>
     <message>
@@ -422,7 +410,7 @@
         <translation>Раздели</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and globaltoken: URIs)</source>
+        <source>Request payments (generates QR codes and bitcoin: URIs)</source>
         <translation>Изискване на плащания(генерира QR кодове и биткойн: URIs)</translation>
     </message>
     <message>
@@ -434,7 +422,7 @@
         <translation>Покажи списък с използваните адреси и имена.</translation>
     </message>
     <message>
-        <source>Open a globaltoken: URI or payment request</source>
+        <source>Open a bitcoin: URI or payment request</source>
         <translation>Отворете биткойн: URI  или заявка за плащане</translation>
     </message>
     <message>
@@ -478,7 +466,7 @@
         <translation>Синхронизиран</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Globaltoken command-line options</source>
+        <source>Show the %1 help message to get a list with possible Bitcoin command-line options</source>
         <translation>Покажи %1 помощно съобщение за да получиш лист с възможни Биткойн команди</translation>
     </message>
     <message>
@@ -540,7 +528,7 @@
         <translation>Портфейлът е &lt;b&gt;криптиран&lt;/b&gt; и &lt;b&gt;заключен&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>A fatal error occurred. Globaltoken can no longer continue safely and will quit.</source>
+        <source>A fatal error occurred. Bitcoin can no longer continue safely and will quit.</source>
         <translation>Възникна фатална грешка. Биткойн не може да продължи безопасно и ще се изключи.</translation>
     </message>
 </context>
@@ -710,10 +698,6 @@
         <translation>&amp;Адрес</translation>
     </message>
     <message>
-        <source>New receiving address</source>
-        <translation>Нов адрес за получаване</translation>
-    </message>
-    <message>
         <source>New sending address</source>
         <translation>Нов адрес за изпращане</translation>
     </message>
@@ -726,12 +710,8 @@
         <translation>Редактиране на адрес за изпращане</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Globaltoken address.</source>
+        <source>The entered address "%1" is not a valid Bitcoin address.</source>
         <translation>"%1" не е валиден Биткоин адрес.</translation>
-    </message>
-    <message>
-        <source>The entered address "%1" is already in the address book.</source>
-        <translation>Вече има адрес "%1" в списъка с адреси.</translation>
     </message>
     <message>
         <source>Could not unlock wallet.</source>
@@ -783,42 +763,6 @@
         <source>Command-line options</source>
         <translation>Списък с команди</translation>
     </message>
-    <message>
-        <source>Usage:</source>
-        <translation>Използване:</translation>
-    </message>
-    <message>
-        <source>command-line options</source>
-        <translation>Списък с налични команди</translation>
-    </message>
-    <message>
-        <source>UI Options:</source>
-        <translation>Опции на интерфейс:</translation>
-    </message>
-    <message>
-        <source>Choose data directory on startup (default: %u)</source>
-        <translation>Избери директория за данни при стартирване (по подразбиране: %u)</translation>
-    </message>
-    <message>
-        <source>Set language, for example "de_DE" (default: system locale)</source>
-        <translation>Избери език, примерно "de_DE" (по подразбиране: system locale)</translation>
-    </message>
-    <message>
-        <source>Start minimized</source>
-        <translation>Стартирай минимизиран</translation>
-    </message>
-    <message>
-        <source>Set SSL root certificates for payment request (default: -system-)</source>
-        <translation>Задай SSL root сертификат за молба за изплащане (по подразбиране: -system-)</translation>
-    </message>
-    <message>
-        <source>Show splash screen on startup (default: %u)</source>
-        <translation>Покажи splash екран при стартирване (по подразбиране %u)</translation>
-    </message>
-    <message>
-        <source>Reset all settings changed in the GUI</source>
-        <translation>Нулиране на всички настройки променени в GUI</translation>
-    </message>
 </context>
 <context>
     <name>Intro</name>
@@ -859,161 +803,6 @@
         <translation>Грешка</translation>
     </message>
     </context>
-<context>
-    <name>MasternodeList</name>
-    <message>
-        <source>Form</source>
-        <translation>От</translation>
-    </message>
-    <message>
-        <source>My Masternodes</source>
-        <translation>Моите Masternodes</translation>
-    </message>
-    <message>
-        <source>Note: Status of your masternodes in local wallet can potentially be slightly incorrect.&lt;br /&gt;Always wait for wallet to sync additional data and then double check from another node&lt;br /&gt;if your masternode should be running but you still do not see "ENABLED" in "Status" field.</source>
-        <translation>Бележка: Статуса на вашите masternodes в портфейла ви може потенциално да бъде леко некоректен.&lt;br /&gt;Винаги изчаквайте портфейлът да синхронизира допълнителната информация и тогава направете двойна проверка от друг възел&lt;br /&gt;ако вашият masternode би трябвало да работи, но все още не виждате надпис "ENABLED" в полето "Статус".</translation>
-    </message>
-    <message>
-        <source>Alias</source>
-        <translation>Псевдоним</translation>
-    </message>
-    <message>
-        <source>Address</source>
-        <translation>Адрес</translation>
-    </message>
-    <message>
-        <source>Protocol</source>
-        <translation>Протокол</translation>
-    </message>
-    <message>
-        <source>Status</source>
-        <translation>Статус</translation>
-    </message>
-    <message>
-        <source>Active</source>
-        <translation>Активен</translation>
-    </message>
-    <message>
-        <source>Last Seen</source>
-        <translation>Последно видян</translation>
-    </message>
-    <message>
-        <source>Payee</source>
-        <translation>Получател</translation>
-    </message>
-    <message>
-        <source>S&amp;tart alias</source>
-        <translation>Стартирай &amp;псевдоним</translation>
-    </message>
-    <message>
-        <source>Start &amp;all</source>
-        <translation>Стартирай &amp;всички</translation>
-    </message>
-    <message>
-        <source>Start &amp;MISSING</source>
-        <translation>Стартирай &amp;ЛИПСВАЩ</translation>
-    </message>
-    <message>
-        <source>&amp;Update status</source>
-        <translation>&amp;Обнови статус</translation>
-    </message>
-    <message>
-        <source>Show additional Masternode information</source>
-        <translation>Покажи допълнителна Masternode информация</translation>
-    </message>
-    <message>
-        <source>Show &amp;Info...</source>
-        <translation>Показва &amp;информация...</translation>
-    </message>
-    <message>
-        <source>Status will be updated automatically in (sec):</source>
-        <translation>Статуса ще бъде обновен автоматично след (сек):</translation>
-    </message>
-    <message>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    <message>
-        <source>All Masternodes</source>
-        <translation>Всички Masternodes</translation>
-    </message>
-    <message>
-        <source>Filter List:</source>
-        <translation>Филтър на списък:</translation>
-    </message>
-    <message>
-        <source>Filter masternode list</source>
-        <translation>Филтър на списък masternode </translation>
-    </message>
-    <message>
-        <source>Node Count:</source>
-        <translation>Брой възли:</translation>
-    </message>
-    <message>
-        <source>Start alias</source>
-        <translation>Стартиране псевдоним</translation>
-    </message>
-    <message>
-        <source>Confirm masternode start</source>
-        <translation>Потвърден старт на masternode</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to start masternode %1?</source>
-        <translation>Сигурен ли сте, че искате да стартирате masternode %1?</translation>
-    </message>
-    <message>
-        <source>Confirm all masternodes start</source>
-        <translation>Потвърдено стартиране на всички masternodes</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to start ALL masternodes?</source>
-        <translation>Сигурен ли сте, че искате стартирането на  ВСИЧКИ masternodes?</translation>
-    </message>
-    <message>
-        <source>Command is not available right now</source>
-        <translation>Командата не е налична в момента</translation>
-    </message>
-    <message>
-        <source>You can't use this command until masternode list is synced</source>
-        <translation>Не можете да използвате тази команда преди синхронизирането на masternode списъка</translation>
-    </message>
-    <message>
-        <source>Confirm missing masternodes start</source>
-        <translation>Потвърдено стартиране на липсващите masternodes</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to start MISSING masternodes?</source>
-        <translation>Сигурен ли сте, че искате стартирането на ЛИПСВАЩИТЕ masternodes? </translation>
-    </message>
-    <message>
-        <source>Additional information for Masternode %1</source>
-        <translation>Допълнителна информация за Masternode %1</translation>
-    </message>
-    <message>
-        <source>Masternode Private Key</source>
-        <translation>Masternode Личен ключ</translation>
-    </message>
-    <message>
-        <source>Private Key</source>
-        <translation>Частен ключ</translation>
-    </message>
-    <message>
-        <source>Collateral</source>
-        <translation>Обезпечаване</translation>
-    </message>
-    <message>
-        <source>IP</source>
-        <translation>IP</translation>
-    </message>
-    <message>
-        <source>Version</source>
-        <translation>Версия</translation>
-    </message>
-    <message>
-        <source>Unknown</source>
-        <translation>Неизвестен</translation>
-    </message>
-</context>
 <context>
     <name>ModalOverlay</name>
     <message>
@@ -1071,14 +860,6 @@
         <translation>Брой на скриптове и &amp;нишки за потвърждение</translation>
     </message>
     <message>
-        <source>Show additional tab listing all your masternodes in first sub-tab&lt;br/&gt;and all masternodes on the network in second sub-tab.</source>
-        <translation>Показване на допълнителен раздел показваш всичките Ви masternodes  в първият подраздел&lt;br/&gt;и всички masternodes в мрежата във вторият подраздел.</translation>
-    </message>
-    <message>
-        <source>Show Masternodes Tab</source>
-        <translation>Показване на раздел Masternodes </translation>
-    </message>
-    <message>
         <source>IP address of the proxy (e.g. IPv4: 127.0.0.1 / IPv6: ::1)</source>
         <translation>IP адрес на прокси (напр. за IPv4: 127.0.0.1 / за IPv6: ::1)</translation>
     </message>
@@ -1111,15 +892,15 @@
         <translation>&amp;Похарчете непотвърденото ресто</translation>
     </message>
     <message>
-        <source>Automatically open the Globaltoken client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>Автоматично отваряне на входящия Globaltoken порт. Работи само с рутери поддържащи UPnP.</translation>
+        <source>Automatically open the Bitcoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <translation>Автоматично отваряне на входящия Bitcoin порт. Работи само с рутери поддържащи UPnP.</translation>
     </message>
     <message>
         <source>Map port using &amp;UPnP</source>
         <translation>Отваряне на входящия порт чрез &amp;UPnP</translation>
     </message>
     <message>
-        <source>Connect to the Globaltoken network through a SOCKS5 proxy.</source>
+        <source>Connect to the Bitcoin network through a SOCKS5 proxy.</source>
         <translation>Свързване с Биткойн мрежата чрез SOCKS5  прокси.</translation>
     </message>
     <message>
@@ -1218,7 +999,7 @@
         <translation>Формуляр</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Globaltoken network after a connection is established, but this process has not completed yet.</source>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Bitcoin network after a connection is established, but this process has not completed yet.</source>
         <translation>Текущата информация на екрана може да не е актуална. Вашият портфейл ще се синхронизира автоматично с мрежата на Биткоин, щом поне една връзката с нея се установи; този процес все още не е приключил.</translation>
     </message>
     <message>
@@ -1273,7 +1054,7 @@
         <translation>Възникна грешка по време назаявката за плащане</translation>
     </message>
     <message>
-        <source>Cannot start globaltoken: click-to-pay handler</source>
+        <source>Cannot start bitcoin: click-to-pay handler</source>
         <translation>Биткойн не можe да се стартира: click-to-pay handler</translation>
     </message>
     <message>
@@ -1351,15 +1132,11 @@
 <context>
     <name>QObject</name>
     <message>
-        <source>Error reading masternode configuration file: %1</source>
-        <translation>Грешка при четене конфигурационният файл на masternode : %1</translation>
-    </message>
-    <message>
         <source>Amount</source>
         <translation>Сума</translation>
     </message>
     <message>
-        <source>Enter a Globaltoken address (e.g. %1)</source>
+        <source>Enter a Bitcoin address (e.g. %1)</source>
         <translation>Въведете Биткойн адрес (например: %1)</translation>
     </message>
     <message>
@@ -1422,25 +1199,6 @@
         <translation>Грешка:Избраната "%1" директория не съществува.</translation>
     </message>
     </context>
-<context>
-    <name>QRDialog</name>
-    <message>
-        <source>QR-Code Title</source>
-        <translation>QR-Code Title</translation>
-    </message>
-    <message>
-        <source>QR Code</source>
-        <translation>QR Код</translation>
-    </message>
-    <message>
-        <source>&amp;Save Image...</source>
-        <translation>&amp;Запиши изображение...</translation>
-    </message>
-    <message>
-        <source>Error creating QR Code.</source>
-        <translation>Грешно създаден QR Код.</translation>
-    </message>
-</context>
 <context>
     <name>QRImageWidget</name>
     <message>
@@ -1505,10 +1263,6 @@
     <message>
         <source>Current number of blocks</source>
         <translation>Текущ брой блокове</translation>
-    </message>
-    <message>
-        <source>Number of Masternodes</source>
-        <translation>Брой на Masternodes</translation>
     </message>
     <message>
         <source>Received</source>
@@ -1654,10 +1408,6 @@
         <translation>Изчистване</translation>
     </message>
     <message>
-        <source>Request InstantSend</source>
-        <translation>Заявка за InstantSend</translation>
-    </message>
-    <message>
         <source>Requested payments history</source>
         <translation>Изискана история на плащанията</translation>
     </message>
@@ -1729,8 +1479,8 @@
         <translation>Съобщение</translation>
     </message>
     <message>
-        <source>InstantSend</source>
-        <translation>InstantSend</translation>
+        <source>Wallet</source>
+        <translation>Портфейл</translation>
     </message>
     <message>
         <source>Error encoding URI into QR Code.</source>
@@ -1815,10 +1565,6 @@
         <translation>Избери...</translation>
     </message>
     <message>
-        <source>InstantSend</source>
-        <translation>InstantSend</translation>
-    </message>
-    <message>
         <source>per kilobyte</source>
         <translation>за килобайт</translation>
     </message>
@@ -1895,20 +1641,16 @@
         <translation>Копирай рестото</translation>
     </message>
     <message>
-        <source>and InstantSend</source>
-        <translation>и InstantSend</translation>
-    </message>
-    <message>
         <source>Are you sure you want to send?</source>
         <translation>Наистина ли искате да изпратите?</translation>
     </message>
     <message>
-        <source>added as transaction fee</source>
-        <translation>добавено като такса за транзакция</translation>
-    </message>
-    <message>
         <source>or</source>
         <translation>или</translation>
+    </message>
+    <message>
+        <source>Transaction fee</source>
+        <translation>Такса</translation>
     </message>
     <message>
         <source>Confirm send coins</source>
@@ -1935,7 +1677,7 @@
         <translation>Заявката за плащане е изтекла.</translation>
     </message>
     <message>
-        <source>Warning: Invalid Globaltoken address</source>
+        <source>Warning: Invalid Bitcoin address</source>
         <translation>Внимание: Невалиден Биткойн адрес</translation>
     </message>
     <message>
@@ -2055,7 +1797,7 @@
         <translation>Копиране на текущия подпис</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Globaltoken address</source>
+        <source>Sign the message to prove you own this Bitcoin address</source>
         <translation>Подпишете съобщение като доказателство, че притежавате определен адрес</translation>
     </message>
     <message>
@@ -2071,7 +1813,7 @@
         <translation>&amp;Провери</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Globaltoken address</source>
+        <source>Verify the message to ensure it was signed with the specified Bitcoin address</source>
         <translation>Проверете съобщение, за да сте сигурни че е подписано с определен Биткоин адрес</translation>
     </message>
     <message>
@@ -2152,10 +1894,6 @@
         <translation>Подлежи на промяна до %1</translation>
     </message>
     <message>
-        <source>%1/offline</source>
-        <translation>%1/офлайн</translation>
-    </message>
-    <message>
         <source>%1/unconfirmed</source>
         <translation>%1/непотвърдени</translation>
     </message>
@@ -2164,24 +1902,8 @@
         <translation>включена в %1 блока</translation>
     </message>
     <message>
-        <source>verified via InstantSend</source>
-        <translation>потвърдено чрез InstantSend</translation>
-    </message>
-    <message>
-        <source>InstantSend verification in progress - %1 of %2 signatures</source>
-        <translation>InstantSend потвърждение в процес - %1 от %2 подписани</translation>
-    </message>
-    <message>
-        <source>InstantSend verification failed</source>
-        <translation>InstantSend потвърждение неуспешно</translation>
-    </message>
-    <message>
         <source>Status</source>
         <translation>Статус</translation>
-    </message>
-    <message>
-        <source>, has not been successfully broadcast yet</source>
-        <translation>, все още не е изпратено</translation>
     </message>
     <message>
         <source>Date</source>
@@ -2314,10 +2036,6 @@
         <translation>Подлежи на промяна до %1</translation>
     </message>
     <message>
-        <source>Offline</source>
-        <translation>Извън линия</translation>
-    </message>
-    <message>
         <source>Unconfirmed</source>
         <translation>Непотвърдено</translation>
     </message>
@@ -2336,10 +2054,6 @@
     <message>
         <source>Immature (%1 confirmations, will be available after %2)</source>
         <translation>Неплатим (%1 потвърждения, ще бъде платим след %2)</translation>
-    </message>
-    <message>
-        <source>This block was not received by any other nodes and will probably not be accepted!</source>
-        <translation>Блокът не е получен от останалите участници и най-вероятно няма да бъде одобрен.</translation>
     </message>
     <message>
         <source>Generated but not accepted</source>
@@ -2545,14 +2259,6 @@
         <source>Send Coins</source>
         <translation>Изпращане</translation>
     </message>
-    <message>
-        <source>InstantSend doesn't support sending values that high yet. Transactions are currently limited to %1 GLT.</source>
-        <translation>InstantSend не поддържа толкова високи стойности за изпращане все още. Транзакциите в момента са ограничени до %1 GLT.</translation>
-    </message>
-    <message>
-        <source>Used way too many inputs (&gt;%1) for this InstantSend transaction, fees could be huge.</source>
-        <translation>Използвани са твърде много входове  (&gt;%1) за тази InstantSend транзакция, таксите могат да бъдат огромни.</translation>
-    </message>
     </context>
 <context>
     <name>WalletView</name>
@@ -2588,48 +2294,12 @@
         <source>The wallet data was successfully saved to %1.</source>
         <translation>Информацията за портфейла беше успешно запазена в %1.</translation>
     </message>
-</context>
+    </context>
 <context>
     <name>bitcoin-core</name>
     <message>
-        <source>Options:</source>
-        <translation>Опции:</translation>
-    </message>
-    <message>
-        <source>Specify data directory</source>
-        <translation>Определете директория за данните</translation>
-    </message>
-    <message>
-        <source>Connect to a node to retrieve peer addresses, and disconnect</source>
-        <translation>Свържете се към сървър за да можете да извлечете адресите на пиърите след което се разкачете.</translation>
-    </message>
-    <message>
-        <source>Specify your own public address</source>
-        <translation>Въведете Ваш публичен адрес</translation>
-    </message>
-    <message>
         <source>Bitcoin Core</source>
-        <translation>Bitcoin Core</translation>
-    </message>
-    <message>
-        <source>Globaltoken Core</source>
-        <translation>Globaltoken Core</translation>
-    </message>
-    <message>
-        <source>&lt;category&gt; can be:</source>
-        <translation>&lt;category&gt; може да бъде:</translation>
-    </message>
-    <message>
-        <source>You must specify a masternodeprivkey in the configuration. Please see documentation for help.</source>
-        <translation>Трябва да посочите masternodeprivkey в конфигурацията. Моля прочетете документацията за помощ.</translation>
-    </message>
-    <message>
-        <source>Accept connections from outside (default: 1 if no -proxy or -connect)</source>
-        <translation>Приемайте връзки отвън.(по подразбиране:1 в противен случай -proxy или -connect)</translation>
-    </message>
-    <message>
-        <source>Connection options:</source>
-        <translation>Настройки на връзката:</translation>
+        <translation>Биткойн ядро</translation>
     </message>
     <message>
         <source>Do you want to rebuild the block database now?</source>
@@ -2656,32 +2326,8 @@
         <translation>Проверка на блоковете...</translation>
     </message>
     <message>
-        <source>Wallet options:</source>
-        <translation>Настройки на портфейла:</translation>
-    </message>
-    <message>
-        <source>Connect through SOCKS5 proxy</source>
-        <translation>Свързване чрез SOCKS5  прокси</translation>
-    </message>
-    <message>
-        <source>Enable the client to act as a masternode (0-1, default: %u)</source>
-        <translation>Активиране на клиента да работи като masternode (0-1, по подразбиране: %u)</translation>
-    </message>
-    <message>
-        <source>Failed to load masternode cache from</source>
-        <translation>Неуспешно зареждане на masternode кеша от</translation>
-    </message>
-    <message>
-        <source>Failed to load masternode payments cache from</source>
-        <translation>Неуспешно зареждане на кеша за masternode плащанията от</translation>
-    </message>
-    <message>
         <source>Information</source>
         <translation>Информация</translation>
-    </message>
-    <message>
-        <source>Send trace/debug info to console instead of debug.log file</source>
-        <translation>Изпрати локализиращата или дебъг информацията към конзолата, вместо файлът debug.log</translation>
     </message>
     <message>
         <source>This is experimental software.</source>
@@ -2696,28 +2342,8 @@
         <translation>Транзакцията е твърде голяма</translation>
     </message>
     <message>
-        <source>Username for JSON-RPC connections</source>
-        <translation>Потребителско име за JSON-RPC връзките</translation>
-    </message>
-    <message>
         <source>Warning</source>
         <translation>Предупреждение</translation>
-    </message>
-    <message>
-        <source>Password for JSON-RPC connections</source>
-        <translation>Парола за  JSON-RPC връзките</translation>
-    </message>
-    <message>
-        <source>Specify configuration file (default: %s)</source>
-        <translation>Назовете конфигурационен файл(по подразбиране %s)</translation>
-    </message>
-    <message>
-        <source>Specify connection timeout in milliseconds (minimum: 1, default: %d)</source>
-        <translation>Задайте време на изключване при проблеми със свързването в милисекунди(минимум:1, по подразбиране %d)</translation>
-    </message>
-    <message>
-        <source>Specify pid file (default: %s)</source>
-        <translation>Задайте pid  файл(по подразбиране: %s)</translation>
     </message>
     <message>
         <source>Starting network threads...</source>
@@ -2752,124 +2378,8 @@
         <translation>Зареждане на блок индекса...</translation>
     </message>
     <message>
-        <source>Loading masternode cache...</source>
-        <translation>Зареждане на masternode кеш...</translation>
-    </message>
-    <message>
-        <source>Loading masternode payment cache...</source>
-        <translation>Зараждане на masternode кеш за плащане</translation>
-    </message>
-    <message>
         <source>Loading wallet...</source>
         <translation>Зареждане на портфейла...</translation>
-    </message>
-    <message>
-        <source>Lock masternodes from masternode configuration file (default: %u)</source>
-        <translation>Заключване на masternodes от конфигурационния файл(по подразбиране: %u)</translation>
-    </message>
-    <message>
-        <source>No Masternodes detected.</source>
-        <translation>Не са открити Masternodes.</translation>
-    </message>
-    <message>
-        <source>No compatible Masternode found.</source>
-        <translation>Не e намерен съвместим Masternode.</translation>
-    </message>
-    <message>
-        <source>Not in the Masternode list.</source>
-        <translation>Не е в Мasternode списъка.</translation>
-    </message>
-    <message>
-        <source>Specify masternode configuration file (default: %s)</source>
-        <translation>Посочете конфигурационен файл (по подразбиране: %s)</translation>
-    </message>
-    <message>
-        <source>Submitted following entries to masternode: %u / %d</source>
-        <translation>Изпратени са следните записи към masternode: %u / %d</translation>
-    </message>
-    <message>
-        <source>Submitted to masternode, waiting for more entries ( %u / %d ) %s</source>
-        <translation>Изпратено към masternode, чака за още записи ( %u / %d ) %s</translation>
-    </message>
-    <message>
-        <source>Submitted to masternode, waiting in queue %s</source>
-        <translation>Изпратено към Мастернода, чака в опашката %s</translation>
-    </message>
-    <message>
-        <source>Synchronizing masternodes...</source>
-        <translation>Синхронизиране на masternodes ...</translation>
-    </message>
-    <message>
-        <source>This is not a Masternode.</source>
-        <translation>Това не е Masternode.</translation>
-    </message>
-    <message>
-        <source>Invalid masternodeprivkey. Please see documenation.</source>
-        <translation>Невалиден частен ключ на Masternode. Моля вижте документацията.</translation>
-    </message>
-    <message>
-        <source>Can't find random Masternode.</source>
-        <translation>Не можете да намери случаен Masternode.</translation>
-    </message>
-    <message>
-        <source>Could not parse masternode.conf</source>
-        <translation>Несъвместимост в masternode.conf</translation>
-    </message>
-    <message>
-        <source>Invalid port detected in masternode.conf</source>
-        <translation>Открит е невалиден порт в masternode.conf</translation>
-    </message>
-    <message>
-        <source>Disable all Globaltoken specific functionality (Masternodes, InstantSend) (0-1, default: %u)</source>
-        <translation>Изключване на всички специфични Globaltoken функции (Masternodes, InstantSend) (0-1, по подразбиране: %u)</translation>
-    </message>
-    <message>
-        <source>Enable InstantSend, show confirmations for locked transactions (0-1, default: %u)</source>
-        <translation>Активиране на InstantSend, показва потвържденията за заключени транзакции (0-1, по подразбиране: %u)</translation>
-    </message>
-    <message>
-        <source>Execute command when a wallet InstantSend transaction is successfully locked (%s in cmd is replaced by TxID)</source>
-        <translation>Изпълнена команда когато транзакцията в  InstantSend портфейла е успешно заключена (%s в cmd е заместен от TxID)</translation>
-    </message>
-    <message>
-        <source>InstantSend doesn't support sending values that high yet. Transactions are currently limited to %1 GLT.</source>
-        <translation>InstantSend не поддържа толкова високи стойности за изпращане все още. Транзакциите в момента са ограничени до %1 GLT.</translation>
-    </message>
-    <message>
-        <source>InstantSend requires inputs with at least %d confirmations, you might need to wait a few minutes and try again.</source>
-        <translation>InstantX изисква средства с поне %d потвърждения, може да се наложи да почакате няколко минути и да опитате отново.</translation>
-    </message>
-    <message>
-        <source>Masternode cache is empty, skipping payments cache...</source>
-        <translation>Masternode кеш е празен, пропускане на payments кеш...</translation>
-    </message>
-    <message>
-        <source>Masternode options:</source>
-        <translation>Masternode опции:</translation>
-    </message>
-    <message>
-        <source>Masternode queue is full.</source>
-        <translation>Опашката с задачи на Masternode е пълна.</translation>
-    </message>
-    <message>
-        <source>Masternode:</source>
-        <translation>Masternode:</translation>
-    </message>
-    <message>
-        <source>Warning: At least %d of %d masternodes are running on a newer software version. Please check latest releases, you might need to update too.</source>
-        <translation>Внимание: Най-малко%d от %d masternodes работят на по-нова версия на софтуера. Моля, проверете последните версии, може да се наложи Вие също да актуализирате .</translation>
-    </message>
-    <message>
-        <source>Warning: Every masternode (out of %d known ones) is running on a newer software version. Please check latest releases, it's very likely that you missed a major/critical update.</source>
-        <translation>Внимание: Всеки masternode (извън %d познатите ни) работи на по-нова версия на софтуера. Моля проверете последните версии, напълно е възможно да сте пропуснали важен/критичен ъпдейт. </translation>
-    </message>
-    <message>
-        <source>Set the masternode private key</source>
-        <translation>Задаване на личен ключ на Masternode</translation>
-    </message>
-    <message>
-        <source>Synchronizing masternode payments...</source>
-        <translation>Синхронизиране на masternodes плащанията...</translation>
     </message>
     <message>
         <source>Cannot downgrade wallet</source>
@@ -2886,30 +2396,6 @@
     <message>
         <source>Error</source>
         <translation>Грешка</translation>
-    </message>
-    <message>
-        <source>Enable publish hash transaction (locked via InstantSend) in &lt;address&gt;</source>
-        <translation>Включва публикуване хеша на транзакцията  (заключен чрез InstantSend) в &lt;address&gt;</translation>
-    </message>
-    <message>
-        <source>Enable publish raw transaction (locked via InstantSend) in &lt;address&gt;</source>
-        <translation>Включва публикуване на необранотена транзакция (заключена чрез InstantSend) в &lt;address&gt;</translation>
-    </message>
-    <message>
-        <source>InstantSend options:</source>
-        <translation>InstantSend опции:</translation>
-    </message>
-    <message>
-        <source>Override spork address. Only useful for regtest. Using this on mainnet or testnet will ban you.</source>
-        <translation>Заменете spork адреса. Полезен само за regtest. Използването на това на mainnet или testnet ще прекъсне връзката ви с мрежата.</translation>
-    </message>
-    <message>
-        <source>Invalid spork address specified with -sporkaddr</source>
-        <translation>Невалиден спорк адрес посочен с -sporkaddr</translation>
-    </message>
-    <message>
-        <source>Unable to sign spork message, wrong key?</source>
-        <translation>Неуспешно подписване на spork-съобщение. Грешен ключ?</translation>
     </message>
 </context>
 </TS>

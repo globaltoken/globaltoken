@@ -586,6 +586,10 @@
         <source>Label</source>
         <translation>Oznaka</translation>
     </message>
+    <message>
+        <source>Wallet</source>
+        <translation>Novčanik</translation>
+    </message>
     </context>
 <context>
     <name>RecentRequestsTableModel</name>
@@ -615,6 +619,10 @@
     <message>
         <source>After Fee:</source>
         <translation>Nakon Naknade:</translation>
+    </message>
+    <message>
+        <source>Transaction fee</source>
+        <translation>Taksa transakcije</translation>
     </message>
     <message>
         <source>(no label)</source>

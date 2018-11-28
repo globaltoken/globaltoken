@@ -1,6 +1,5 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2017 The Bitcoin Core developers
-// Copyright (c) 2017 The Globaltoken Core developers
+// Copyright (c) 2009-2018 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -8,11 +7,10 @@
 #define BITCOIN_CHAIN_H
 
 #include <arith_uint256.h>
+#include <consensus/params.h>
 #include <primitives/block.h>
-#include <pow.h>
 #include <tinyformat.h>
 #include <uint256.h>
-#include <chainparams.h>
 
 #include <vector>
 
@@ -20,7 +18,7 @@
  * Maximum amount of time that a block timestamp is allowed to exceed the
  * current network-adjusted time before the block will be accepted.
  */
-static const int64_t MAX_FUTURE_BLOCK_TIME = 2 * 60 * 6;
+static const int64_t MAX_FUTURE_BLOCK_TIME = 2 * 60 * 60;
 
 /**
  * Timestamp window used as a grace period by code that compares external
@@ -93,7 +91,7 @@ struct CDiskBlockPos
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action) {
-        READWRITE(VARINT(nFile));
+        READWRITE(VARINT(nFile, VarIntMode::NONNEGATIVE_SIGNED));
         READWRITE(VARINT(nPos));
     }
 
@@ -119,7 +117,7 @@ struct CDiskBlockPos
 
     std::string ToString() const
     {
-        return strprintf("CBlockDiskPos(nFile=%i, nPos=%i)", nFile, nPos);
+        return strprintf("CDiskBlockPos(nFile=%i, nPos=%i)", nFile, nPos);
     }
 
 };
@@ -211,12 +209,9 @@ public:
     //! block header
     int32_t nVersion;
     uint256 hashMerkleRoot;
-	uint256 hashReserved;
     uint32_t nTime;
     uint32_t nBits;
     uint32_t nNonce;
-    uint256 nBigNonce;
-	std::vector<unsigned char> nSolution;
 
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     int32_t nSequenceId;
@@ -242,12 +237,9 @@ public:
 
         nVersion       = 0;
         hashMerkleRoot = uint256();
-		hashReserved   = uint256();
         nTime          = 0;
         nBits          = 0;
         nNonce         = 0;
-        nBigNonce      = uint256();
-		nSolution.clear();
     }
 
     CBlockIndex()
@@ -261,12 +253,9 @@ public:
 
         nVersion       = block.nVersion;
         hashMerkleRoot = block.hashMerkleRoot;
-		hashReserved   = block.hashReserved;
         nTime          = block.nTime;
         nBits          = block.nBits;
         nNonce         = block.nNonce;
-        nBigNonce      = block.nBigNonce;
-		nSolution      = block.nSolution;
     }
 
     CDiskBlockPos GetBlockPos() const {
@@ -286,37 +275,23 @@ public:
         }
         return ret;
     }
-    
-    CBlockHeader GetBlockHeader(const Consensus::Params& consensusParams) const;
+
+    CBlockHeader GetBlockHeader() const
+    {
+        CBlockHeader block;
+        block.nVersion       = nVersion;
+        if (pprev)
+            block.hashPrevBlock = pprev->GetBlockHash();
+        block.hashMerkleRoot = hashMerkleRoot;
+        block.nTime          = nTime;
+        block.nBits          = nBits;
+        block.nNonce         = nNonce;
+        return block;
+    }
 
     uint256 GetBlockHash() const
     {
         return *phashBlock;
-    }
-	
-	uint256 GetBlockPoWHash() const
-    {
-        CBlockHeader block = GetBlockHeader(Params().GetConsensus());
-        return block.GetPoWHash();
-    }
-
-    uint8_t GetAlgo() const
-    {
-        /* create a dummy blockheader and set the nVersion known from CBlockIndex into the block version.
-         * nVersion is required because we need the block algo, which is calculated through nVersion.
-         * So we don't need the full GetBlockHeader Command, because it will fail while linking and 
-         * the LoadBlockIndex will fail if it tries to get a BlockHeader with consensusParams.
-         */ 
-        CBlockHeader block;
-        block.nVersion = nVersion;
-        return block.GetAlgo();
-    }
-    
-    int32_t GetAuxpowVersion() const
-    {
-        CPureBlockVersion block;
-        block.nVersion = nVersion;
-        return block.GetAuxpowVersion();
     }
 
     int64_t GetBlockTime() const
@@ -411,13 +386,13 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action) {
         int _nVersion = s.GetVersion();
         if (!(s.GetType() & SER_GETHASH))
-            READWRITE(VARINT(_nVersion));
+            READWRITE(VARINT(_nVersion, VarIntMode::NONNEGATIVE_SIGNED));
 
-        READWRITE(VARINT(nHeight));
+        READWRITE(VARINT(nHeight, VarIntMode::NONNEGATIVE_SIGNED));
         READWRITE(VARINT(nStatus));
         READWRITE(VARINT(nTx));
         if (nStatus & (BLOCK_HAVE_DATA | BLOCK_HAVE_UNDO))
-            READWRITE(VARINT(nFile));
+            READWRITE(VARINT(nFile, VarIntMode::NONNEGATIVE_SIGNED));
         if (nStatus & BLOCK_HAVE_DATA)
             READWRITE(VARINT(nDataPos));
         if (nStatus & BLOCK_HAVE_UNDO)
@@ -427,20 +402,9 @@ public:
         READWRITE(this->nVersion);
         READWRITE(hashPrev);
         READWRITE(hashMerkleRoot);
-        if (GetAlgo() == ALGO_EQUIHASH || GetAlgo() == ALGO_ZHASH) {
-            READWRITE(hashReserved);
-        }
         READWRITE(nTime);
         READWRITE(nBits);
-        if (GetAlgo() == ALGO_EQUIHASH || GetAlgo() == ALGO_ZHASH)
-        {
-            READWRITE(nBigNonce);
-            READWRITE(nSolution);
-        }
-        if(!(GetAlgo() == ALGO_EQUIHASH || GetAlgo() == ALGO_ZHASH))
-        {
-            READWRITE(nNonce);
-        }
+        READWRITE(nNonce);
     }
 
     uint256 GetBlockHash() const
@@ -449,12 +413,9 @@ public:
         block.nVersion        = nVersion;
         block.hashPrevBlock   = hashPrev;
         block.hashMerkleRoot  = hashMerkleRoot;
-		block.hashReserved    = hashReserved;
         block.nTime           = nTime;
         block.nBits           = nBits;
         block.nNonce          = nNonce;
-        block.nBigNonce       = nBigNonce;
-		block.nSolution       = nSolution;
         return block.GetHash();
     }
 

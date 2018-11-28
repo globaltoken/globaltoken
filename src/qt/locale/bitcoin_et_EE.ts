@@ -130,8 +130,8 @@
         <translation>Kõvakettal olevate plokkide reindekseerimine...</translation>
     </message>
     <message>
-        <source>Globaltoken</source>
-        <translation>Globaltoken</translation>
+        <source>Bitcoin</source>
+        <translation>Bitcoin</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -257,15 +257,7 @@
         <source>Command-line options</source>
         <translation>Käsurea valikud</translation>
     </message>
-    <message>
-        <source>Usage:</source>
-        <translation>Kasutus:</translation>
-    </message>
-    <message>
-        <source>command-line options</source>
-        <translation>käsurea valikud</translation>
-    </message>
-    </context>
+</context>
 <context>
     <name>Intro</name>
     <message>
@@ -275,10 +267,6 @@
     <message>
         <source>Bitcoin</source>
         <translation>Bitcoin</translation>
-    </message>
-	<message>
-        <source>Globaltoken</source>
-        <translation>Globaltoken</translation>
     </message>
     <message>
         <source>Error</source>
@@ -511,6 +499,10 @@
     <message>
         <source>Message</source>
         <translation>Sõnum</translation>
+    </message>
+    <message>
+        <source>Wallet</source>
+        <translation>Rahakott</translation>
     </message>
     </context>
 <context>
@@ -768,14 +760,6 @@
 <context>
     <name>bitcoin-core</name>
     <message>
-        <source>Options:</source>
-        <translation>Valikud:</translation>
-    </message>
-    <message>
-        <source>Globaltoken Core</source>
-        <translation>Globaltoken Core</translation>
-    </message>
-	<message>
         <source>Bitcoin Core</source>
         <translation>Bitcoin Core</translation>
     </message>

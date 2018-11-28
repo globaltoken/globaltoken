@@ -228,6 +228,10 @@
         <source>Message</source>
         <translation>Билдирүү</translation>
     </message>
+    <message>
+        <source>Wallet</source>
+        <translation>Капчык</translation>
+    </message>
     </context>
 <context>
     <name>RecentRequestsTableModel</name>
@@ -295,10 +299,6 @@
     </context>
 <context>
     <name>TransactionDesc</name>
-    <message>
-        <source>%1/offline</source>
-        <translation>%1/тармакта эмес</translation>
-    </message>
     <message>
         <source>Date</source>
         <translation>Дата</translation>
