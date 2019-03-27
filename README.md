@@ -1,27 +1,88 @@
-Globaltoken Core integration/staging tree
+GlobalToken Core integration/staging tree
 =====================================
 
 [![Build Status](https://travis-ci.org/globaltoken/globaltoken.svg?branch=master)](https://travis-ci.org/globaltoken/globaltoken)
 
-https://globaltoken.org
-
-What is Globaltoken?
+What is GlobalToken?
 ----------------
+GlobalToken (GLT) is a Proof of Work Multi-Algorithm cryptocurrency. GlobalToken uses peer-to-peer technology to operate with no central authority: managing transactions and issuing money are carried out collectively by the network. GlobalToken Core is the name of open source software which enables the use of this currency.
 
-Globaltoken is an experimental digital currency that enables instant payments to
-anyone, anywhere in the world. Globaltoken uses peer-to-peer technology to operate
-with no central authority: managing transactions and issuing money are carried
-out collectively by the network. Globaltoken Core is the name of open source
-software which enables the use of this currency.
+Codebase: Bitcoin
+PoW Phase : Active
+Block Size : 10MB
+Transaction Size : 1MB
+TPM / Transactions Per Minute : 44247
+TPS / Transactions Per Second: 737.45
+MultiShield Retargeting (DGB powered)
+Merged Mining Enabled (NMC powered)
+AuxPoW Enabled
+Equihash/Zhash (AuxPoW 2.0)
+InstantSend Support
+
+30 Algorithms Supported
+-------
+1. astralhash
+2. blake2b
+3. blake2s
+4. equihash
+5. globalhash
+6. myriad-groestl
+7. hmq1725
+8. jeonghash
+9. keccakc
+10. lyra2rev2
+11. neoscrypt
+12. nist5
+13. padihash
+14. pawelhash
+15. quark
+16. qubit
+17. scrypt
+18. sha256d*
+19. skein
+20. skunkhash
+21. timetravel10
+22. x11
+23. x13
+24. x14
+25. x15
+26. x16r
+27. x17
+28. xevan
+29. yescrypt
+30. zhash
+*sha256d is the default algorithm
+
+Use "algo=x16r" in globaltoken.conf to change the algorithm in use.
+
+Links
+----------------
+https://globaltoken.org
+https://explorer.globaltoken.org
+
+Price Info
+----------------
+https://coinmarketcap.com/currencies/globaltoken/
+https://coingecko.com/en/coins/globaltoken
+
+Social
+----------------
+https://discord.gg/futDmxM
+https://twitter.com/globaltokencoin
+https://bitcointalk.org/index.php?topic=5035302.0
+
+Mining
+----------------
+http://gltminer.com/
 
 For more information, as well as an immediately useable, binary version of
-the Globaltoken Core software, see https://globaltoken.org/#downloads, or read the
+the GlobalToken Core software, see https://globaltoken.org/#downloads, or read the
 [original Bitcoin whitepaper](https://bitcoincore.org/bitcoin.pdf).
 
 License
 -------
 
-Globaltoken Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
+GlobalToken Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
 information or see https://opensource.org/licenses/MIT.
 
 Development Process
