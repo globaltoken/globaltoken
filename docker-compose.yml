@@ -1,0 +1,22 @@
+# Maintained by Crypto and Coffee | https://cryptoandcoffee.com
+version: '3.7'
+services:
+  globaltoken:
+    build:
+      context: ./
+    container_name: globaltoken
+    image: globaltoken
+    restart: unless-stopped
+#    deploy: #deploy endpoints for swarm
+#      endpoint_mode: dnsrr
+#      mode: global
+#      placement:
+#        constraints:
+#          - node.hostname == wildpool
+#    ports: #exposing ports is optional
+#      - target: 9319
+#        mode: host
+#        published: 9319
+#    volumes: #custom volume mount points
+#     - ./globaltoken.conf:/root/.globaltoken/globaltoken.conf
+#   command: bash -c "/usr/local/bin/globaltokend -datadir=/root/.globaltoken/ -conf=/root/.globaltoken/globaltoken.conf"

@@ -1,27 +1,162 @@
-Globaltoken Core integration/staging tree
+GlobalToken Official Development Repository
 =====================================
 
 [![Build Status](https://travis-ci.org/globaltoken/globaltoken.svg?branch=master)](https://travis-ci.org/globaltoken/globaltoken)
 
-https://globaltoken.org
+What is GlobalToken?
+----------------
+GlobalToken (GLT) is a Proof of Work Multi-Algorithm cryptocurrency. GlobalToken uses peer-to-peer technology to operate with no central authority: managing transactions and issuing money are carried out collectively by the network. GlobalToken Core is the name of open source software which enables the use of this currency.
 
-What is Globaltoken?
+````
+Codebase : Bitcoin
+RPC Port: 9320
+P2P / Masternode Port : 9319
+Masternode Collateral : 50,000 GLT
+PoW Phase : Active
+Block Size : 10MB
+Transaction Size : 1MB
+TPM / Transactions Per Minute : 44247
+TPS / Transactions Per Second : 737.45
+MultiShield Retargeting (DGB powered)
+Merged Mining Enabled (NMC powered)
+AuxPoW Enabled
+Equihash/Zhash (AuxPoW 2.0)
+InstantSend Support
+````
+
+30 Algorithms Supported
+-------
+````
+1. astralhash
+2. blake2b
+3. blake2s
+4. equihash
+5. globalhash
+6. myriad-groestl
+7. hmq1725
+8. jeonghash
+9. keccakc
+10. lyra2rev2
+11. neoscrypt
+12. nist5
+13. padihash
+14. pawelhash
+15. quark
+16. qubit
+17. scrypt
+18. sha256d*
+19. skein
+20. skunkhash
+21. timetravel10
+22. x11
+23. x13
+24. x14
+25. x15
+26. x16r
+27. x17
+28. xevan
+29. yescrypt
+30. zhash
+````
+
+*sha256d is the default algorithm  
+Use "algo=x16r" in globaltoken.conf to change the algorithm in use.
+
+Links
+----------------
+https://globaltoken.org  
+https://explorer.globaltoken.org
+
+Price Info
+----------------
+https://coinmarketcap.com/currencies/globaltoken/  
+https://coingecko.com/en/coins/globaltoken
+
+Social
+----------------
+https://discord.gg/futDmxM  
+https://twitter.com/globaltokencoin  
+https://bitcointalk.org/index.php?topic=5035302.0
+
+Mining
+----------------
+https://gltminer.com/
+
+Running GlobalToken with Docker
+----------------
+Please install the latest Docker CE and Docker Compose from https://docker.com 
+
+Docker CE  
+Linux : https://docs.docker.com/install/linux/docker-ce/ubuntu/  
+Windows : https://docs.docker.com/docker-for-windows/install/  
+Mac : https://docs.docker.com/docker-for-mac/install/  
+
+Docker Compose  
+https://docs.docker.com/compose/install/
+
+There are two ways to run GlobalToken with Docker.  The easiest way to is to use the container from Docker Hub, alternatively you can build your own.  GlobalToken container be found on DockerHub at : ````cryptoandcoffee/globaltoken````  
+````
+docker pull cryptoandcoffee/globaltoken
+````
+
+Run GlobalToken from Docker Hub in the Foreground (press CTRL-C to stop) 
+````
+docker run cryptoandcoffee/globaltoken
+````
+
+Run GlobalToken from Docker Hub in the Background (forever)  
+````
+docker run -d cryptoandcoffee/globaltoken
+````
+
+Run GlobalToken with a permanent volume
+````
+docker run -d -v ./local_global_token_directory:/root/.globaltoken/cryptoandcoffee/globaltoken cryptoandcoffee/globaltoken
+````
+
+Run GlobalToken with a permanent volume and expose a port
+````
+docker run -d -p 9319:9319 -v ./local_global_token_directory:/root/.globaltoken/ cryptoandcoffee/globaltoken   
+````
+
+Run GlobalToken with a permanent volume and expose a port and custom configuration file
+````
+docker run -d -p 9319:9319 -v ./local_globaltoken.conf:/root/.globaltoken/globaltoken.conf -v ./local_global_token_directory:/root/.globaltoken/ cryptoandcoffee/globaltoken
+````
+
 ----------------
 
-Globaltoken is an experimental digital currency that enables instant payments to
-anyone, anywhere in the world. Globaltoken uses peer-to-peer technology to operate
-with no central authority: managing transactions and issuing money are carried
-out collectively by the network. Globaltoken Core is the name of open source
-software which enables the use of this currency.
+Build GlobalToken Docker container and manage with Docker Compose
+----------------
+Build your own local container named "globaltoken"
+````
+git clone https://github.com/globaltoken/globaltoken
+cd globaltoken ; docker-compose build
+````
+
+Run GlobalToken in the Foreground with Docker Compose  
+````
+docker-compose up
+````
+
+Run GlobalToken in the Background (forever) with Docker Compose
+````
+docker-compose up -d
+````
+
+Deploy GlobalToken to Docker Swarm
+````
+docker stack deploy globaltoken_swarm
+````
 
 For more information, as well as an immediately useable, binary version of
-the Globaltoken Core software, see https://globaltoken.org/#downloads, or read the
+the GlobalToken Core software, see https://globaltoken.org/#downloads, or read the
 [original Bitcoin whitepaper](https://bitcoincore.org/bitcoin.pdf).
 
 License
 -------
 
-Globaltoken Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
+GlobalToken Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
 information or see https://opensource.org/licenses/MIT.
 
 Development Process
