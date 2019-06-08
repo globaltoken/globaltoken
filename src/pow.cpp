@@ -21,7 +21,73 @@
 #include <crypto/algos/equihash/equihash.h>
 #include <validation.h>
 
-unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params, uint8_t algo)
+bool IsAuxPowAllowed(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params, const uint8_t algo)
+{
+    if(!pblock->IsAuxpow())
+        return true; // This is not an auxpow block! - The block is allowed!
+    
+    if(params.Hardfork2.IsActivated(pindexLast->nTime))
+    {
+        if(params.nMaxAuxpowBlocks == ~uint32_t(0)) // Max value of uint32_t means, there is no limit for auxpow blocks.
+            return true;
+        
+        unsigned int npowWorkLimit = params.aPOWAlgos[algo].GetArithPowLimit().GetCompact();
+        const CBlockIndex* pIndexLastAlgo = GetLastBlockIndexForAlgo(pindexLast, algo, params);
+        if(pIndexLastAlgo == nullptr)
+            return false; // No block yet, auxpow unallowed!
+        
+        // If this block has genesis diff, it is allowed to mine auxpow!
+        if(GetNextWorkRequired(pindexLast, pblock, params, algo) == npowWorkLimit)
+            return true;
+        
+        uint32_t blocksfound = 0;
+        for(uint32_t i = 0; i < params.nMaxAuxpowBlocks; i++)
+        {
+            bool fIsAuxPow = CPureBlockVersion(pIndexLastAlgo->nVersion).IsAuxpow();
+            
+            if(fIsAuxPow)
+            {
+                blocksfound++;
+                
+                if(pIndexLastAlgo->nBits == npowWorkLimit)
+                {
+                    break;
+                }
+                pIndexLastAlgo = GetLastBlockIndexForAlgo(pIndexLastAlgo->pprev, algo, params);
+                
+                if(pIndexLastAlgo == nullptr)
+                    return false;
+            }
+            else
+            {
+                // the chain includes normal mining without auxpow. auxpow is not allowed.
+                return false;
+            }
+        }
+        
+        if(blocksfound == params.nMaxAuxpowBlocks-1)
+        {
+            // The current pindex must be genesis diff, because max auxpow block is genesis diff.
+            if(pIndexLastAlgo->nBits != npowWorkLimit)
+                return false; // The block is not at genesis diff, block not allowed!
+        }
+        
+        if(blocksfound == params.nMaxAuxpowBlocks)
+        {
+            return false;
+        }
+        return (blocksfound < params.nMaxAuxpowBlocks);
+    }
+    else
+    {
+        if(params.Hardfork1.IsActivated(pindexLast->nTime))
+            return true; // Hardfork 1 has full auxpow support.
+        else
+            return false; // Before hardfork 1, there was no auxpow.
+    }
+}
+
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params, const uint8_t algo)
 {
     if(params.Hardfork2.IsActivated(pblock->nTime))
        return GetNextWorkRequiredV3(pindexLast, pblock, params, algo);
@@ -31,7 +97,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
        return GetNextWorkRequiredV1(pindexLast, pblock, params, algo);
 }
 
-unsigned int GetNextWorkRequiredV1(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params, uint8_t algo)
+unsigned int GetNextWorkRequiredV1(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params, const uint8_t algo)
 {
     assert(pindexLast != nullptr);
     unsigned int nProofOfWorkLimit = params.aPOWAlgos[ALGO_SHA256D].GetArithPowLimit().GetCompact(); // Before the Hardfork starts, there is just SHA256D
@@ -67,7 +133,7 @@ unsigned int GetNextWorkRequiredV1(const CBlockIndex* pindexLast, const CBlockHe
     return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
 }
 
-unsigned int GetNextWorkRequiredV2(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params, uint8_t algo)
+unsigned int GetNextWorkRequiredV2(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params, const uint8_t algo)
 {
 	unsigned int npowWorkLimit = params.aPOWAlgos[algo].GetArithPowLimit().GetCompact();
 
@@ -93,7 +159,7 @@ unsigned int GetNextWorkRequiredV2(const CBlockIndex* pindexLast, const CBlockHe
 	// find first block in averaging interval
 	// Go back by what we want to be nAveragingInterval blocks per algo
 	const CBlockIndex* pindexFirst = pindexLast;
-	for (int i = 0; pindexFirst && i < NUM_ALGOS*params.nAveragingInterval; i++)
+	for (int i = 0; pindexFirst && i < NUM_ALGOS_OLD*params.nAveragingInterval; i++)
 	{
 		pindexFirst = pindexFirst->pprev;
 	}
@@ -122,7 +188,7 @@ unsigned int GetNextWorkRequiredV2(const CBlockIndex* pindexLast, const CBlockHe
 	bnNew /= params.nAveragingTargetTimespan;
 
 	//Per-algo retarget
-	int nAdjustments = pindexPrevAlgo->nHeight + NUM_ALGOS - 1 - pindexLast->nHeight;
+	int nAdjustments = pindexPrevAlgo->nHeight + NUM_ALGOS_OLD - 1 - pindexLast->nHeight;
 	if (nAdjustments > 0)
 	{
 		for (int i = 0; i < nAdjustments; i++)
@@ -148,7 +214,7 @@ unsigned int GetNextWorkRequiredV2(const CBlockIndex* pindexLast, const CBlockHe
 	return bnNew.GetCompact();
 }
 
-unsigned int GetNextWorkRequiredV3(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params, uint8_t algo)
+unsigned int GetNextWorkRequiredV3(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params, const uint8_t algo)
 {
 	unsigned int npowWorkLimit = params.aPOWAlgos[algo].GetArithPowLimit().GetCompact();
 
@@ -289,7 +355,7 @@ bool CheckEquihashSolution(const CBlockHeader *pblock, const CChainParams& param
     return CheckEquihashSolution(&pequihashblock, params, nAlgo, GetEquihashBasedDefaultPersonalize(nAlgo));
 }
 
-bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params, uint8_t algo)
+bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params, const uint8_t algo)
 {
     bool fNegative;
     bool fOverflow;
@@ -465,7 +531,7 @@ bool CheckProofOfWork(const CBlockHeader& block, const Consensus::Params& params
     return true;
 }
 
-const CBlockIndex* GetLastBlockIndexForAlgo(const CBlockIndex* pindex, uint8_t algo, const Consensus::Params& params)
+const CBlockIndex* GetLastBlockIndexForAlgo(const CBlockIndex* pindex, const uint8_t algo, const Consensus::Params& params)
 {
 	for (;;)
 	{
@@ -482,7 +548,7 @@ const CBlockIndex* GetLastBlockIndexForAlgo(const CBlockIndex* pindex, uint8_t a
 	return nullptr;
 }
 
-const CBlockIndex* GetNextBlockIndexForAlgo(const CBlockIndex* pindex, uint8_t algo)
+const CBlockIndex* GetNextBlockIndexForAlgo(const CBlockIndex* pindex, const uint8_t algo)
 {
     AssertLockHeld(cs_main);
 	for (;;)
@@ -496,7 +562,7 @@ const CBlockIndex* GetNextBlockIndexForAlgo(const CBlockIndex* pindex, uint8_t a
 	return nullptr;
 }
 
-int CalculateDiffRetargetingBlock(const CBlockIndex* pindex, int retargettype, uint8_t algo, const Consensus::Params& params)
+int CalculateDiffRetargetingBlock(const CBlockIndex* pindex, int retargettype, const uint8_t algo, const Consensus::Params& params)
 {
     if (params.fPowNoRetargeting)
 	    return 0;

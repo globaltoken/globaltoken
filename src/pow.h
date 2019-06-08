@@ -22,10 +22,11 @@ class CChainParams;
 class CEquihashBlockHeader;
 class uint256;
 
-unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params&, uint8_t algo);
-unsigned int GetNextWorkRequiredV1(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params&, uint8_t algo);
-unsigned int GetNextWorkRequiredV2(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params&, uint8_t algo);
-unsigned int GetNextWorkRequiredV3(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params&, uint8_t algo);
+bool IsAuxPowAllowed(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params&, const uint8_t algo);
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params&, const uint8_t algo);
+unsigned int GetNextWorkRequiredV1(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params&, const uint8_t algo);
+unsigned int GetNextWorkRequiredV2(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params&, const uint8_t algo);
+unsigned int GetNextWorkRequiredV3(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params&, const uint8_t algo);
 unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params&);
 
 /** Check whether the Equihash solution in a block header is valid */
@@ -33,9 +34,9 @@ bool CheckEquihashSolution(const CEquihashBlockHeader *pblock, const CChainParam
 bool CheckEquihashSolution(const CBlockHeader *pblock, const CChainParams&);
 
 /** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
-bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&, uint8_t algo);
-const CBlockIndex* GetLastBlockIndexForAlgo(const CBlockIndex* pindex, uint8_t algo, const Consensus::Params&);
-const CBlockIndex* GetNextBlockIndexForAlgo(const CBlockIndex* pindex, uint8_t algo);
+bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&, const uint8_t algo);
+const CBlockIndex* GetLastBlockIndexForAlgo(const CBlockIndex* pindex, const uint8_t algo, const Consensus::Params&);
+const CBlockIndex* GetNextBlockIndexForAlgo(const CBlockIndex* pindex, const uint8_t algo);
 
 /**
  * Check proof-of-work of a block header, taking auxpow into account.
@@ -48,6 +49,6 @@ bool CheckProofOfWork(const CBlockHeader& block, const Consensus::Params& params
 bool CheckProofOfWork(const CBlockHeader& block, const Consensus::Params& params, bool &ehsolutionvalid);
 
 /** Calculations */
-int CalculateDiffRetargetingBlock(const CBlockIndex* pindex, int retargettype, uint8_t algo, const Consensus::Params&);
+int CalculateDiffRetargetingBlock(const CBlockIndex* pindex, int retargettype, const uint8_t algo, const Consensus::Params&);
 
 #endif // BITCOIN_POW_H

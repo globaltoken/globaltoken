@@ -184,6 +184,8 @@ uint8_t CPureBlockHeader::GetAlgo() const
             return ALGO_DESERTHASH;
         case BLOCK_VERSION_CRYPTOANDCOFFEE:
             return ALGO_CRYPTOANDCOFFEE;
+        case BLOCK_VERSION_RICKHASH:
+            return ALGO_RICKHASH;
     }
     return ALGO_SHA256D;
 }

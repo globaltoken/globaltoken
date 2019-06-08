@@ -3379,6 +3379,10 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
     const Consensus::Params& consensusParams = params.GetConsensus();
     if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams, block.GetAlgo()))
         return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");
+    
+    // Check if auxpow is allowed at this height, if it's an auxpow block.
+    if (!IsAuxPowAllowed(pindexPrev, &block, consensusParams, block.GetAlgo()))
+        return state.DoS(100, false, REJECT_INVALID, "invalid-auxpow", false, "aux pow block is not allowed at this height.");
 
     // Check against checkpoints
     if (fCheckpointsEnabled) {
@@ -3407,9 +3411,10 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
             return state.Invalid(false, REJECT_OBSOLETE, strprintf("bad-version(0x%08x)", block.nVersion),
                                  strprintf("rejected nVersion=0x%08x block", block.nVersion));
 
+    int32_t nCheckVersion = block.nVersion & BLOCK_VERSION_ALGO;
     // Reject reserved / unused algo-IDs!
-    if(consensusParams.Hardfork1.IsActivated(block.nTime) && block.GetAlgo() == ALGO_SHA256D && ((block.nVersion & BLOCK_VERSION_ALGO) != BLOCK_VERSION_SHA256D))
-        return state.Invalid(false, REJECT_INVALID, "invalid-multialgo-id", strprintf("Invalid block algo-ID! nVersion = %u, expected ID: %d, got: %d", block.nVersion, BLOCK_VERSION_SHA256D, block.nVersion & BLOCK_VERSION_ALGO));
+    if(consensusParams.Hardfork1.IsActivated(block.nTime) && block.GetAlgo() == ALGO_SHA256D && (nCheckVersion != BLOCK_VERSION_SHA256D))
+        return state.Invalid(false, REJECT_INVALID, "invalid-multialgo-id", strprintf("Invalid block algo-ID! nVersion = %u, expected ID: %d, got: %d", block.nVersion, BLOCK_VERSION_SHA256D, nCheckVersion));
 
     return true;
 }

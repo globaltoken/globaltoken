@@ -18,7 +18,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
 unsigned int ParseConfirmTarget(const UniValue& value);
 
 /* Creation and submission of auxpow blocks.  */
-UniValue AuxMiningCreateBlock(const CScript& scriptPubKey);
+UniValue AuxMiningCreateBlock(const CScript& scriptPubKey, const uint8_t nAlgo);
 bool AuxMiningSubmitBlock(const std::string& hashHex,
                           const std::string& auxpowHex,
                           const int nAuxPoWVersion);

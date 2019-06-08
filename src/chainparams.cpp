@@ -106,6 +106,7 @@ public:
         consensus.BIP66Height = 360000; // not hashed yet ...
         consensus.Hardfork1.Initialize(1 /* Hardfork ID */, 1537617600 /* Hardfork Activation Time */, 327036 /* Hardfork Activation Height */, uint256S("0xfa2a1f17edbb39496a4d1c9ee643797bc2b0d72dd9038e3646872c0fd7d3fd56") /* Hardfork Activation Blockhash */);
         consensus.Hardfork2.Initialize(2 /* Hardfork ID */, 1562760000 /* Hardfork Activation Time */, 700000 /* Hardfork Activation Height - unknown yet */, uint256() /* Hardfork Activation Blockhash - unknown yet */);
+        consensus.nMaxAuxpowBlocks = 2;
         consensus.aPOWAlgos[ALGO_SHA256D]         = CPOWAlgoProperties(ALGO_SHA256D, uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_SCRYPT]          = CPOWAlgoProperties(ALGO_SCRYPT, uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_X11]             = CPOWAlgoProperties(ALGO_X11, uint256S("00000fffff000000000000000000000000000000000000000000000000000000"), 1);
@@ -165,6 +166,7 @@ public:
         consensus.aPOWAlgos[ALGO_ARCTICHASH]      = CPOWAlgoProperties(ALGO_ARCTICHASH, uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_DESERTHASH]      = CPOWAlgoProperties(ALGO_DESERTHASH, uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_CRYPTOANDCOFFEE] = CPOWAlgoProperties(ALGO_CRYPTOANDCOFFEE, uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
+        consensus.aPOWAlgos[ALGO_RICKHASH]        = CPOWAlgoProperties(ALGO_RICKHASH, uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         
         // verification
         for(uint8_t i = 0; i < NUM_ALGOS; i++)
@@ -617,6 +619,7 @@ public:
         consensus.BIP66Height = 10; // not hashed yet.
         consensus.Hardfork1.Initialize(1 /* Hardfork ID */, 1537185600 /* Hardfork Activation Time */, 2153 /* Hardfork Activation Height */, uint256S("0x944140d0c734a7a94ca0b306cd3ad8c9bfe70889c927ca6c4852e5644b621733") /* Hardfork Activation Blockhash */);
         consensus.Hardfork2.Initialize(2 /* Hardfork ID */, 1560715200 /* Hardfork Activation Time */, 10000 /* Hardfork Activation Height - unknown yet */, uint256() /* Hardfork Activation Blockhash - unknown yet */);
+        consensus.nMaxAuxpowBlocks = ~uint32_t(0); // unlimited
         consensus.aPOWAlgos[ALGO_SHA256D]         = CPOWAlgoProperties(ALGO_SHA256D, uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_SCRYPT]          = CPOWAlgoProperties(ALGO_SCRYPT, uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_X11]             = CPOWAlgoProperties(ALGO_X11, uint256S("00000fffff000000000000000000000000000000000000000000000000000000"), 1);
@@ -676,6 +679,7 @@ public:
         consensus.aPOWAlgos[ALGO_ARCTICHASH]      = CPOWAlgoProperties(ALGO_ARCTICHASH, uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_DESERTHASH]      = CPOWAlgoProperties(ALGO_DESERTHASH, uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_CRYPTOANDCOFFEE] = CPOWAlgoProperties(ALGO_CRYPTOANDCOFFEE, uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
+        consensus.aPOWAlgos[ALGO_RICKHASH]        = CPOWAlgoProperties(ALGO_RICKHASH, uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         
         // verification
         for(uint8_t i = 0; i < NUM_ALGOS; i++)
@@ -1106,6 +1110,7 @@ public:
         consensus.BIP66Height = 1251; // BIP66 activated on regtest (Used in rpc activation tests)
         consensus.Hardfork1.Initialize(1 /* Hardfork ID */, 1537048800 /* Hardfork Activation Time */, 100000000 /* Hardfork Activation Height - unknown yet */, uint256() /* there is no hardfork hash for regtest, it will be just activated with the timestamp. */);
         consensus.Hardfork2.Initialize(2 /* Hardfork ID */, 1556661600 /* Hardfork Activation Time */, 100000000 /* Hardfork Activation Height - unknown yet */, uint256() /* there is no hardfork hash for regtest, it will be just activated with the timestamp. */);
+        consensus.nMaxAuxpowBlocks = ~uint32_t(0); // unlimited
         consensus.aPOWAlgos[ALGO_SHA256D]         = CPOWAlgoProperties(ALGO_SHA256D, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_SCRYPT]          = CPOWAlgoProperties(ALGO_SCRYPT, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_X11]             = CPOWAlgoProperties(ALGO_X11, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
@@ -1165,6 +1170,7 @@ public:
         consensus.aPOWAlgos[ALGO_ARCTICHASH]      = CPOWAlgoProperties(ALGO_ARCTICHASH, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_DESERTHASH]      = CPOWAlgoProperties(ALGO_DESERTHASH, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_CRYPTOANDCOFFEE] = CPOWAlgoProperties(ALGO_CRYPTOANDCOFFEE, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
+        consensus.aPOWAlgos[ALGO_RICKHASH]        = CPOWAlgoProperties(ALGO_RICKHASH, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         
         // verification
         for(uint8_t i = 0; i < NUM_ALGOS; i++)

@@ -266,6 +266,9 @@ public:
             case ALGO_CRYPTOANDCOFFEE:
                 nVersion |= BLOCK_VERSION_CRYPTOANDCOFFEE;
                 break;
+            case ALGO_RICKHASH:
+                nVersion |= BLOCK_VERSION_RICKHASH;
+                break;
             default:
                 break;
         }

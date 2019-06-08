@@ -1393,7 +1393,7 @@ UniValue getblockchaininfo(const JSONRPCRequest& request)
     globaltoken_hardforks.pushKV("activation_blockhash", consensusParams.Hardfork1.GetActivationBlockHash().GetHex());
     globaltoken_hardforks.pushKV("blocks_since_hardfork", tip->nHeight - consensusParams.Hardfork1.GetActivationHeight());
     globaltoken_hardfork.pushKV("1", globaltoken_hardforks);
-    globaltoken_hardforks.clear();
+    globaltoken_hardforks.setObject(); // clear and reset as object
     globaltoken_hardforks.pushKV("activated", consensusParams.Hardfork2.IsActivated(tip->nTime));
     globaltoken_hardforks.pushKV("activation_time", (int64_t)consensusParams.Hardfork2.GetActivationTime());
     globaltoken_hardfork.pushKV("2", globaltoken_hardforks);

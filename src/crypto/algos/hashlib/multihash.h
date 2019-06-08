@@ -2341,6 +2341,204 @@ inline uint256 NIST5(const T1 pbegin, const T1 pend)
 }
 
 template<typename T1>
+inline uint256 RickHash(const T1 pbegin, const T1 pend)
+{
+    // 32 bytes
+    sph_blake256_context      ctx_blake256;
+    sph_bmw256_context        ctx_bmw256;
+    sph_groestl256_context    ctx_groestl256;
+    sph_jh256_context         ctx_jh256;
+    sph_keccak256_context     ctx_keccak256;
+    sph_skein256_context      ctx_skein256;
+    sph_luffa256_context      ctx_luffa256;
+    sph_cubehash256_context   ctx_cubehash256;
+    sph_shavite256_context    ctx_shavite256;
+    sph_simd256_context       ctx_simd256;
+    sph_echo256_context       ctx_echo256;
+    sph_hamsi256_context      ctx_hamsi256;
+    sph_fugue256_context      ctx_fugue256;
+    sph_shabal256_context     ctx_shabal256;
+    sph_sha256_context        ctx_sha256;
+    sph_haval256_5_context    ctx_haval256;
+    
+    // 64 bytes
+    sph_blake512_context      ctx_blake512;
+    sph_bmw512_context        ctx_bmw512;
+    sph_groestl512_context    ctx_groestl512;
+    sph_jh512_context         ctx_jh512;
+    sph_keccak512_context     ctx_keccak512;
+    sph_skein512_context      ctx_skein512;
+    sph_luffa512_context      ctx_luffa512;
+    sph_cubehash512_context   ctx_cubehash512;
+    sph_shavite512_context    ctx_shavite512;
+    sph_simd512_context       ctx_simd512;
+    sph_echo512_context       ctx_echo512;
+    sph_hamsi512_context      ctx_hamsi512;
+    sph_fugue512_context      ctx_fugue512;
+    sph_shabal512_context     ctx_shabal512;
+    sph_whirlpool_context     ctx_whirlpool512;
+    sph_sha512_context        ctx_sha512;
+    
+    // Blake2 Stuff
+    blake2b_state             ctx_blake2b;
+    blake2s_state             ctx_blake2s;
+    
+    static unsigned char pblank[1];
+    uint512 h512Hashes[18], finalhash512;
+    uint256 h256Hashes[18], finalhash;
+    
+    // First of all we hash everything with 64 bytes.
+    
+    sph_shavite512_init(&ctx_shavite512);
+    sph_shavite512(&ctx_shavite512, (pbegin == pend ? pblank : static_cast<const void*>(&pbegin[0])), (pend - pbegin) * sizeof(pbegin[0]));
+    sph_shavite512_close(&ctx_shavite512, static_cast<void*>(&h512Hashes[0]));
+    
+    blake2b_init( &ctx_blake2b, BLAKE2B_OUTBYTES );
+    blake2b_update( &ctx_blake2b, static_cast<const void*>(&h512Hashes[0]), 64 );
+    blake2b_final( &ctx_blake2b, static_cast<void*>(&h512Hashes[1]), BLAKE2B_OUTBYTES );
+    
+    sph_bmw512_init(&ctx_bmw512);
+    sph_bmw512 (&ctx_bmw512, static_cast<const void*>(&h512Hashes[1]), 64);
+    sph_bmw512_close(&ctx_bmw512, static_cast<void*>(&h512Hashes[2]));
+    
+    sph_sha512_init(&ctx_sha512);
+    sph_sha512 (&ctx_sha512, static_cast<const void*>(&h512Hashes[2]), 64);
+    sph_sha512_close(&ctx_sha512, static_cast<void*>(&h512Hashes[3]));
+    
+    sph_blake512_init(&ctx_blake512);
+    sph_blake512 (&ctx_blake512, static_cast<const void*>(&h512Hashes[3]), 64);
+    sph_blake512_close(&ctx_blake512, static_cast<void*>(&h512Hashes[4]));
+    
+    sph_echo512_init(&ctx_echo512);
+    sph_echo512 (&ctx_echo512, static_cast<const void*>(&h512Hashes[4]), 64);
+    sph_echo512_close(&ctx_echo512, static_cast<void*>(&h512Hashes[5]));
+    
+    LYRA2(static_cast<void*>(&h512Hashes[6]), 64, static_cast<const void*>(&h512Hashes[5]), 64, static_cast<const void*>(&h512Hashes[5]), 64, 1, 4, 4);
+    
+    sph_shabal512_init(&ctx_shabal512);
+    sph_shabal512 (&ctx_shabal512, static_cast<const void*>(&h512Hashes[6]), 64);
+    sph_shabal512_close(&ctx_shabal512, static_cast<void*>(&h512Hashes[7]));
+    
+    sph_simd512_init(&ctx_simd512);
+    sph_simd512 (&ctx_simd512, static_cast<const void*>(&h512Hashes[7]), 64);
+    sph_simd512_close(&ctx_simd512, static_cast<void*>(&h512Hashes[8]));
+    
+    sph_jh512_init(&ctx_jh512);
+    sph_jh512 (&ctx_jh512, static_cast<const void*>(&h512Hashes[8]), 64);
+    sph_jh512_close(&ctx_jh512, static_cast<void*>(&h512Hashes[9]));
+    
+    sph_keccak512_init(&ctx_keccak512);
+    sph_keccak512 (&ctx_keccak512, static_cast<const void*>(&h512Hashes[9]), 64);
+    sph_keccak512_close(&ctx_keccak512, static_cast<void*>(&h512Hashes[10]));
+    
+    sph_groestl512_init(&ctx_groestl512);
+    sph_groestl512 (&ctx_groestl512, static_cast<const void*>(&h512Hashes[10]), 64);
+    sph_groestl512_close(&ctx_groestl512, static_cast<void*>(&h512Hashes[11]));
+    
+    sph_skein512_init(&ctx_skein512);
+    sph_skein512 (&ctx_skein512, static_cast<const void*>(&h512Hashes[11]), 64);
+    sph_skein512_close(&ctx_skein512, static_cast<void*>(&h512Hashes[12]));
+    
+    sph_luffa512_init(&ctx_luffa512);
+    sph_luffa512 (&ctx_luffa512, static_cast<void*>(&h512Hashes[12]), 64);
+    sph_luffa512_close(&ctx_luffa512, static_cast<void*>(&h512Hashes[13]));
+    
+    sph_hamsi512_init(&ctx_hamsi512);
+    sph_hamsi512 (&ctx_hamsi512, static_cast<const void*>(&h512Hashes[13]), 64);
+    sph_hamsi512_close(&ctx_hamsi512, static_cast<void*>(&h512Hashes[14]));
+    
+    LYRA2(static_cast<void*>(&h512Hashes[15]), 64, static_cast<const void*>(&h512Hashes[14]), 64, static_cast<const void*>(&h512Hashes[14]), 64, 1, 8, 8);
+    
+    sph_fugue512_init(&ctx_fugue512);
+    sph_fugue512 (&ctx_fugue512, static_cast<const void*>(&h512Hashes[15]), 64);
+    sph_fugue512_close(&ctx_fugue512, static_cast<void*>(&h512Hashes[16]));
+    
+    sph_whirlpool_init(&ctx_whirlpool512);
+    sph_whirlpool (&ctx_whirlpool512, static_cast<const void*>(&h512Hashes[16]), 64);
+    sph_whirlpool_close(&ctx_whirlpool512, static_cast<void*>(&h512Hashes[17]));
+    
+    sph_cubehash512_init(&ctx_cubehash512);
+    sph_cubehash512 (&ctx_cubehash512, static_cast<const void*>(&h512Hashes[17]), 64);
+    sph_cubehash512_close(&ctx_cubehash512, static_cast<void*>(&finalhash512));
+    
+    // Now we hash everything with 32 bytes.
+    
+    sph_shavite256_init(&ctx_shavite256);
+    sph_shavite256(&ctx_shavite256, static_cast<const void*>(&finalhash512), 64);
+    sph_shavite256_close(&ctx_shavite256, static_cast<void*>(&h256Hashes[0]));
+    
+    blake2s_init( &ctx_blake2s, BLAKE2S_OUTBYTES );
+    blake2s_update( &ctx_blake2s, static_cast<const void*>(&h256Hashes[0]), 32 );
+    blake2s_final( &ctx_blake2s, static_cast<void*>(&h256Hashes[1]), BLAKE2S_OUTBYTES );
+    
+    sph_bmw256_init(&ctx_bmw256);
+    sph_bmw256 (&ctx_bmw256, static_cast<const void*>(&h256Hashes[1]), 32);
+    sph_bmw256_close(&ctx_bmw256, static_cast<void*>(&h256Hashes[2]));
+    
+    sph_sha256_init(&ctx_sha256);
+    sph_sha256 (&ctx_sha256, static_cast<const void*>(&h256Hashes[2]), 32);
+    sph_sha256_close(&ctx_sha256, static_cast<void*>(&h256Hashes[3]));
+    
+    sph_blake256_init(&ctx_blake256);
+    sph_blake256 (&ctx_blake256, static_cast<const void*>(&h256Hashes[3]), 32);
+    sph_blake256_close(&ctx_blake256, static_cast<void*>(&h256Hashes[4]));
+    
+    sph_echo256_init(&ctx_echo256);
+    sph_echo256 (&ctx_echo256, static_cast<const void*>(&h256Hashes[4]), 32);
+    sph_echo256_close(&ctx_echo256, static_cast<void*>(&h256Hashes[5]));
+    
+    LYRA2(static_cast<void*>(&h256Hashes[6]), 32, static_cast<const void*>(&h256Hashes[5]), 32, static_cast<const void*>(&h256Hashes[5]), 32, 1, 4, 4);
+    
+    sph_shabal256_init(&ctx_shabal256);
+    sph_shabal256 (&ctx_shabal256, static_cast<const void*>(&h256Hashes[6]), 32);
+    sph_shabal256_close(&ctx_shabal256, static_cast<void*>(&h256Hashes[7]));
+    
+    sph_simd256_init(&ctx_simd256);
+    sph_simd256 (&ctx_simd256, static_cast<const void*>(&h256Hashes[7]), 32);
+    sph_simd256_close(&ctx_simd256, static_cast<void*>(&h256Hashes[8]));
+    
+    sph_jh256_init(&ctx_jh256);
+    sph_jh256 (&ctx_jh256, static_cast<const void*>(&h256Hashes[8]), 32);
+    sph_jh256_close(&ctx_jh256, static_cast<void*>(&h256Hashes[9]));
+    
+    sph_keccak256_init(&ctx_keccak256);
+    sph_keccak256 (&ctx_keccak256, static_cast<const void*>(&h256Hashes[9]), 32);
+    sph_keccak256_close(&ctx_keccak256, static_cast<void*>(&h256Hashes[10]));
+    
+    sph_groestl256_init(&ctx_groestl256);
+    sph_groestl256 (&ctx_groestl256, static_cast<const void*>(&h256Hashes[10]), 32);
+    sph_groestl256_close(&ctx_groestl256, static_cast<void*>(&h256Hashes[11]));
+    
+    sph_skein256_init(&ctx_skein256);
+    sph_skein256 (&ctx_skein256, static_cast<const void*>(&h256Hashes[11]), 32);
+    sph_skein256_close(&ctx_skein256, static_cast<void*>(&h256Hashes[12]));
+    
+    sph_luffa256_init(&ctx_luffa256);
+    sph_luffa256 (&ctx_luffa256, static_cast<void*>(&h256Hashes[12]), 32);
+    sph_luffa256_close(&ctx_luffa256, static_cast<void*>(&h256Hashes[13]));
+    
+    sph_hamsi256_init(&ctx_hamsi256);
+    sph_hamsi256 (&ctx_hamsi256, static_cast<const void*>(&h256Hashes[13]), 32);
+    sph_hamsi256_close(&ctx_hamsi256, static_cast<void*>(&h256Hashes[14]));
+    
+    LYRA2(static_cast<void*>(&h256Hashes[15]), 32, static_cast<const void*>(&h256Hashes[14]), 32, static_cast<const void*>(&h256Hashes[14]), 32, 1, 8, 8);
+    
+    sph_fugue256_init(&ctx_fugue256);
+    sph_fugue256 (&ctx_fugue256, static_cast<const void*>(&h256Hashes[15]), 32);
+    sph_fugue256_close(&ctx_fugue256, static_cast<void*>(&h256Hashes[16]));
+    
+    sph_haval256_5_init(&ctx_haval256);
+    sph_haval256_5 (&ctx_haval256, static_cast<const void*>(&h256Hashes[16]), 32);
+    sph_haval256_5_close(&ctx_haval256, static_cast<void*>(&h256Hashes[17]));
+    
+    sph_cubehash256_init(&ctx_cubehash256);
+    sph_cubehash256 (&ctx_cubehash256, static_cast<const void*>(&h256Hashes[17]), 32);
+    sph_cubehash256_close(&ctx_cubehash256, static_cast<void*>(&finalhash));
+    
+    return finalhash;
+}
+
+template<typename T1>
 inline uint256 cryptoandcoffee_hash(const T1 pbegin, const T1 pend)
 {
     blake2s_state             ctx_blake2s;
@@ -2374,9 +2572,9 @@ inline uint256 cryptoandcoffee_hash(const T1 pbegin, const T1 pend)
     sph_skein256(&ctx_skein256, (pbegin == pend ? pblank : static_cast<const void*>(&pbegin[0])), (pend - pbegin) * sizeof(pbegin[0]));
     sph_skein256_close(&ctx_skein256, static_cast<void*>(&skeinOutHash[0]));
     
-    blake2s_init( ctx_blake2s, BLAKE2S_OUTBYTES );
-    blake2s_update( ctx_blake2s, static_cast<const void*>(&skeinOutHash[0]), 32);
-    blake2s_final( ctx_blake2s, static_cast<void*>(&blake2sOutHash[0]), BLAKE2S_OUTBYTES );
+    blake2s_init( &ctx_blake2s, BLAKE2S_OUTBYTES );
+    blake2s_update( &ctx_blake2s, static_cast<const void*>(&skeinOutHash[0]), 32);
+    blake2s_final( &ctx_blake2s, static_cast<void*>(&blake2sOutHash[0]), BLAKE2S_OUTBYTES );
     
     // Base hashes end. (Round 1)
     // X17 hashes Round 1.
@@ -2447,7 +2645,7 @@ inline uint256 cryptoandcoffee_hash(const T1 pbegin, const T1 pend)
 
     sph_haval256_5_init(&ctx_haval);
     sph_haval256_5 (&ctx_haval, static_cast<const void*>(&hashRound1[15]), 64);
-    sph_haval256_5_close(&ctx_haval, static_cast<void*>(&havalOutHash[0]);
+    sph_haval256_5_close(&ctx_haval, static_cast<void*>(&havalOutHash[0]));
     
     // X17 hashes END (Round 1.)
     // Base hashes: skein256, blake2s (256 bit). Round 2
@@ -2456,9 +2654,9 @@ inline uint256 cryptoandcoffee_hash(const T1 pbegin, const T1 pend)
     sph_skein256(&ctx_skein256, static_cast<const void*>(&havalOutHash[0]), 32);
     sph_skein256_close(&ctx_skein256, static_cast<void*>(&skeinOutHash[1]));
     
-    blake2s_init( ctx_blake2s, BLAKE2S_OUTBYTES );
-    blake2s_update( ctx_blake2s, static_cast<const void*>(&skeinOutHash[1]), 32);
-    blake2s_final( ctx_blake2s, static_cast<void*>(&blake2sOutHash[1]), BLAKE2S_OUTBYTES );
+    blake2s_init( &ctx_blake2s, BLAKE2S_OUTBYTES );
+    blake2s_update( &ctx_blake2s, static_cast<const void*>(&skeinOutHash[1]), 32);
+    blake2s_final( &ctx_blake2s, static_cast<void*>(&blake2sOutHash[1]), BLAKE2S_OUTBYTES );
     
     // Base hashes end. (Round 2)
     // X17 hashes Round 2.
@@ -2529,7 +2727,7 @@ inline uint256 cryptoandcoffee_hash(const T1 pbegin, const T1 pend)
 
     sph_haval256_5_init(&ctx_haval);
     sph_haval256_5 (&ctx_haval, static_cast<const void*>(&hashRound2[15]), 64);
-    sph_haval256_5_close(&ctx_haval, static_cast<void*>(&havalOutHash[1]);
+    sph_haval256_5_close(&ctx_haval, static_cast<void*>(&havalOutHash[1]));
     
     // X17 hashes END (Round 2.)
     // Round 3: Nist 5 hashes
@@ -2550,9 +2748,9 @@ inline uint256 cryptoandcoffee_hash(const T1 pbegin, const T1 pend)
     sph_keccak512(&ctx_keccak, static_cast<const void*>(&hashRound3[2]), 64);
     sph_keccak512_close(&ctx_keccak, static_cast<void*>(&hashRound3[3]));
 
-    sph_skein512_init(&ctx_skein);
-    sph_skein512(&ctx_skein, static_cast<const void*>(&hashRound3[3]), 64);
-    sph_skein512_close(&ctx_skein, static_cast<void*>(&hashRound3[4]));
+    sph_skein512_init(&ctx_skein512);
+    sph_skein512(&ctx_skein512, static_cast<const void*>(&hashRound3[3]), 64);
+    sph_skein512_close(&ctx_skein512, static_cast<void*>(&hashRound3[4]));
     
     // Finalize the hash now!
     sph_bmw256_init(&ctx_bmw_final);
@@ -2595,9 +2793,9 @@ inline uint256 DesertHash(const T1 pbegin, const T1 pend)
     
     /** BASE HASHES of DesertHash */
     
-    blake2b_init( ctx_blake2b, BLAKE2B_OUTBYTES );
-    blake2b_update( ctx_blake2b, (pbegin == pend ? pblank : static_cast<const void*>(&pbegin[0])), (pend - pbegin) * sizeof(pbegin[0]) );
-    blake2b_final( ctx_blake2b, static_cast<void*>(&hash[0]), BLAKE2B_OUTBYTES );
+    blake2b_init( &ctx_blake2b, BLAKE2B_OUTBYTES );
+    blake2b_update( &ctx_blake2b, (pbegin == pend ? pblank : static_cast<const void*>(&pbegin[0])), (pend - pbegin) * sizeof(pbegin[0]) );
+    blake2b_final( &ctx_blake2b, static_cast<void*>(&hash[0]), BLAKE2B_OUTBYTES );
     
     sph_simd512_init(&ctx_simd);
     sph_simd512(&ctx_simd, static_cast<const void*>(&hash[0]), BLAKE2B_OUTBYTES);
@@ -2641,9 +2839,9 @@ inline uint256 DesertHash(const T1 pbegin, const T1 pend)
     
     /** BASE HASHES of DesertHash */
     
-    blake2b_init( ctx_blake2b, BLAKE2B_OUTBYTES );
-    blake2b_update( ctx_blake2b, static_cast<const void*>(&hash[9]), 64 );
-    blake2b_final( ctx_blake2b, static_cast<void*>(&hash[10]), BLAKE2B_OUTBYTES );
+    blake2b_init( &ctx_blake2b, BLAKE2B_OUTBYTES );
+    blake2b_update( &ctx_blake2b, static_cast<const void*>(&hash[9]), 64 );
+    blake2b_final( &ctx_blake2b, static_cast<void*>(&hash[10]), BLAKE2B_OUTBYTES );
     
     sph_simd512_init(&ctx_simd);
     sph_simd512(&ctx_simd, static_cast<const void*>(&hash[10]), BLAKE2B_OUTBYTES);
@@ -2687,9 +2885,9 @@ inline uint256 DesertHash(const T1 pbegin, const T1 pend)
     
     /** BASE HASHES of DesertHash */
     
-    blake2b_init( ctx_blake2b, BLAKE2B_OUTBYTES );
-    blake2b_update( ctx_blake2b, static_cast<const void*>(&hash[19]), 64 );
-    blake2b_final( ctx_blake2b, static_cast<void*>(&hash[20]), BLAKE2B_OUTBYTES );
+    blake2b_init( &ctx_blake2b, BLAKE2B_OUTBYTES );
+    blake2b_update( &ctx_blake2b, static_cast<const void*>(&hash[19]), 64 );
+    blake2b_final( &ctx_blake2b, static_cast<void*>(&hash[20]), BLAKE2B_OUTBYTES );
     
     sph_simd512_init(&ctx_simd);
     sph_simd512(&ctx_simd, static_cast<const void*>(&hash[20]), BLAKE2B_OUTBYTES);

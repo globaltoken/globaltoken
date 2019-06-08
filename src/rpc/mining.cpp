@@ -695,6 +695,7 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
             "  },\n"
             "  \"masternode_payments_started\" :  true|false, (boolean) true, if masternode payments started\n"
             "  \"masternode_payments_enforced\" : true|false, (boolean) true, if masternode payments are enforced\n"
+            "  \"auxpow_allowed\" : true|false,               (boolean) true, if this blockheight is allowed for merge mining.\n"
             "}\n"
 
             "\nExamples:\n"
@@ -894,7 +895,7 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
     // Cache whether the last invocation was with segwit support, to avoid returning
     // a segwit-block to a non-segwit caller.
     static bool fLastTemplateSupportsSegwit = true;
-    static int lastAlgo;
+    static uint8_t lastAlgo;
     if (pindexPrev != chainActive.Tip() ||
         (mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast && GetTime() - nStart > 5) ||
         fLastTemplateSupportsSegwit != fSupportsSegwit || algo != lastAlgo)
@@ -1129,6 +1130,7 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
     result.pushKV("masternode", masternodeObj);
     result.pushKV("masternode_payments_started", consensusParams.Hardfork1.IsActivated(pblock->nTime));
     result.pushKV("masternode_payments_enforced", sporkManager.IsSporkActive(SPORK_5_MASTERNODE_PAYMENT_ENFORCEMENT));
+    result.pushKV("auxpow_allowed", IsAuxPowAllowed(pindexPrev, pblock, consensusParams, pblock->GetAlgo()));
 
     if (!pblocktemplate->vchCoinbaseCommitment.empty() && fSupportsSegwit) {
         result.pushKV("default_witness_commitment", HexStr(pblocktemplate->vchCoinbaseCommitment.begin(), pblocktemplate->vchCoinbaseCommitment.end()));
@@ -1435,7 +1437,7 @@ void AuxMiningCheck()
 
 } // anonymous namespace
 
-UniValue AuxMiningCreateBlock(const CScript& scriptPubKey)
+UniValue AuxMiningCreateBlock(const CScript& scriptPubKey, const uint8_t nAlgo)
 {
     AuxMiningCheck();
 
@@ -1446,13 +1448,14 @@ UniValue AuxMiningCreateBlock(const CScript& scriptPubKey)
     static uint64_t nStart;
     static CBlock* pblock = nullptr;
     static unsigned nExtraNonce = 0;
+    static uint8_t lastAlgo;
 
     // Update block
     {
     LOCK(cs_main);
     if (pindexPrev != chainActive.Tip()
         || (mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast
-            && GetTime() - nStart > 60))
+            && GetTime() - nStart > 60) || nAlgo != lastAlgo)
     {
         if (pindexPrev != chainActive.Tip())
         {
@@ -1464,23 +1467,23 @@ UniValue AuxMiningCreateBlock(const CScript& scriptPubKey)
 
         // Create new block with nonce = 0 and extraNonce = 1
         std::unique_ptr<CBlockTemplate> newBlock
-            = BlockAssembler(Params()).CreateNewBlock(scriptPubKey, currentAlgo);
+            = BlockAssembler(Params()).CreateNewBlock(scriptPubKey, nAlgo);
         if (!newBlock)
         {
-            if(Params().GetConsensus().Hardfork1.IsActivated(chainActive.Tip()->nTime))
+            if(Params().GetConsensus().Hardfork2.IsActivated(chainActive.Tip()->nTime))
             {
                 throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
             }
             else
             {
-                if(currentAlgo == ALGO_SHA256D)
+                if(IsAlgoAllowedBeforeHF2(nAlgo))
                 {
                     throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
                 }
                 else
                 {
                     std::stringstream strstream;
-                    strstream << "You cannot mine with Algorithm " << GetAlgoName(currentAlgo) << ", because Hardfork is not activated yet.";
+                    strstream << "You cannot mine with Algorithm " << GetAlgoName(nAlgo) << ", because Hardfork 2 is not activated yet.";
                     throw JSONRPCError(RPC_INVALID_PARAMS, strstream.str()); 
                 }
             }
@@ -1495,9 +1498,10 @@ UniValue AuxMiningCreateBlock(const CScript& scriptPubKey)
         nTransactionsUpdatedLast = mempool.GetTransactionsUpdated();
         pindexPrev = chainActive.Tip();
         nStart = GetTime();
+        lastAlgo = nAlgo;
 	    
         // If new block is an Equihash block, set the nNonce to null, because it is randomized by default.
-        if(IsEquihashBasedAlgo(currentAlgo))
+        if(IsEquihashBasedAlgo(nAlgo))
             newBlock->block.nBigNonce.SetNull();
 
         // Finalise it by setting the version and building the merkle root
@@ -1525,6 +1529,8 @@ UniValue AuxMiningCreateBlock(const CScript& scriptPubKey)
         throw std::runtime_error("invalid difficulty bits in block");
 
     UniValue result(UniValue::VOBJ);
+    result.pushKV("algo", GetAlgoName(pblock->GetAlgo()));
+    result.pushKV("auxpow_allowed", IsAuxPowAllowed(pindexPrev, pblock, Params().GetConsensus(), pblock->GetAlgo()));
     result.pushKV("baseversion", (int64_t)CURRENT_AUXPOW_VERSION);
     result.pushKV("posflag", strprintf("%08x", AUXPOW_STAKE_FLAG));
     result.pushKV("equihashflag", strprintf("%08x", AUXPOW_EQUIHASH_FLAG));
@@ -1597,14 +1603,21 @@ bool AuxMiningSubmitBlock(const std::string& hashHex,
 
 UniValue createauxblock(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 1)
-        throw std::runtime_error(
+    if (request.fHelp || (request.params.size() < 1 && request.params.size() > 2))
+        throw std::runtime_error(strprintf(
             "createauxblock <address>\n"
             "\ncreate a new block and return information required to merge-mine it.\n"
             "\nArguments:\n"
             "1. address      (string, required) specify coinbase transaction payout address\n"
+            "2. algo         (string, optional, default=%s) the pow algorithm to apply for this merge mining block. Available algorithms: %s\n"
             "\nResult:\n"
             "{\n"
+            "  \"algo\"               (string) the pow algorithm, to mine this block.\n"
+            "  \"auxpow_allowed\" :   (boolean) true, if this blockheight is allowed for merge mining, false if merge mining is not allowed at this height.\n"
+            "  \"baseversion\"        (numeric) the current auxpow version.\n"
+            "  \"posflag\"            (string) hex flag for auxpow 2.0 proof of stake hybrid merge mining\n"
+            "  \"equihashflag\"       (string) hex flag for auxpow 2.0 equihash based blocks.\n"
+            "  \"personalizeflag\"    (string) hex flag for auxpow 2.0 equihash algos personalisation string.\n"
             "  \"hash\"               (string) hash of the created block\n"
             "  \"chainid\"            (numeric) chain ID for this block\n"
             "  \"previousblockhash\"  (string) hash of the previous block\n"
@@ -1616,7 +1629,7 @@ UniValue createauxblock(const JSONRPCRequest& request)
             "\nExamples:\n"
             + HelpExampleCli("createauxblock", "\"address\"")
             + HelpExampleRpc("createauxblock", "\"address\"")
-            );
+            , GetAlgoName(currentAlgo), GetAlgoRangeString()));
 
     // Check coinbase payout address
     const CTxDestination coinbaseScript
@@ -1631,8 +1644,17 @@ UniValue createauxblock(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, GetOldScriptAddressWarning(request.params[0].get_str()));
     }
     const CScript scriptPubKey = GetScriptForDestination(coinbaseScript);
+    
+    uint8_t nAlgo = currentAlgo;
+    bool fAlgoFound = false;
+    if (!request.params[1].isNull()) {
+        nAlgo = GetAlgoByName(request.params[1].get_str(), nAlgo, fAlgoFound);
+    }
+    
+    if(!fAlgoFound)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Invalid mining algorithm '%s' selected. Available algorithms: %s", request.params[1].get_str(), GetAlgoRangeString()));
 
-    return AuxMiningCreateBlock(scriptPubKey);
+    return AuxMiningCreateBlock(scriptPubKey, nAlgo);
 }
 
 UniValue submitauxblock(const JSONRPCRequest& request)
@@ -1674,13 +1696,13 @@ static const CRPCCommand commands[] =
     { "mining",             "getnetworkhashps",       &getnetworkhashps,       {"nblocks","height"} },
     { "mining",             "getmininginfo",          &getmininginfo,          {} },
     { "mining",             "prioritisetransaction",  &prioritisetransaction,  {"txid","dummy","fee_delta"} },
-    { "mining",             "getblocktemplate",       &getblocktemplate,       {"template_request"} },
+    { "mining",             "getblocktemplate",       &getblocktemplate,       {"template_request","algo"} },
     { "mining",             "submitblock",            &submitblock,            {"hexdata","dummy"} },
-    { "mining",             "createauxblock",         &createauxblock,         {"address"} },
+    { "mining",             "createauxblock",         &createauxblock,         {"address", "algo"} },
     { "mining",             "submitauxblock",         &submitauxblock,         {"hash", "auxpow", "auxpowversion"} },
 
 
-    { "generating",         "generatetoaddress",      &generatetoaddress,      {"nblocks","address","maxtries"} },
+    { "generating",         "generatetoaddress",      &generatetoaddress,      {"nblocks","address","maxtries","algo"} },
 
     { "hidden",             "estimatefee",            &estimatefee,            {} },
     { "util",               "estimatesmartfee",       &estimatesmartfee,       {"conf_target", "estimate_mode"} },

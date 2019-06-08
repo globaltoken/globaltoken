@@ -76,13 +76,14 @@ void hex_hash(const void* input, size_t len, void* output)
 
     const void *in = input;
     int size = len;
+    int i = 0;
 
     uint32_t *in32 = (uint32_t*) input;
 
     // initial algo = first digit of prev block hashorder (cheers, x16r)
     curr_algo = get_first_algo(&in32[1]);
 
-    for (int i = 0; i < TOTAL_CYCLES; i++)
+    for (i = 0; i < TOTAL_CYCLES; i++)
     {
         // Only 4 test algos yet
         switch (curr_algo) {

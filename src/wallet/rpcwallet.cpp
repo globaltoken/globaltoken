@@ -3644,7 +3644,7 @@ UniValue generate(const JSONRPCRequest& request)
     int num_generate = request.params[0].get_int();
     
     uint8_t algo = currentAlgo;
-    bool fAlgoFound = true;
+    bool fAlgoFound = false;
     if (!request.params[2].isNull()) {
         algo = GetAlgoByName(request.params[2].get_str(), algo, fAlgoFound);
     }
@@ -3973,19 +3973,26 @@ UniValue getauxblock(const JSONRPCRequest& request)
     }
 
     if (request.fHelp
-          || (request.params.size() == 1 || request.params.size() > 3))
-        throw std::runtime_error(
+          || (request.params.size() == 2 || request.params.size() > 4))
+        throw std::runtime_error(strprintf(
             "getauxblock (hash auxpow)\n"
             "\nCreate or submit a merge-mined block.\n"
             "\nWithout arguments, create a new block and return information\n"
             "required to merge-mine it.  With arguments, submit a solved\n"
             "auxpow for a previously returned block.\n"
             "\nArguments:\n"
-            "1. hash           (string, optional) hash of the block to submit\n"
-            "2. auxpow         (string, optional) serialised auxpow found\n"
-            "3. auxpowversion  (numeric, optional, default=1) The AuxPoW Version to encode (1 = legacy, 2 = supports pos + equihash format)\n"
+            "1. algo           (string, optional, default=%s) the pow algorithm to apply for this merge mining block. Available algorithms: %s\n"
+            "2. hash           (string, optional) hash of the block to submit\n"
+            "3. auxpow         (string, optional) serialised auxpow found\n"
+            "4. auxpowversion  (numeric, optional, default=1) The AuxPoW Version to encode (1 = legacy, 2 = supports pos + equihash format)\n"
             "\nResult (without arguments):\n"
             "{\n"
+            "  \"algo\"               (string) the pow algorithm, to mine this block.\n"
+            "  \"auxpow_allowed\" :   (boolean) true, if this blockheight is allowed for merge mining, false if merge mining is not allowed at this height.\n"
+            "  \"baseversion\"        (numeric) the current auxpow version.\n"
+            "  \"posflag\"            (string) hex flag for auxpow 2.0 proof of stake hybrid merge mining\n"
+            "  \"equihashflag\"       (string) hex flag for auxpow 2.0 equihash based blocks.\n"
+            "  \"personalizeflag\"    (string) hex flag for auxpow 2.0 equihash algos personalisation string.\n"
             "  \"hash\"               (string) hash of the created block\n"
             "  \"chainid\"            (numeric) chain ID for this block\n"
             "  \"previousblockhash\"  (string) hash of the previous block\n"
@@ -4000,12 +4007,14 @@ UniValue getauxblock(const JSONRPCRequest& request)
             + HelpExampleCli("getauxblock", "")
             + HelpExampleCli("getauxblock", "\"hash\" \"serialised auxpow\"")
             + HelpExampleRpc("getauxblock", "")
-            );
+            , GetAlgoName(currentAlgo), GetAlgoRangeString()));
 
     std::shared_ptr<CReserveScript> coinbaseScript;
     pwallet->GetScriptForMining(coinbaseScript);
     
-    const int nAuxPoWVersion =  (request.params.size() == 3) ? request.params[2].get_int() : 1;
+    bool fAccepted = false, fAlgoFound = false;
+    uint8_t nAlgo = currentAlgo;
+    const int nAuxPoWVersion =  (request.params.size() == 4) ? request.params[3].get_int() : (request.params.size() == 3) ? request.params[2].get_int() : 1;
 
     // If the keypool is exhausted, no script is returned at all.  Catch this.
     if (!coinbaseScript)
@@ -4018,17 +4027,27 @@ UniValue getauxblock(const JSONRPCRequest& request)
     //throw an error if the auxpow encoding version is unknown.
     if (!(nAuxPoWVersion == 1 || nAuxPoWVersion == 2))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Unknown auxpow version.");
+    
+    if (!request.params[0].isNull()) {
+        nAlgo = GetAlgoByName(request.params[0].get_str(), nAlgo, fAlgoFound);
+    }
+    
+    if(!fAlgoFound)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Invalid mining algorithm '%s' selected. Available algorithms: %s", request.params[0].get_str(), GetAlgoRangeString()));
 
-    /* Create a new block */
-    if (request.params.size() == 0)
-        return AuxMiningCreateBlock(coinbaseScript->reserveScript);
+    /* Create a new block with the algorithm configured in globaltoken.conf (no algo specified) */
+    if (request.params.size() == 0 || request.params.size() == 1)
+        return AuxMiningCreateBlock(coinbaseScript->reserveScript, nAlgo);
 
     /* Submit a block instead.  Note that this need not lock cs_main,
        since ProcessNewBlock below locks it instead.  */
-    assert(request.params.size() == 2 || request.params.size() == 3);
-    bool fAccepted = AuxMiningSubmitBlock(request.params[0].get_str(), 
-                                          request.params[1].get_str(),
-                                          nAuxPoWVersion);
+    assert(request.params.size() == 3 || request.params.size() == 4);
+    
+    if(request.params.size() == 3)
+        fAccepted = AuxMiningSubmitBlock(request.params[0].get_str(), request.params[1].get_str(), nAuxPoWVersion);
+    else
+        fAccepted = AuxMiningSubmitBlock(request.params[1].get_str(), request.params[2].get_str(), nAuxPoWVersion);
+    
     if (fAccepted)
         coinbaseScript->KeepScript();
 
@@ -4106,8 +4125,8 @@ static const CRPCCommand commands[] =
     
     { "wallet",             "instantsendtoaddress",             &instantsendtoaddress,          {"address","amount","comment","comment_to","subtractfeefromamount","replaceable","conf_target","estimate_mode"} },
 
-    { "generating",         "generate",                         &generate,                      {"nblocks","maxtries"} },
-    { "mining",             "getauxblock",                      &getauxblock,                   {"hash", "auxpow", "auxpowversion"} },
+    { "generating",         "generate",                         &generate,                      {"nblocks","maxtries","algo"} },
+    { "mining",             "getauxblock",                      &getauxblock,                   {"algo", "hash", "auxpow", "auxpowversion"} },
 };
 
 void RegisterWalletRPCCommands(CRPCTable &t)

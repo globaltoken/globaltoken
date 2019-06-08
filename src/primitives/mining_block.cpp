@@ -313,6 +313,10 @@ uint256 CDefaultBlockHeader::GetPoWHash(uint8_t algo) const
         {
             return cryptoandcoffee_hash(BEGIN(nVersion), END(nNonce));
         }
+        case ALGO_RICKHASH:
+        {
+            return RickHash(BEGIN(nVersion), END(nNonce));
+        }
     }
     return GetHash();
 }

@@ -45,8 +45,9 @@ static void get_hash_order(const uint32_t* prevblock, uint8_t* output, uint8_t* 
 	uint8_t hr = 0;
 	uint8_t* data = (uint8_t*)prevblock;
 	uint16_t tspeed = 0;
+    uint8_t i = 0;
 	
-	for (uint8_t i = 0; i < 6; i++) {
+	for (i = 0; i < 6; i++) {
 		ord[i] = data[i] % 16;
 		ord[i + 6] = data[i+1] >> 4;
 		tspeed += Kspeed[ord[i]] + Kspeed[ord[i + 6]];
@@ -54,7 +55,7 @@ static void get_hash_order(const uint32_t* prevblock, uint8_t* output, uint8_t* 
 	hr = tspeed + 920 >> 7;
 	
 	int8_t c = hr - 12;
-	for (uint8_t i = 0; i < c ; i++) {
+	for (i = 0; i < c ; i++) {
 		if (i < 15) {
 			uint8_t j = i >> 1;
 			ord[i + 12] = (i & 1) ? data[j] % 6 : data[j] % 5;
@@ -92,10 +93,11 @@ void dedal_hash(const void* input, void* output, size_t len)
     uint32_t *in32 = (uint32_t*) input;
 	uint8_t hashorder[32] = {};
 	uint8_t hashrounds = 0;
+    int i = 0;
 
 	get_hash_order(&in32[1], hashorder, &hashrounds);
 
-    for (int i = 0; i < hashrounds; i++) 
+    for (i = 0; i < hashrounds; i++) 
 	{
         switch (hashorder[i]) 
 		{
