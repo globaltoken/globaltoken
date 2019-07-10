@@ -129,8 +129,9 @@ inline int GetHashSelectionCPU23R(const uint256 PrevBlockHash, int index) {
     // We fixed this algo, because the GetNibble function only returns values from 0 - 15.
 
     const unsigned char *hashBits = PrevBlockHash.end() - 23 + index;
-    int hashSelection = *hashBits % 23;
-    return(hashSelection);
+    unsigned char lastFiveBits = *hashBits << 3;
+    lastFiveBits = lastFiveBits >> 3;
+    return lastFiveBits % 23;
 }
 
 inline int GetX21sSelection(const uint256 PrevBlockHash, int index) {
