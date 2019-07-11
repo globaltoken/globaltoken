@@ -192,7 +192,7 @@ UniValue getnetworkhashps(const JSONRPCRequest& request)
     uint8_t algo = currentAlgo;
     bool fAlgoFound = true;
     if (!request.params[2].isNull()) {
-        algo = GetAlgoByName(request.params[3].get_str(), algo, fAlgoFound);
+        algo = GetAlgoByName(request.params[2].get_str(), algo, fAlgoFound);
     }
     
     if(!fAlgoFound)
