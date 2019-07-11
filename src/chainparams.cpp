@@ -617,8 +617,8 @@ public:
         consensus.BIP34Hash = uint256S("00000000238f0fdbc6d992a183ecf735ce0009f5ae2088ce8014370fcaaec7e8");
         consensus.BIP65Height = 100; // not hashed yet.
         consensus.BIP66Height = 10; // not hashed yet.
-        consensus.Hardfork1.Initialize(1 /* Hardfork ID */, 1537185600 /* Hardfork Activation Time */, 2153 /* Hardfork Activation Height */, uint256S("0x944140d0c734a7a94ca0b306cd3ad8c9bfe70889c927ca6c4852e5644b621733") /* Hardfork Activation Blockhash */);
-        consensus.Hardfork2.Initialize(2 /* Hardfork ID */, 1560715200 /* Hardfork Activation Time */, 10000 /* Hardfork Activation Height - unknown yet */, uint256() /* Hardfork Activation Blockhash - unknown yet */);
+        consensus.Hardfork1.Initialize(1 /* Hardfork ID */, 1564610400 /* Hardfork Activation Time */, 25000 /* Hardfork Activation Height */, uint256S("0x944140d0c734a7a94ca0b306cd3ad8c9bfe70889c927ca6c4852e5644b621733") /* Hardfork Activation Blockhash */);
+        consensus.Hardfork2.Initialize(2 /* Hardfork ID */, 1565128800 /* Hardfork Activation Time */, 100000 /* Hardfork Activation Height - unknown yet */, uint256() /* Hardfork Activation Blockhash - unknown yet */);
         consensus.nMaxAuxpowBlocks = ~uint32_t(0); // unlimited
         consensus.aPOWAlgos[ALGO_SHA256D]         = CPOWAlgoProperties(ALGO_SHA256D, uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_SCRYPT]          = CPOWAlgoProperties(ALGO_SCRYPT, uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
@@ -713,13 +713,13 @@ public:
 
         // Deployment of BIP68, BIP112, and BIP113.
         consensus.vDeployments[Consensus::DEPLOYMENT_CSV].bit = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nStartTime = 1506729600; // Sat, 30 Sep 2017
-        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = 1509494400; // Wed, 01 Nov 2017
+        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nStartTime = 1562796000;
+        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = 1594418400;
 
         // Deployment of SegWit (BIP141, BIP143, and BIP147)
         consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].bit = 1;
-        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nStartTime = 1509494400; // Wed, 01 Nov 2017
-        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 1519862400; // Thu, 01 Mar 2018.
+        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nStartTime = 1564524000;
+        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 1596146400;
 
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000100010001");
@@ -1143,8 +1143,8 @@ public:
         consensus.aPOWAlgos[ALGO_X16R]            = CPOWAlgoProperties(ALGO_X16R, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_LYRA2REV3]       = CPOWAlgoProperties(ALGO_LYRA2REV3, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_YESCRYPT_R16V2]  = CPOWAlgoProperties(ALGO_YESCRYPT_R16V2, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
-        consensus.aPOWAlgos[ALGO_YESCRYPT_R24]    = CPOWAlgoProperties(ALGO_YESCRYPT_R24, uint256S("3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
-        consensus.aPOWAlgos[ALGO_YESCRYPT_R8]     = CPOWAlgoProperties(ALGO_YESCRYPT_R8, uint256S("3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
+        consensus.aPOWAlgos[ALGO_YESCRYPT_R24]    = CPOWAlgoProperties(ALGO_YESCRYPT_R24, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
+        consensus.aPOWAlgos[ALGO_YESCRYPT_R8]     = CPOWAlgoProperties(ALGO_YESCRYPT_R8, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_YESCRYPT_R32]    = CPOWAlgoProperties(ALGO_YESCRYPT_R32, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_X25X]            = CPOWAlgoProperties(ALGO_X25X, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
         consensus.aPOWAlgos[ALGO_ARGON2D]         = CPOWAlgoProperties(ALGO_ARGON2D, uint256S("0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 1);
