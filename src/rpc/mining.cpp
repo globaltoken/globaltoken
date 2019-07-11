@@ -198,7 +198,7 @@ UniValue getnetworkhashps(const JSONRPCRequest& request)
     if(!fAlgoFound)
         throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Invalid mining algorithm '%s' selected. Available algorithms: %s", request.params[2].get_str(), GetAlgoRangeString()));
     
-    return GetNetworkHashPS(algo, !request.params[0].isNull() ? request.params[0].get_int() : 120, !request.params[1].isNull() ? request.params[1].get_int() : -1);
+    return GetNetworkHashPS(algo, !request.params[0].isNull() ? request.params[0].get_int() : 24, !request.params[1].isNull() ? request.params[1].get_int() : -1);
 }
 
 UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGenerate, uint64_t nMaxTries, bool keepScript, uint8_t nAlgo)
@@ -476,7 +476,7 @@ UniValue getmininginfo(const JSONRPCRequest& request)
     {
         UniValue currentAlgo(UniValue::VOBJ);
         currentAlgo.pushKV("difficulty",       (double)GetDifficulty(NULL, i));
-        currentAlgo.pushKV("nethashrate",      GetNetworkHashPS(i, 120, -1));
+        currentAlgo.pushKV("nethashrate",      GetNetworkHashPS(i, 24, -1));
         algodetails.pushKV(GetAlgoName(i), currentAlgo);
     }
 	obj.pushKV("algodetails", algodetails);
@@ -545,7 +545,7 @@ UniValue getalgoinfo(const JSONRPCRequest& request)
         algo_description.pushKV("algoid",      consensusParams.aPOWAlgos[i].GetAlgoID());
         algo_description.pushKV("lastblock",   lastblock);
         algo_description.pushKV("difficulty",  (double)GetDifficulty(NULL, consensusParams.aPOWAlgos[i].GetAlgoID()));
-        algo_description.pushKV("nethashrate", GetNetworkHashPS(consensusParams.aPOWAlgos[i].GetAlgoID(), 120, -1));
+        algo_description.pushKV("nethashrate", GetNetworkHashPS(consensusParams.aPOWAlgos[i].GetAlgoID(), 24, -1));
         algo_description.pushKV("lastdiffret", CalculateDiffRetargetingBlock(tip, RETARGETING_LAST, consensusParams.aPOWAlgos[i].GetAlgoID(), Params().GetConsensus()));
         algo_description.pushKV("nextdiffret", CalculateDiffRetargetingBlock(tip, RETARGETING_NEXT, consensusParams.aPOWAlgos[i].GetAlgoID(), Params().GetConsensus()));
         algos.pushKV(GetAlgoName(consensusParams.aPOWAlgos[i].GetAlgoID()), algo_description);
