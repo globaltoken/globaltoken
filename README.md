@@ -5,9 +5,11 @@ GlobalToken Official Development Repository
 
 What is GlobalToken?
 ----------------
-GlobalToken (GLT) is a Proof of Work Multi-Algorithm cryptocurrency. GlobalToken uses peer-to-peer technology to operate with no central authority: managing transactions and issuing money are carried out collectively by the network. GlobalToken Core is the name of open source software which enables the use of this currency.
+GlobalToken (GLT) is the world's largest proof of work cryptocurrency with support for 60 mining algorithms. GlobalToken uses peer-to-peer technology to operate with no central authority: managing transactions and issuing money are carried out collectively by the network. GlobalToken Core is the name of open source software which enables the use of this currency.
 
 ````
+Current Version : 3.1
+Next Hardfork Activation : Thu, 01 Aug 2019 12:00:00 GMT
 Codebase : Bitcoin
 RPC Port: 9320
 P2P / Masternode Port : 9319
@@ -24,39 +26,69 @@ Equihash/Zhash (AuxPoW 2.0)
 InstantSend Support
 ````
 
-30 Algorithms Supported
+60 Algorithms Supported
 -------
 ````
-1. astralhash
-2. blake2b
-3. blake2s
-4. equihash
-5. globalhash
-6. myriad-groestl
-7. hmq1725
-8. jeonghash
-9. keccakc
-10. lyra2rev2
-11. neoscrypt
-12. nist5
-13. padihash
-14. pawelhash
-15. quark
-16. qubit
-17. scrypt
-18. sha256d*
-19. skein
-20. skunkhash
-21. timetravel10
-22. x11
-23. x13
-24. x14
-25. x15
-26. x16r
-27. x17
-28. xevan
-29. yescrypt
-30. zhash
+1. allium
+2. arctichash
+3. argon2d
+4. argon2i
+5. astralhash
+6. blake2b
+7. blake2s
+8. c11
+9. cpu23r
+10. cryptoandcoffee
+11. dedal
+12. deserthash
+13. eh192
+14. equihash
+15. globalhash
+16. groestl
+17. hex
+18. hmq1725
+19. honeycomb
+20. jeonghash
+21. keccakc
+22. lyra2rev2
+23. lyra2rev3
+24. lyra2z
+25. mars
+26. neoscrypt
+27. nist5
+28. padihash
+29. pawelhash
+30. phi1612
+31. phi2
+32. quark
+33. qubit
+34. rickhash
+35. scrypt
+36. sha256d*
+37. skein
+38. skunkhash
+39. timetravel10
+40. tribus
+41. x11
+42. x12
+43. x13
+44. x14
+45. x15
+46. x16r
+47. x16rt
+48. x16s
+49. x17
+50. x21s
+51. x22i
+52. x25x
+53. xevan
+54. yescrypt
+55. yescrypt_r16v2
+56. yescrypt_r24
+57. yescrypt_r32
+58. yescrypt_r8
+59. yespower
+60. zhash
 ````
 
 *sha256d is the default algorithm  
