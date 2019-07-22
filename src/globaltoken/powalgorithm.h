@@ -158,9 +158,6 @@ private:
     // the powLimit hash
     uint256 powLimit;
     
-    // the diff multiplier
-    int nMultiplier;
-    
 public:
 
     CPOWAlgoProperties()
@@ -168,28 +165,26 @@ public:
         SetNull();
     }
     
-    CPOWAlgoProperties(uint8_t nAlgo, uint256 proofOfWorkLimit, int diffMultiplier)
+    CPOWAlgoProperties(uint8_t nAlgo, uint256 proofOfWorkLimit)
     {
-        Initialize(nAlgo, proofOfWorkLimit, diffMultiplier);
+        Initialize(nAlgo, proofOfWorkLimit);
     }
     
     void SetNull()
     {
         nAlgoID = 0;
         powLimit.SetNull();
-        nMultiplier = 0;
     }
     
     bool IsNull() const
     {
-        return (nMultiplier == 0);
+        return (powLimit == uint256());
     }
     
-    void Initialize(uint8_t nAlgo, uint256 proofOfWorkLimit, int diffMultiplier)
+    void Initialize(uint8_t nAlgo, uint256 proofOfWorkLimit)
     {
         nAlgoID = nAlgo;
         powLimit = proofOfWorkLimit;
-        nMultiplier = diffMultiplier;
     }
     
     uint8_t GetAlgoID() const
@@ -205,11 +200,6 @@ public:
     arith_uint256 GetArithPowLimit() const
     {
         return UintToArith256(powLimit);
-    }
-    
-    int GetMultiplier() const
-    {
-        return nMultiplier;
     }
 };
 
