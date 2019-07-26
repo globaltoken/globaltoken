@@ -185,7 +185,7 @@ uint8_t GetAlgoByName(std::string strAlgo, uint8_t fallback, bool &fAlgoFound)
         return ALGO_PADIHASH;
     else if (strAlgo == "jeonghash")
         return ALGO_JEONGHASH;
-    else if (strAlgo == "keccak" || strAlgo == "keccakc")
+    else if (strAlgo == "keccak" || strAlgo == "keccakc" || strAlgo == "sha3-keccak" || strAlgo == "sha3keccak")
         return ALGO_KECCAKC;
     else if (strAlgo == "zhash" || strAlgo == "equihash144" || strAlgo == "equihash1445" || strAlgo == "equihash144_5" || strAlgo == "equihash144.5")
         return ALGO_ZHASH;

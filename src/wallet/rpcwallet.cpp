@@ -3973,7 +3973,7 @@ UniValue getauxblock(const JSONRPCRequest& request)
     }
 
     if (request.fHelp
-          || (request.params.size() == 2 || request.params.size() > 4))
+          || request.params.size() > 3)
         throw std::runtime_error(strprintf(
             "getauxblock (hash auxpow)\n"
             "\nCreate or submit a merge-mined block.\n"
@@ -3981,7 +3981,7 @@ UniValue getauxblock(const JSONRPCRequest& request)
             "required to merge-mine it.  With arguments, submit a solved\n"
             "auxpow for a previously returned block.\n"
             "\nArguments:\n"
-            "1. algo           (string, optional, default=%s) the pow algorithm to apply for this merge mining block. Available algorithms: %s\n"
+            "1. algo           (string, optional, default=%s) the pow algorithm to apply for this merge mining block. Note: Only apply this argument, when requesting an auxpow block, not on submitting. Available algorithms: %s\n"
             "2. hash           (string, optional) hash of the block to submit\n"
             "3. auxpow         (string, optional) serialised auxpow found\n"
             "4. auxpowversion  (numeric, optional, default=1) The AuxPoW Version to encode (1 = legacy, 2 = supports pos + equihash format)\n"
@@ -4014,7 +4014,7 @@ UniValue getauxblock(const JSONRPCRequest& request)
     
     bool fAccepted = false, fAlgoFound = true;
     uint8_t nAlgo = currentAlgo;
-    const int nAuxPoWVersion =  (request.params.size() == 4) ? request.params[3].get_int() : (request.params.size() == 3) ? request.params[2].get_int() : 1;
+    const int nAuxPoWVersion =  (request.params.size() == 3) ? request.params[2].get_int() : 1;
 
     // If the keypool is exhausted, no script is returned at all.  Catch this.
     if (!coinbaseScript)
@@ -4028,25 +4028,22 @@ UniValue getauxblock(const JSONRPCRequest& request)
     if (!(nAuxPoWVersion == 1 || nAuxPoWVersion == 2))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Unknown auxpow version.");
     
-    if (!request.params[0].isNull()) {
+    if (!request.params[0].isNull() && request.params.size() == 1)
         nAlgo = GetAlgoByName(request.params[0].get_str(), nAlgo, fAlgoFound);
-    }
     
     if(!fAlgoFound)
         throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Invalid mining algorithm '%s' selected. Available algorithms: %s", request.params[0].get_str(), GetAlgoRangeString()));
 
-    /* Create a new block with the algorithm configured in globaltoken.conf (no algo specified) */
+    /* Create a new block with specific algorithm */
     if (request.params.size() == 0 || request.params.size() == 1)
         return AuxMiningCreateBlock(coinbaseScript->reserveScript, nAlgo);
 
     /* Submit a block instead.  Note that this need not lock cs_main,
        since ProcessNewBlock below locks it instead.  */
-    assert(request.params.size() == 3 || request.params.size() == 4);
-    
-    if(request.params.size() == 3)
-        fAccepted = AuxMiningSubmitBlock(request.params[0].get_str(), request.params[1].get_str(), nAuxPoWVersion);
-    else
-        fAccepted = AuxMiningSubmitBlock(request.params[1].get_str(), request.params[2].get_str(), nAuxPoWVersion);
+    assert(request.params.size() == 2 || request.params.size() == 3);
+    bool fAccepted = AuxMiningSubmitBlock(request.params[0].get_str(), 
+                                          request.params[1].get_str(),
+                                          nAuxPoWVersion);
     
     if (fAccepted)
         coinbaseScript->KeepScript();
