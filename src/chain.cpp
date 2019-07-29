@@ -197,10 +197,9 @@ double CalculateAlgoHashrate(const CBlockIndex& block, int algo, int lookup, con
     if (minTime == maxTime)
         return 0;
 
-    arith_uint256 workDiff = totalAlgoWork * params.aPOWAlgos[algo].GetMultiplier();
     int64_t timeDiff = maxTime - minTime;
 
-    return workDiff.getdouble() / timeDiff;
+    return totalAlgoWork.getdouble() / timeDiff;
 }
 
 arith_uint256 GetPrevWorkForAlgoWithDecay(const CBlockIndex& block, int algo, const Consensus::Params& params)
