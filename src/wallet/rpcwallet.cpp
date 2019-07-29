@@ -4041,7 +4041,7 @@ UniValue getauxblock(const JSONRPCRequest& request)
     /* Submit a block instead.  Note that this need not lock cs_main,
        since ProcessNewBlock below locks it instead.  */
     assert(request.params.size() == 2 || request.params.size() == 3);
-    bool fAccepted = AuxMiningSubmitBlock(request.params[0].get_str(), 
+    fAccepted = AuxMiningSubmitBlock(request.params[0].get_str(), 
                                           request.params[1].get_str(),
                                           nAuxPoWVersion);
     
