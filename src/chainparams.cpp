@@ -105,7 +105,8 @@ public:
         consensus.BIP65Height = 380000; // not hashed yet ...
         consensus.BIP66Height = 360000; // not hashed yet ...
         consensus.Hardfork1.Initialize(1 /* Hardfork ID */, 1537617600 /* Hardfork Activation Time */, 327036 /* Hardfork Activation Height */, uint256S("0xfa2a1f17edbb39496a4d1c9ee643797bc2b0d72dd9038e3646872c0fd7d3fd56") /* Hardfork Activation Blockhash */);
-        consensus.Hardfork2.Initialize(2 /* Hardfork ID */, 1564660800 /* Hardfork Activation Time */, 700000 /* Hardfork Activation Height - unknown yet */, uint256() /* Hardfork Activation Blockhash - unknown yet */);
+        consensus.Hardfork2.Initialize(2 /* Hardfork ID */, 1564660800 /* Hardfork Activation Time */, 772760 /* Hardfork Activation Height */, uint256S("0x4a6c9ff09d78d7b83722429db684f9fa4b1a1d4ba9dbb0b4fedb80d078bb9efe") /* Hardfork Activation Blockhash */);
+        consensus.Hardfork3.Initialize(3 /* Hardfork ID */, 1577379600 /* Hardfork Activation Time */, 999999 /* Hardfork Activation Height - unknown yet*/, uint256() /* Hardfork Activation Blockhash - unknown yet*/);
         consensus.nMaxAuxpowBlocks = 2;
         consensus.aPOWAlgos[ALGO_SHA256D]         = CPOWAlgoProperties(ALGO_SHA256D, uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.aPOWAlgos[ALGO_SCRYPT]          = CPOWAlgoProperties(ALGO_SCRYPT, uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
@@ -209,7 +210,7 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 1519862400; // Thu, 01 Mar 2018.
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x000000000000000000000000000000000000000000000134b2af90229877f1cc");
+        consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000000000015bf8b830c325f590cc");
 
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x0000003c2e7d758e5ba8c89a875f379b5463ad00b6fec73c704098e26a49ecd7"); //400009
@@ -309,18 +310,21 @@ public:
                 {282595, uint256S("0x00000000000000e335a60ca393eee3445f551d5bf6987e47d3a70e043b8dff5b")},
                 {300000, uint256S("0x00000000000000c22e9be2faab7b2f05b0e834f434b0a82b0a12b55351b9d3c4")},
                 {327035, uint256S("0x0000000000000072f4e5960b252d812991c4c13810b2324d623f824572cb5251")}, // last old chain height
-                {327036, uint256S("0xfa2a1f17edbb39496a4d1c9ee643797bc2b0d72dd9038e3646872c0fd7d3fd56")}, // firt hardfork chain block
+                {327036, uint256S("0xfa2a1f17edbb39496a4d1c9ee643797bc2b0d72dd9038e3646872c0fd7d3fd56")}, // first hardfork chain block
                 {328101, uint256S("0x320c067ac8c5cdebbd12df990556b1237f0b41c7dac54a232906f4ce7a180655")},
-                {500000, uint256S("0xac8482b87e86587589e3c170dae61d6ac12567903c3c79beb4a9234c6f9b4760")}
+                {500000, uint256S("0xac8482b87e86587589e3c170dae61d6ac12567903c3c79beb4a9234c6f9b4760")},
+                {772759, uint256S("0x225092228bdfe8be531bb889eddff6a9b4e2fa987a6ec075653c8b51274e1b29")}, // last hardfork 1 block
+                {772760, uint256S("0x4a6c9ff09d78d7b83722429db684f9fa4b1a1d4ba9dbb0b4fedb80d078bb9efe")}, // second hardfork chain block
+                {960000, uint256S("0xddef3a7916b73edef49dbc5246814df6d9af590ebe2f1f8a53968dd8616a6036")}
             }
         };
 
         chainTxData = ChainTxData{
-            // Data as of block 14b4ed452d4561f653854001e5a84036e4cf611bdc3e27edb2317fc9ed52ba09 (height 676488).
-            1558828913, // * UNIX timestamp of last known number of transactions
-            1008167,    // * total number of transactions between genesis and that timestamp
+            // Data as of block 6cc68fdafbe8bd313a2827f439803fbc20a5c2466d10c8e1154f5170ecf64d1f (height 965072).
+            1576340720, // * UNIX timestamp of last known number of transactions
+            1656078,    // * total number of transactions between genesis and that timestamp
                         //   (the tx=... number in the SetBestChain debug.log lines)
-            0.0306467   // * estimated number of transactions per second after that timestamp
+            0.0402827   // * estimated number of transactions per second after that timestamp
         };
         
         /*
@@ -619,6 +623,7 @@ public:
         consensus.BIP66Height = 10; // not hashed yet.
         consensus.Hardfork1.Initialize(1 /* Hardfork ID */, 1564610400 /* Hardfork Activation Time */, 25000 /* Hardfork Activation Height */, uint256S("0x944140d0c734a7a94ca0b306cd3ad8c9bfe70889c927ca6c4852e5644b621733") /* Hardfork Activation Blockhash */);
         consensus.Hardfork2.Initialize(2 /* Hardfork ID */, 1565128800 /* Hardfork Activation Time */, 100000 /* Hardfork Activation Height - unknown yet */, uint256() /* Hardfork Activation Blockhash - unknown yet */);
+        consensus.Hardfork3.Initialize(3 /* Hardfork ID */, 1565128800 /* Hardfork Activation Time */, 100000 /* Hardfork Activation Height - unknown yet */, uint256() /* Hardfork Activation Blockhash - unknown yet*/);
         consensus.nMaxAuxpowBlocks = ~uint32_t(0); // unlimited
         consensus.aPOWAlgos[ALGO_SHA256D]         = CPOWAlgoProperties(ALGO_SHA256D, uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.aPOWAlgos[ALGO_SCRYPT]          = CPOWAlgoProperties(ALGO_SCRYPT, uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
@@ -1106,6 +1111,7 @@ public:
         consensus.BIP66Height = 1251; // BIP66 activated on regtest (Used in rpc activation tests)
         consensus.Hardfork1.Initialize(1 /* Hardfork ID */, 1537048800 /* Hardfork Activation Time */, 100000000 /* Hardfork Activation Height - unknown yet */, uint256() /* there is no hardfork hash for regtest, it will be just activated with the timestamp. */);
         consensus.Hardfork2.Initialize(2 /* Hardfork ID */, 1556661600 /* Hardfork Activation Time */, 100000000 /* Hardfork Activation Height - unknown yet */, uint256() /* there is no hardfork hash for regtest, it will be just activated with the timestamp. */);
+        consensus.Hardfork3.Initialize(3 /* Hardfork ID */, 1556661600 /* Hardfork Activation Time */, 100000000 /* Hardfork Activation Height - unknown yet */, uint256() /* there is no hardfork hash for regtest, it will be just activated with the timestamp. */);
         consensus.nMaxAuxpowBlocks = ~uint32_t(0); // unlimited
         consensus.aPOWAlgos[ALGO_SHA256D]         = CPOWAlgoProperties(ALGO_SHA256D, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.aPOWAlgos[ALGO_SCRYPT]          = CPOWAlgoProperties(ALGO_SCRYPT, uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));

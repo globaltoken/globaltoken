@@ -78,6 +78,7 @@ struct Params {
 	/** Block height at which BIP66 becomes active */
     CHardforkProperties Hardfork1;
     CHardforkProperties Hardfork2;
+    CHardforkProperties Hardfork3;
     /** The max allowed auxpow blocks after genesis diff*/
     uint32_t nMaxAuxpowBlocks;
     uint32_t nOldRuleChangeActivationThreshold;
