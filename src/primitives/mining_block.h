@@ -59,7 +59,7 @@ public:
     
     uint256 GetHash() const;
 	
-    uint256 GetPoWHash(uint8_t algo) const;
+    uint256 GetPoWHash(uint8_t algo, int nType, int nVersion) const;
 
     int64_t GetBlockTime() const
     {

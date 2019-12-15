@@ -2109,7 +2109,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
         bool found = false;
 
         for(const CTxOut& output : block.vtx[0]->vout) {
-            if (output.scriptPubKey == Params().GetFoundersRewardScriptAtHeight(pindex->nHeight)) {
+            if (output.scriptPubKey == Params().GetFoundersRewardScriptAtHeight(pindex->nHeight, chainparams.GetConsensus().Hardfork3.IsActivated(block.nTime))) {
                 if (output.nValue == Params().GetTreasuryAmount(blockReward)) {
                     found = true;
                     break;

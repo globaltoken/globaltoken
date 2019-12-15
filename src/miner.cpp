@@ -194,7 +194,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     {
         CAmount nTreasuryAmount = chainparams.GetTreasuryAmount(blockReward);
         coinbaseTx.vout[0].nValue -= nTreasuryAmount;
-        coinbaseTx.vout.push_back(CTxOut(nTreasuryAmount, chainparams.GetFoundersRewardScriptAtHeight(nHeight)));
+        coinbaseTx.vout.push_back(CTxOut(nTreasuryAmount, chainparams.GetFoundersRewardScriptAtHeight(nHeight, chainparams.GetConsensus().Hardfork3.IsActivated(pblock->nTime))));
         
         // Update coinbase transaction with additional info about masternode payments,
         // get some info back to pass to getblocktemplate

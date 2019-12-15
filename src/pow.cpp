@@ -382,10 +382,12 @@ bool CheckProofOfWork(const CBlockHeader& block, const Consensus::Params& params
 
 bool CheckProofOfWork(const CBlockHeader& block, const Consensus::Params& params, bool &ehsolutionvalid)
 {
-    bool hardfork   = params.Hardfork1.IsActivated(block.nTime);
-    bool hardfork2  = params.Hardfork2.IsActivated(block.nTime);
-    uint8_t nAlgo   = block.GetAlgo();
-    ehsolutionvalid = true;
+    bool hardfork    = params.Hardfork1.IsActivated(block.nTime);
+    bool hardfork2   = params.Hardfork2.IsActivated(block.nTime);
+    bool hardfork3   = params.Hardfork3.IsActivated(block.nTime);
+    int powHashFlags = LoadMultiHasherVersionFlags(hardfork3);
+    uint8_t nAlgo    = block.GetAlgo();
+    ehsolutionvalid  = true;
     
     /* Except for legacy blocks with full version 1, ensure that
        the chain ID is correct.  Legacy blocks are not allowed since
@@ -427,14 +429,14 @@ bool CheckProofOfWork(const CBlockHeader& block, const Consensus::Params& params
                 
                 // Check the header
                 // Also check the Block Header after Equihash solution check.
-                if (!CheckProofOfWork(block.GetPoWHash(), block.nBits, params, nAlgo))
-                    return error("%s : non-AUX proof of work failed - hash=%s, algo=%d (%s), nVersion=%d, PoWHash=%s", __func__, block.GetHash().ToString(), nAlgo, GetAlgoName(nAlgo), block.nVersion, block.GetPoWHash().ToString());
+                if (!CheckProofOfWork(block.GetPoWHash(SER_GETHASH, powHashFlags), block.nBits, params, nAlgo))
+                    return error("%s : non-AUX proof of work failed - hash=%s, algo=%d (%s), nVersion=%d, PoWHash=%s", __func__, block.GetHash().ToString(), nAlgo, GetAlgoName(nAlgo), block.nVersion, block.GetPoWHash(SER_GETHASH, powHashFlags).ToString());
             }
             else
             {
                 // Check the header
-                if (!CheckProofOfWork(block.GetPoWHash(), block.nBits, params, nAlgo))
-                    return error("%s : non-AUX proof of work failed - hash=%s, algo=%d (%s), nVersion=%d, PoWHash=%s", __func__, block.GetHash().ToString(), nAlgo, GetAlgoName(nAlgo), block.nVersion, block.GetPoWHash().ToString());
+                if (!CheckProofOfWork(block.GetPoWHash(SER_GETHASH, powHashFlags), block.nBits, params, nAlgo))
+                    return error("%s : non-AUX proof of work failed - hash=%s, algo=%d (%s), nVersion=%d, PoWHash=%s", __func__, block.GetHash().ToString(), nAlgo, GetAlgoName(nAlgo), block.nVersion, block.GetPoWHash(SER_GETHASH, powHashFlags).ToString());
             }
         }
         else
@@ -442,8 +444,8 @@ bool CheckProofOfWork(const CBlockHeader& block, const Consensus::Params& params
             if(nAlgo == ALGO_SHA256D)
             {
                 // Check the header
-                if (!CheckProofOfWork(block.GetPoWHash(), block.nBits, params, ALGO_SHA256D))
-                    return error("%s : non-AUX proof of work failed - hash=%s, algo=%d (%s), nVersion=%d, PoWHash=%s", __func__, block.GetHash().ToString(), nAlgo, GetAlgoName(nAlgo), block.nVersion, block.GetPoWHash().ToString());
+                if (!CheckProofOfWork(block.GetPoWHash(SER_GETHASH, powHashFlags), block.nBits, params, ALGO_SHA256D))
+                    return error("%s : non-AUX proof of work failed - hash=%s, algo=%d (%s), nVersion=%d, PoWHash=%s", __func__, block.GetHash().ToString(), nAlgo, GetAlgoName(nAlgo), block.nVersion, block.GetPoWHash(SER_GETHASH, powHashFlags).ToString());
             }
             else
             {

@@ -42,14 +42,14 @@ CDefaultBlockHeader CPureBlockHeader::GetDefaultBlockHeader() const
     return block;
 }
 
-uint256 CPureBlockHeader::GetPoWHash() const
+uint256 CPureBlockHeader::GetPoWHash(int nType, int nVersion) const
 {
-    return SerializeMultiAlgoHash(*this, GetAlgo());
+    return SerializeMultiAlgoHash(*this, GetAlgo(), nType, nVersion);
 }
 
-uint256 CPureBlockHeader::GetPoWHash(uint8_t nAlgo) const
+uint256 CPureBlockHeader::GetPoWHash(uint8_t nAlgo, int nType, int nVersion) const
 {
-    return SerializeMultiAlgoHash(*this, nAlgo);
+    return SerializeMultiAlgoHash(*this, nAlgo, nType, nVersion);
 }
 
 uint8_t CPureBlockHeader::GetAlgo() const

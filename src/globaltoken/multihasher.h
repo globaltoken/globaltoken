@@ -14,6 +14,8 @@
 
 #include <vector>
 
+static const int MULTIHASHER_YESCRYPT_R8_NEW = 0x40000000;
+
 /** A writer stream (for serialization) that computes a 256-bit hash, with selected algorithm. */
 class CMultihasher
 {
@@ -53,5 +55,7 @@ uint256 SerializeMultiAlgoHash(const T& obj, uint8_t nAlgo, int nType=SER_GETHAS
     ss << obj;
     return ss.GetHash();
 }
+
+int LoadMultiHasherVersionFlags(bool fHardfork3Activated);
 
 #endif // GLOBALTOKEN_MULTIHASHER_H

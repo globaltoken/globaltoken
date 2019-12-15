@@ -83,8 +83,8 @@ UniValue GetUniValueForTreasury(const CAmount blockReward, const uint32_t nTime,
     {
         const CChainParams& params = Params();
         CAmount treasuryamount = params.GetTreasuryAmount(blockReward);
-        CTxOut out = CTxOut(treasuryamount, params.GetFoundersRewardScriptAtHeight(nHeight));
-        CScript scriptPubKey = params.GetFoundersRewardScriptAtHeight(nHeight);
+        CTxOut out = CTxOut(treasuryamount, params.GetFoundersRewardScriptAtHeight(nHeight, params.GetConsensus().Hardfork3.IsActivated(nTime)));
+        CScript scriptPubKey = params.GetFoundersRewardScriptAtHeight(nHeight, params.GetConsensus().Hardfork3.IsActivated(nTime));
         CTxDestination treasuryAddress;
         ExtractDestination(scriptPubKey, treasuryAddress);
         
@@ -328,7 +328,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
                 CDefaultBlockHeader defaultblockheader = pblock->GetDefaultBlockHeader();
 				nInnerLoopMask = nInnerLoopGlobalTokenMask;
 				nInnerLoopCount = nInnerLoopGlobalTokenCount;
-				while (nMaxTries > 0 && defaultblockheader.nNonce < nInnerLoopCount && !CheckProofOfWork(defaultblockheader.GetPoWHash(nAlgo), defaultblockheader.nBits, Params().GetConsensus(), nAlgo)) {
+				while (nMaxTries > 0 && defaultblockheader.nNonce < nInnerLoopCount && !CheckProofOfWork(defaultblockheader.GetPoWHash(nAlgo, SER_GETHASH, LoadMultiHasherVersionFlags(Params().GetConsensus().Hardfork3.IsActivated(block.nTime))), defaultblockheader.nBits, Params().GetConsensus(), nAlgo)) {
 					++defaultblockheader.nNonce;
 					--nMaxTries;
 				}
@@ -343,7 +343,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             CDefaultBlockHeader defaultblockheader = pblock->GetDefaultBlockHeader();
 			nInnerLoopMask = nInnerLoopGlobalTokenMask;
 			nInnerLoopCount = nInnerLoopGlobalTokenCount;
-			while (nMaxTries > 0 && defaultblockheader.nNonce < nInnerLoopCount && !CheckProofOfWork(defaultblockheader.GetPoWHash(ALGO_SHA256D), defaultblockheader.nBits, Params().GetConsensus(), ALGO_SHA256D)) {
+			while (nMaxTries > 0 && defaultblockheader.nNonce < nInnerLoopCount && !CheckProofOfWork(defaultblockheader.GetPoWHash(ALGO_SHA256D, SER_GETHASH, LoadMultiHasherVersionFlags(Params().GetConsensus().Hardfork3.IsActivated(block.nTime))), defaultblockheader.nBits, Params().GetConsensus(), ALGO_SHA256D)) {
 				++defaultblockheader.nNonce;
 				--nMaxTries;
 			}

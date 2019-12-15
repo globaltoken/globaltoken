@@ -22,9 +22,9 @@ uint256 CEquihashBlockHeader::GetHash() const
     return SerializeHash(*this);
 }
 
-uint256 CDefaultBlockHeader::GetPoWHash(uint8_t algo) const
+uint256 CDefaultBlockHeader::GetPoWHash(uint8_t algo, int nType, int nVersion) const
 {
-    return SerializeMultiAlgoHash(*this, algo);
+    return SerializeMultiAlgoHash(*this, algo, nType, nVersion);
 }
 
 std::string CDefaultBlock::ToString() const

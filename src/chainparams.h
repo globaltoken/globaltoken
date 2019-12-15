@@ -83,8 +83,8 @@ public:
     const std::vector<SeedSpec6>& FixedSeeds() const { return vFixedSeeds; }
     const CCheckpointData& Checkpoints() const { return checkpointData; }
     /** Return the founder's reward address and script for a given block height */
-    std::string GetFoundersRewardAddressAtHeight(int height) const;
-    CScript GetFoundersRewardScriptAtHeight(int height) const;
+    std::string GetFoundersRewardAddressAtHeight(int height, bool fUseBridgeAddress) const;
+    CScript GetFoundersRewardScriptAtHeight(int height, bool fUseBridgeAddress) const;
     std::string GetFoundersRewardAddressAtIndex(int i) const;
     CAmount GetTreasuryAmount(CAmount coinAmount) const;
     /** Attackers address stuff */

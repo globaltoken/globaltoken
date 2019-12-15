@@ -296,8 +296,9 @@ public:
 	
 	uint256 GetBlockPoWHash() const
     {
-        CBlockHeader block = GetBlockHeader(Params().GetConsensus());
-        return block.GetPoWHash();
+        const Consensus::Params& consensusParams = Params().GetConsensus();
+        CBlockHeader block = GetBlockHeader(consensusParams);
+        return block.GetPoWHash(SER_GETHASH, LoadMultiHasherVersionFlags(consensusParams.Hardfork3.IsActivated(block.nTime)));
     }
 
     uint8_t GetAlgo() const

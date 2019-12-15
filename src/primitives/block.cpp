@@ -23,7 +23,7 @@ void CBlockHeader::SetAuxpow (CAuxPow* apow)
     }
 }
 
-std::string CBlock::ToString() const
+std::string CBlock::ToString(bool fHardfork3) const
 {
     std::stringstream s;
     s << strprintf("CBlock(hash=%s, ver=0x%08x, powalgo=%u, powalgoname=%s, powhash=%s, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u, nBigNonce=%s, vtx=%u)\n",
@@ -31,7 +31,7 @@ std::string CBlock::ToString() const
         nVersion,
         GetAlgo(),
         GetAlgoName(GetAlgo()),
-        GetPoWHash().ToString(),
+        GetPoWHash(SER_GETHASH, LoadMultiHasherVersionFlags(fHardfork3)).ToString(),
         hashPrevBlock.ToString(),
         hashMerkleRoot.ToString(),
         nTime, nBits, nNonce, nBigNonce.GetHex(),

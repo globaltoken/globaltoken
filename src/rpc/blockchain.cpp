@@ -248,7 +248,7 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     result.pushKV("algo", GetAlgoName(algo));
 	result.pushKV("algoid", algo);
     if(!isauxpow)
-        result.pushKV("algopowhash", block.GetPoWHash().GetHex());
+        result.pushKV("algopowhash", block.GetPoWHash(SER_GETHASH, LoadMultiHasherVersionFlags(Params().GetConsensus().Hardfork3.IsActivated(block.nTime))).GetHex());
     result.pushKV("version", block.nVersion);
     result.pushKV("versionHex", strprintf("%08x", block.nVersion));
     result.pushKV("merkleroot", block.hashMerkleRoot.GetHex());

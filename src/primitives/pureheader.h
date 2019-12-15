@@ -81,8 +81,8 @@ public:
 
     uint256 GetHash() const;
 
-    uint256 GetPoWHash() const;
-    uint256 GetPoWHash(uint8_t nAlgo) const;
+    uint256 GetPoWHash(int nType, int nVersion) const;
+    uint256 GetPoWHash(uint8_t nAlgo, int nType, int nVersion) const;
     
     // Set Algo to use
     inline void SetAlgo(uint8_t algo)

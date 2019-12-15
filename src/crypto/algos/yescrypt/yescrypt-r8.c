@@ -19,9 +19,9 @@
  */
 #include "yescrypt.h"
 
-#define YESCRYPT_N 2048
+#define YESCRYPT_N 8192
 #define YESCRYPT_R 8
-#define YESCRYPT_P 1
+#define YESCRYPT_P 2
 #define YESCRYPT_T 0
 #define YESCRYPT_FLAGS (YESCRYPT_RW | YESCRYPT_PWXFORM)
 

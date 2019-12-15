@@ -30,6 +30,7 @@
 #include <crypto/algos/allium/allium.h>
 #include <uint256.h>
 #include <hash.h>
+#include <version.h>
 
 
 uint256 CMultihasher::GetSHA256Hash() const
@@ -208,7 +209,10 @@ uint256 CMultihasher::GetHash() const
         {
             assert(buf.size() == 80);
             uint256 thash;
-            yescrypt_r8_hash((const char*)buf.data(), (char*)&thash);
+            if(this->nVersion & MULTIHASHER_YESCRYPT_R8_NEW)
+                yescrypt_r8_hash((const char*)buf.data(), (char*)&thash);
+            else
+                yescrypt_hash((const char*)buf.data(), (char*)&thash);
             return thash;
         }
         case ALGO_YESCRYPT_R32:
@@ -351,4 +355,9 @@ uint256 CMultihasher::GetHash() const
         }
     }
     return this->GetSHA256Hash();
+}
+
+int LoadMultiHasherVersionFlags(bool fHardfork3Activated)
+{
+    return fHardfork3Activated ? PROTOCOL_VERSION | MULTIHASHER_YESCRYPT_R8_NEW : PROTOCOL_VERSION;
 }

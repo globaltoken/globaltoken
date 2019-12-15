@@ -12,6 +12,7 @@
 #include <primitives/mining_block.h>
 #include <primitives/transaction.h>
 #include <serialize.h>
+#include <version.h>
 #include <uint256.h>
 
 #include <vector>
@@ -260,7 +261,7 @@ public:
     if(isAuxPowEquihash() && (IsEquihashBasedAlgo(nAlgo)))
         return getEquihashParentBlock().GetHash ();
     else
-        return getDefaultParentBlock().GetPoWHash (nAlgo);
+        return getDefaultParentBlock().GetPoWHash(nAlgo, SER_GETHASH, LoadMultiHasherVersionFlags(true));
   }
 
   /**
