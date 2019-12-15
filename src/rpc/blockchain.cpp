@@ -1392,18 +1392,18 @@ UniValue getblockchaininfo(const JSONRPCRequest& request)
     globaltoken_hardforks.pushKV("activation_height", (int64_t)consensusParams.Hardfork1.GetActivationHeight());
     globaltoken_hardforks.pushKV("activation_blockhash", consensusParams.Hardfork1.GetActivationBlockHash().GetHex());
     globaltoken_hardforks.pushKV("blocks_since_hardfork", tip->nHeight - consensusParams.Hardfork1.GetActivationHeight());
-    globaltoken_hardfork.pushKV(consensusParams.Hardfork1.GetHardforkID(), globaltoken_hardforks);
+    globaltoken_hardfork.pushKV(consensusParams.Hardfork1.GetHardforkIDAsString(), globaltoken_hardforks);
     globaltoken_hardforks.setObject(); // clear and reset as object
     globaltoken_hardforks.pushKV("activated", consensusParams.Hardfork2.IsActivated(tip->nTime));
     globaltoken_hardforks.pushKV("activation_time", (int64_t)consensusParams.Hardfork2.GetActivationTime());
     globaltoken_hardforks.pushKV("activation_height", (int64_t)consensusParams.Hardfork2.GetActivationHeight());
     globaltoken_hardforks.pushKV("activation_blockhash", consensusParams.Hardfork2.GetActivationBlockHash().GetHex());
     globaltoken_hardforks.pushKV("blocks_since_hardfork", tip->nHeight - consensusParams.Hardfork2.GetActivationHeight());
-    globaltoken_hardfork.pushKV(consensusParams.Hardfork2.GetHardforkID(), globaltoken_hardforks);
+    globaltoken_hardfork.pushKV(consensusParams.Hardfork2.GetHardforkIDAsString(), globaltoken_hardforks);
     globaltoken_hardforks.setObject(); // clear and reset as object
     globaltoken_hardforks.pushKV("activated", consensusParams.Hardfork3.IsActivated(tip->nTime));
     globaltoken_hardforks.pushKV("activation_time", (int64_t)consensusParams.Hardfork3.GetActivationTime());
-    globaltoken_hardfork.pushKV(consensusParams.Hardfork3.GetHardforkID(), globaltoken_hardforks);
+    globaltoken_hardfork.pushKV(consensusParams.Hardfork3.GetHardforkIDAsString(), globaltoken_hardforks);
     softforks.push_back(SoftForkDesc("bip34", 2, tip, consensusParams));
     softforks.push_back(SoftForkDesc("bip66", 3, tip, consensusParams));
     softforks.push_back(SoftForkDesc("bip65", 4, tip, consensusParams));

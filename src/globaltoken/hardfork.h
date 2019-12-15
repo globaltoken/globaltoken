@@ -73,6 +73,7 @@ public:
     }
     
     bool IsActivated(uint32_t nTimeCheck) const;
+    std::string GetHardforkIDAsString() const;
 };
 
 enum {

@@ -328,7 +328,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
                 CDefaultBlockHeader defaultblockheader = pblock->GetDefaultBlockHeader();
 				nInnerLoopMask = nInnerLoopGlobalTokenMask;
 				nInnerLoopCount = nInnerLoopGlobalTokenCount;
-				while (nMaxTries > 0 && defaultblockheader.nNonce < nInnerLoopCount && !CheckProofOfWork(defaultblockheader.GetPoWHash(nAlgo, SER_GETHASH, LoadMultiHasherVersionFlags(Params().GetConsensus().Hardfork3.IsActivated(block.nTime))), defaultblockheader.nBits, Params().GetConsensus(), nAlgo)) {
+				while (nMaxTries > 0 && defaultblockheader.nNonce < nInnerLoopCount && !CheckProofOfWork(defaultblockheader.GetPoWHash(nAlgo, SER_GETHASH, LoadMultiHasherVersionFlags(Params().GetConsensus().Hardfork3.IsActivated(defaultblockheader.nTime))), defaultblockheader.nBits, Params().GetConsensus(), nAlgo)) {
 					++defaultblockheader.nNonce;
 					--nMaxTries;
 				}
@@ -343,7 +343,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             CDefaultBlockHeader defaultblockheader = pblock->GetDefaultBlockHeader();
 			nInnerLoopMask = nInnerLoopGlobalTokenMask;
 			nInnerLoopCount = nInnerLoopGlobalTokenCount;
-			while (nMaxTries > 0 && defaultblockheader.nNonce < nInnerLoopCount && !CheckProofOfWork(defaultblockheader.GetPoWHash(ALGO_SHA256D, SER_GETHASH, LoadMultiHasherVersionFlags(Params().GetConsensus().Hardfork3.IsActivated(block.nTime))), defaultblockheader.nBits, Params().GetConsensus(), ALGO_SHA256D)) {
+			while (nMaxTries > 0 && defaultblockheader.nNonce < nInnerLoopCount && !CheckProofOfWork(defaultblockheader.GetPoWHash(ALGO_SHA256D, SER_GETHASH, LoadMultiHasherVersionFlags(Params().GetConsensus().Hardfork3.IsActivated(defaultblockheader.nTime))), defaultblockheader.nBits, Params().GetConsensus(), ALGO_SHA256D)) {
 				++defaultblockheader.nNonce;
 				--nMaxTries;
 			}

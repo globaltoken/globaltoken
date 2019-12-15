@@ -3,12 +3,11 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <globaltoken/hardfork.h>
+#include <sstream>
+#include <string>
 
 #ifndef HARDFORK_IMPORTANT_ONLY
 #include <chainparams.h>
-
-#include <sstream>
-#include <string>
 
 std::string GetOldScriptAddressWarning(std::string strWrongScriptAddress)
 {
@@ -116,4 +115,11 @@ std::string GetCoinbaseFeeString(int type)
 bool CHardforkProperties::IsActivated(uint32_t nTimeCheck) const
 {
     return (nTimeCheck >= nActivationTime);
+}
+
+std::string CHardforkProperties::GetHardforkIDAsString() const
+{
+    std::stringstream strStream;
+    strStream << nID;
+    return strStream.str();
 }

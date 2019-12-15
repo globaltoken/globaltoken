@@ -11,6 +11,7 @@
 #include <consensus/params.h>
 #include <primitives/mining_block.h>
 #include <primitives/transaction.h>
+#include <globaltoken/multihasher.h>
 #include <serialize.h>
 #include <version.h>
 #include <uint256.h>
