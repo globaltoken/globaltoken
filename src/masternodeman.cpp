@@ -1032,7 +1032,7 @@ void CMasternodeMan::DoFullVerificationStep(CConnman& connman)
 // with the same addr but none of them is verified yet, then none of them are banned.
 // It could take many times to run this before most of the duplicate nodes are banned.
 
-void CMasternodeMan::CheckSameAddr()
+void CMasternodeMan::CheckSameAddr(bool fApplyNewRules)
 {
     if(!masternodeSync.IsSynced() || mapMasternodes.empty()) return;
 
@@ -1052,8 +1052,10 @@ void CMasternodeMan::CheckSameAddr()
         sort(vSortedByAddr.begin(), vSortedByAddr.end(), CompareByAddr());
 
         for (const auto& pmn : vSortedByAddr) {
-            // check only (pre)enabled masternodes
-            if(!pmn->IsEnabled() && !pmn->IsPreEnabled()) continue;
+            // check only (pre)enabled masternodes (old rule. Why only pre enabled ?)
+            if(!pmn->IsEnabled() && !pmn->IsPreEnabled() && !fApplyNewRules) continue;
+            // check pre enabled and enabled masternodes for double IP's now.
+            if(!(pmn->IsEnabled() || pmn->IsPreEnabled()) && fApplyNewRules) continue;
             // initial step
             if(!pprevMasternode) {
                 pprevMasternode = pmn;
@@ -1615,7 +1617,7 @@ void CMasternodeMan::UpdatedBlockTip(const CBlockIndex *pindex)
     nCachedBlockHeight = pindex->nHeight;
     LogPrint(BCLog::MASTERNODE, "CMasternodeMan::UpdatedBlockTip -- nCachedBlockHeight=%d\n", nCachedBlockHeight);
 
-    CheckSameAddr();
+    CheckSameAddr(Params().GetConsensus().Hardfork3.IsActivated(pindex->nTime));
 
     if(fMasternodeMode) {
         // normal wallet does not need to update this every block, doing update on rpc call should be enough

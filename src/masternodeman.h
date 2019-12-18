@@ -182,7 +182,7 @@ public:
     void ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, CConnman& connman);
 
     void DoFullVerificationStep(CConnman& connman);
-    void CheckSameAddr();
+    void CheckSameAddr(bool fApplyNewRules);
     bool SendVerifyRequest(const CAddress& addr, const std::vector<const CMasternode*>& vSortedByAddr, CConnman& connman);
     void ProcessPendingMnvRequests(CConnman& connman);
     void SendVerifyReply(CNode* pnode, CMasternodeVerification& mnv, CConnman& connman);
