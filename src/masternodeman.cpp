@@ -1051,32 +1051,51 @@ void CMasternodeMan::CheckSameAddr(bool fApplyNewRules)
 
         sort(vSortedByAddr.begin(), vSortedByAddr.end(), CompareByAddr());
 
-        for (const auto& pmn : vSortedByAddr) {
-            // check only (pre)enabled masternodes (old rule. Why only pre enabled ?)
-            if(!pmn->IsEnabled() && !pmn->IsPreEnabled() && !fApplyNewRules) continue;
-            // check pre enabled and enabled masternodes for double IP's now.
-            if(!(pmn->IsEnabled() || pmn->IsPreEnabled()) && fApplyNewRules) continue;
-            // initial step
-            if(!pprevMasternode) {
-                pprevMasternode = pmn;
-                pverifiedMasternode = pmn->IsPoSeVerified() ? pmn : nullptr;
-                continue;
-            }
-            // second+ step
-            if(pmn->addr == pprevMasternode->addr) {
-                if(pverifiedMasternode) {
-                    // another masternode with the same ip is verified, ban this one
-                    vBan.push_back(pmn);
-                } else if(pmn->IsPoSeVerified()) {
-                    // this masternode with the same ip is verified, ban previous one
-                    vBan.push_back(pprevMasternode);
-                    // and keep a reference to be able to ban following masternodes with the same ip
-                    pverifiedMasternode = pmn;
+        if(fApplyNewRules)
+        {
+            for (const auto& pmn : vSortedByAddr) {
+                // check only (pre)enabled masternodes
+                if(!pmn->IsEnabled() && !pmn->IsPreEnabled()) continue;
+                // initial step
+                if(!pprevMasternode) {
+                    pprevMasternode = pmn;
+                    continue;
                 }
-            } else {
-                pverifiedMasternode = pmn->IsPoSeVerified() ? pmn : nullptr;
+                // ban all nodes with the same IP that are (pre)enabled
+                if(pmn->addr == pprevMasternode->addr) 
+                {
+                    vBan.push_back(pmn);
+                    pprevMasternode = pmn;
+                }
             }
-            pprevMasternode = pmn;
+        }
+        else
+        {
+            for (const auto& pmn : vSortedByAddr) {
+                // check only (pre)enabled masternodes
+                if(!pmn->IsEnabled() && !pmn->IsPreEnabled()) continue;
+                // initial step
+                if(!pprevMasternode) {
+                    pprevMasternode = pmn;
+                    pverifiedMasternode = pmn->IsPoSeVerified() ? pmn : nullptr;
+                    continue;
+                }
+                // second+ step
+                if(pmn->addr == pprevMasternode->addr) {
+                    if(pverifiedMasternode) {
+                        // another masternode with the same ip is verified, ban this one
+                        vBan.push_back(pmn);
+                    } else if(pmn->IsPoSeVerified()) {
+                        // this masternode with the same ip is verified, ban previous one
+                        vBan.push_back(pprevMasternode);
+                        // and keep a reference to be able to ban following masternodes with the same ip
+                        pverifiedMasternode = pmn;
+                    }
+                } else {
+                    pverifiedMasternode = pmn->IsPoSeVerified() ? pmn : nullptr;
+                }
+                pprevMasternode = pmn;
+            }
         }
     }
 
