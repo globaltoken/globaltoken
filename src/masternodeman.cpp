@@ -1065,6 +1065,9 @@ void CMasternodeMan::CheckSameAddr(bool fApplyNewRules)
                 if(pmn->addr == pprevMasternode->addr) 
                 {
                     vBan.push_back(pmn);
+                }
+                else
+                {
                     pprevMasternode = pmn;
                 }
             }
