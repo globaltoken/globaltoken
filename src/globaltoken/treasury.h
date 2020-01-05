@@ -53,8 +53,8 @@ public:
         nCreationTime = 0;
         nLastEdited = 0;
         nExpireTime = 0;
-        strHeadline = "";
-        strDescription = "";
+        strHeadline.clear();
+        strDescription.clear();
         mtx = CMutableTransaction();
     }
     
@@ -118,8 +118,8 @@ public:
     {
         nVersion = 0;
         nLastSaved = 0;
-        strTreasuryDir = "";
-        strTreasuryFile = "";
+        strTreasuryDir.clear();
+        strTreasuryFile.clear();
         vTreasuryProposals.clear();
     }
     
@@ -144,7 +144,7 @@ public:
 };
 
 /** Treasury Stuff */
-const std::string CONST_TREASURY_FILE_MARKER = "GlobalToken Treasury Proposal File";
+const std::string CONST_TREASURY_FILE_MARKER = "GlobalTokenTreasuryProposalFileMagic";
 extern CTreasuryMempool activeTreasury;
 
 #endif // GLOBALTOKEN_TREASURY_H
