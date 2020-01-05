@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2018 The Bitcoin Core developers
 // Copyright (c) 2014-2017 The Dash Core developers
-// Copyright (c) 2017-2018 The Globaltoken Core developers
+// Copyright (c) 2017-2020 The Globaltoken Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -18,6 +18,7 @@
 #include <consensus/validation.h>
 #include <cuckoocache.h>
 #include <globaltoken/hardfork.h>
+#include <globaltoken/treasury.h>
 #include <hash.h>
 #include <init.h>
 #include <policy/fees.h>
@@ -4877,6 +4878,61 @@ int VersionBitsTipStateSinceHeight(const Consensus::Params& params, Consensus::D
 {
     LOCK(cs_main);
     return VersionBitsStateSinceHeight(chainActive.Tip(), params, pos, versionbitscache);
+}
+
+bool LoadTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error)
+{
+    fs::path pathDest(activeMempool.GetTreasuryDir());
+    FILE* filestr = fsbridge::fopen(pathDest / activeMempool.GetTreasuryFile(), "rb");
+    CAutoFile file(filestr, SER_DISK, CLIENT_VERSION);
+    if (file.IsNull()) {
+        error = "Could not open treasurymempoolfile from Path: " + activeMempool.GetTreasuryDir() + "/" + activeMempool.GetTreasuryFile();
+        LogPrintf("Failed to open treasurymempool file from disk. Path: %s/%s\n", activeMempool.GetTreasuryDir().c_str(), activeMempool.GetTreasuryFile().c_str());
+        return false;
+    }
+
+    try {
+        std::string strTreasuryMarker;
+        file >> strTreasuryMarker;
+        if (strTreasuryMarker != CONST_TREASURY_FILE_MARKER) {
+            return false;
+        }
+        file >> activeMempool;
+    } catch (const std::exception& e) {
+        error = "Failed to deserialize treasury mempool data on disk. See debug.log for details.";
+        LogPrintf("Failed to deserialize treasury mempool data on disk with path %s/%s: %s. Continuing anyway.\n", activeMempool.GetTreasuryDir().c_str(), activeMempool.GetTreasuryFile().c_str(), e.what());
+        return false;
+    }
+
+    LogPrintf("Imported treasury mempool proposals from disk: %i items loaded from file %s/%s | Last edited: %lu\n", activeMempool.vTreasuryProposals.size(), activeMempool.GetTreasuryDir().c_str(), activeMempool.GetTreasuryFile().c_str(), (unsigned long)activeMempool.GetLastSaved());
+    return true;
+}
+
+bool DumpTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error)
+{
+    activeMempool.SetLastSaved(GetTime());
+
+    try {
+        fs::path pathDest(activeMempool.GetTreasuryDir());
+        FILE* filestr = fsbridge::fopen(pathDest / (activeMempool.GetTreasuryFile() + std::string(".new")), "wb");
+        if (!filestr) {
+            error = "Could not open file for write: " + activeMempool.GetTreasuryDir() + "/" + activeMempool.GetTreasuryFile();
+            return false;
+        }
+        CAutoFile file(filestr, SER_DISK, CLIENT_VERSION);
+        std::string strTreasuryMarker = CONST_TREASURY_FILE_MARKER;
+        file << strTreasuryMarker;
+        file << activeMempool;
+        FileCommit(file.Get());
+        file.fclose();
+        RenameOver(pathDest / (activeMempool.GetTreasuryFile() + std::string(".new")), pathDest / activeMempool.GetTreasuryFile());
+        LogPrintf("Dumped treasury mempool\n");
+    } catch (const std::exception& e) {
+        error = "Error while writing treasury mempool. See debug.log for details.";
+        LogPrintf("Failed to dump treasury mempool: %s. Continuing anyway.\n", e.what());
+        return false;
+    }
+    return true;
 }
 
 static const uint64_t MEMPOOL_DUMP_VERSION = 1;

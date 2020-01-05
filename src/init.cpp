@@ -2,7 +2,7 @@
 // Copyright (c) 2009-2017 The Bitcoin Core developers
 // Copyright (c) 2009-2018 The DigiByte Core developers
 // Copyright (c) 2014-2017 The Dash Core developers
-// Copyright (c) 2017-2019 The Globaltoken Core developers
+// Copyright (c) 2017-2020 The Globaltoken Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -21,6 +21,7 @@
 #include <compat/sanity.h>
 #include <consensus/validation.h>
 #include <fs.h>
+#include <globaltoken/treasury.h>
 #include <httpserver.h>
 #include <httprpc.h>
 #include <key.h>
@@ -245,6 +246,12 @@ void Shutdown()
 
     if (fDumpMempoolLater && gArgs.GetArg("-persistmempool", DEFAULT_PERSIST_MEMPOOL)) {
         DumpMempool();
+    }
+    
+    if(activeTreasury.IsCached())
+    {
+        std::string error;
+        DumpTreasuryMempool(activeTreasury, error);
     }
 
     if (fFeeEstimatesInitialized)

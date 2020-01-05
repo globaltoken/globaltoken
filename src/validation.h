@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2017 The Bitcoin Core developers
 // Copyright (c) 2014-2017 The Dash Core developers
+// Copyright (c) 2019-2020 The Globaltoken Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -14,6 +15,7 @@
 #include <amount.h>
 #include <coins.h>
 #include <fs.h>
+#include <globaltoken/treasury.h>
 #include <protocol.h> // For CMessageHeader::MessageStartChars
 #include <policy/feerate.h>
 #include <script/script_error.h>
@@ -508,5 +510,11 @@ bool DumpMempool();
 
 /** Load the mempool from disk. */
 bool LoadMempool();
+
+/** Dump the treasury mempool to disk. */
+bool DumpTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error);
+
+/** Load the treasury mempool from disk. */
+bool LoadTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error);
 
 #endif // BITCOIN_VALIDATION_H

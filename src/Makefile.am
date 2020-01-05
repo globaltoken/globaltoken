@@ -464,6 +464,8 @@ libbitcoin_consensus_a_SOURCES = \
   primitives/transaction.h \
   globaltoken/multihasher.cpp \
   globaltoken/multihasher.h \
+  globaltoken/treasury.cpp \
+  globaltoken/treasury.h \
   pubkey.cpp \
   pubkey.h \
   script/bitcoinconsensus.cpp \
