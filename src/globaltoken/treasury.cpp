@@ -3,12 +3,19 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <globaltoken/treasury.h>
+#include <uint256.h>
+#include <hash.h>
 
 CTreasuryMempool activeTreasury;
 
 bool CTreasuryProposal::IsNull() const
 {
     return (nVersion == 0);
+}
+
+uint256 CTreasuryProposal::GetHash() const
+{
+    return SerializeHash(*this);
 }
 
 void CTreasuryMempool::SetTreasuryDir (const std::string &dir)

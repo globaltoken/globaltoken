@@ -9,6 +9,8 @@
 #include <serialize.h>
 #include <validation.h>
 #include <utilstrencodings.h>
+#include <utiltime.h>
+#include <random.h>
 
 #include <stdint.h>
 
@@ -113,6 +115,47 @@ UniValue createtreasurymempool(const JSONRPCRequest& request)
     activeTreasury = cachedTreasury;
 
     return NullUniValue;
+}
+
+UniValue createtreasuryproposal(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 2) {
+        throw std::runtime_error(
+            "createtreasuryproposal\n"
+            "\nCreates a new treasury proposal and adds it to the treasury memory pool.\n"
+            "\nArguments:\n"
+            "1. \"headline\"    (required, string) The headline of this proposal\n"
+            "2. \"description\" (required, string) The description of this proposal\n"
+            "\nExamples:\n"
+            + HelpExampleCli("createtreasuryproposal", "")
+            + HelpExampleRpc("createtreasuryproposal", "")
+        );
+    }
+    
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    // Create the proposal and give it a random hash.
+    uint32_t nCurrentTime = GetTime();
+    CTreasuryProposal proposal;
+    uint256 hashRandom;
+    GetStrongRandBytes((unsigned char*)&hashRandom, sizeof(hashRandom));
+    
+    proposal.nVersion = 1;
+    proposal.hashID = hashRandom;
+    proposal.nCreationTime = nCurrentTime;
+    proposal.nLastEdited = nCurrentTime;
+    proposal.nExpireTime = nCurrentTime + (60 * 60 * 24 * 31); // ~ One month until this proposal will expire.
+    proposal.strHeadline = request.params[0].get_str();
+    proposal.strDescription = request.params[1].get_str();
+    
+    hashRandom = proposal.GetHash(); // now we get the final ID (from all data)
+    proposal.hashID = hashRandom;
+    
+    // Now add the proposal to cachedTreasury
+    activeTreasury.vTreasuryProposals.push_back(proposal);
+
+    return proposal.hashID.GetHex();
 }
 
 UniValue savetreasurymempooltonewfile(const JSONRPCRequest& request)
@@ -220,9 +263,10 @@ static const CRPCCommand commands[] =
     { "treasury",           "gettreasurymempoolinfo",       &gettreasurymempoolinfo,       {} },
     { "treasury",           "closetreasurymempool",         &closetreasurymempool,         {} },
     { "treasury",           "aborttreasurymempool",         &aborttreasurymempool,         {} },
-    { "treasury",           "createtreasurymempool",        &createtreasurymempool,        {"directory","filename"} },
-    { "treasury",           "opentreasurymempool",          &opentreasurymempool,          {"directory","filename"} },
-    { "treasury",           "savetreasurymempooltonewfile", &savetreasurymempooltonewfile, {"directory","filename"}}
+    { "treasury",           "createtreasurymempool",        &createtreasurymempool,        {"directory","filename"}   },
+    { "treasury",           "opentreasurymempool",          &opentreasurymempool,          {"directory","filename"}   },
+    { "treasury",           "savetreasurymempooltonewfile", &savetreasurymempooltonewfile, {"directory","filename"}   },
+    { "treasury",           "createtreasuryproposal",       &createtreasuryproposal,       {"headline","description"} }
 };
 
 void RegisterTreasuryRPCCommands(CRPCTable &t)

@@ -8,6 +8,7 @@
 #include <uint256.h>
 #include <primitives/transaction.h>
 #include <serialize.h>
+#include <uint256.h>
 
 #include <string>
 #include <vector>
@@ -32,10 +33,10 @@ public:
     // the expiration time
     uint32_t nExpireTime;
     
-    // headline of this propsal (max 500 byte.)
+    // headline of this propsal
     std::string strHeadline;
     
-    // text description of this proposal (max 16 MB.)
+    // text description of this proposal
     std::string strDescription;
     
     // the related treasury transaction
@@ -59,6 +60,7 @@ public:
     }
     
     bool IsNull() const;
+    uint256 GetHash() const;
     
     ADD_SERIALIZE_METHODS;
 
