@@ -3399,6 +3399,115 @@ UniValue fundrawtransaction(const JSONRPCRequest& request)
     return result;
 }
 
+UniValue signrawtreasurywithwallet(const JSONRPCRequest& request)
+{
+    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+
+    if (request.fHelp || request.params.size() < 2 || request.params.size() > 3)
+        throw std::runtime_error(
+            "signrawtreasurywithwallet \"hexstring\" ( sighashtype )\n"
+            "\nSign inputs for raw transaction (serialized, hex-encoded).\n"
+            "The second optional argument (may be null) is an array of previous transaction outputs that\n"
+            "this transaction depends on but may not yet be in the block chain.\n"
+            + HelpRequiringPassphrase(pwallet) + "\n"
+
+            "\nArguments:\n"
+            "1. \"hexstring\"                      (string, required) The transaction hex string\n"
+            "2. \"redeemscript\"                   (string, required) The treasury redeem script to release the coins\n"
+            "3. \"sighashtype\"                    (string, optional, default=ALL) The signature hash type. Must be one of\n"
+            "       \"ALL\"\n"
+            "       \"NONE\"\n"
+            "       \"SINGLE\"\n"
+            "       \"ALL|ANYONECANPAY\"\n"
+            "       \"NONE|ANYONECANPAY\"\n"
+            "       \"SINGLE|ANYONECANPAY\"\n"
+
+            "\nResult:\n"
+            "{\n"
+            "  \"hex\" : \"value\",                  (string) The hex-encoded raw transaction with signature(s)\n"
+            "  \"complete\" : true|false,          (boolean) If the transaction has a complete set of signatures\n"
+            "  \"errors\" : [                      (json array of objects) Script verification errors (if there are any)\n"
+            "    {\n"
+            "      \"txid\" : \"hash\",              (string) The hash of the referenced, previous transaction\n"
+            "      \"vout\" : n,                   (numeric) The index of the output to spent and used as input\n"
+            "      \"scriptSig\" : \"hex\",          (string) The hex-encoded signature script\n"
+            "      \"sequence\" : n,               (numeric) Script sequence number\n"
+            "      \"error\" : \"text\"              (string) Verification or signing error related to the input\n"
+            "    }\n"
+            "    ,...\n"
+            "  ]\n"
+            "}\n"
+
+            "\nExamples:\n"
+            + HelpExampleCli("signrawtreasurywithwallet", "\"myhex\"")
+            + HelpExampleRpc("signrawtreasurywithwallet", "\"myhex\"")
+        );
+
+    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VSTR, UniValue::VSTR}, true);
+
+    CMutableTransaction mtx;
+    if (!DecodeHexTx(mtx, request.params[0].get_str(), true)) {
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
+    }
+    
+    LOCK2(cs_main, pwallet->cs_wallet);
+    EnsureWalletIsUnlocked(pwallet);
+    
+    CBasicKeyStore keystore;
+    txnouttype type;
+    std::vector<CTxDestination> addresses;
+    int nRequired, nFoundSigningAddresses=0;
+    
+    CScript script;
+    if (request.params[0].get_str().size() > 0)
+    {
+        std::vector<unsigned char> scriptData(ParseHexV(request.params[1], "redeemscript"));
+        script = CScript(scriptData.begin(), scriptData.end());
+    }
+    else
+    {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Redeemscript is not provided.");
+    }
+
+    if (!ExtractDestinations(script, type, addresses, nRequired)) {
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Could not decode Redeemscript.");
+    }
+    
+    for (unsigned int i = 0; i < addresses.size(); i++) 
+    {
+        auto keyid = GetKeyForDestination(*pwallet, addresses[i]);
+        if (keyid.IsNull()) {
+            throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to a key");
+        }
+        CKey vchSecret;
+        if (!pwallet->GetKey(keyid, vchSecret))
+            continue;
+        
+        if (!vchSecret.IsValid()) {
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Private key outside allowed range");
+        }
+        
+        keystore.AddKey(vchSecret);
+        nFoundSigningAddresses++;
+    }
+    
+    if(nFoundSigningAddresses == 0)
+    {
+        throw JSONRPCError(RPC_WALLET_ERROR, "None of the signers addresses are yours, the transaction cannot be signed.");
+    }
+    
+    // Add redeem scripts to the temp wallet.
+    keystore.AddCScript(script);
+    // Automatically also add the P2WSH wrapped version of the script (to deal with P2SH-P2WSH).
+    keystore.AddCScript(GetScriptForWitness(script));
+
+    // Sign the transaction
+    return SignTreasuryTransactionPartially(mtx, &keystore, request.params[2]);
+}
+
 UniValue signrawtransactionwithwallet(const JSONRPCRequest& request)
 {
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
@@ -4119,6 +4228,8 @@ static const CRPCCommand commands[] =
     { "wallet",             "walletpassphrase",                 &walletpassphrase,              {"passphrase","timeout"} },
     { "wallet",             "removeprunedfunds",                &removeprunedfunds,             {"txid"} },
     { "wallet",             "rescanblockchain",                 &rescanblockchain,              {"start_height", "stop_height"} },
+    
+    { "treasury",           "signrawtreasurywithwallet",        &signrawtreasurywithwallet,     {"hexstring","redeemscript","sighashtype"} },
     
     { "wallet",             "instantsendtoaddress",             &instantsendtoaddress,          {"address","amount","comment","comment_to","subtractfeefromamount","replaceable","conf_target","estimate_mode"} },
 

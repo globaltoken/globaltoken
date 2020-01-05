@@ -11,5 +11,6 @@ class UniValue;
 
 /** Sign a transaction with the given keystore and previous transactions */
 UniValue SignTransaction(CMutableTransaction& mtx, const UniValue& prevTxs, CBasicKeyStore *keystore, bool tempKeystore, const UniValue& hashType);
+UniValue SignTreasuryTransactionPartially(CMutableTransaction& mtx, CBasicKeyStore *keystore, const UniValue& hashType);
 
 #endif // BITCOIN_RPC_RAWTRANSACTION_H
