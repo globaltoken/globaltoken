@@ -250,6 +250,7 @@ void Shutdown()
     
     if(activeTreasury.IsCached())
     {
+        LOCK(cs_treasury);
         std::string error;
         DumpTreasuryMempool(activeTreasury, error);
     }

@@ -5,7 +5,7 @@
 #ifndef GLOBALTOKEN_TREASURY_H
 #define GLOBALTOKEN_TREASURY_H
 
-#include <uint256.h>
+#include <script/script.h>
 #include <primitives/transaction.h>
 #include <serialize.h>
 #include <uint256.h>
@@ -66,6 +66,7 @@ public:
     bool IsNull() const;
     bool IsHeadlineValid() const;
     bool IsDescriptionValid() const;
+    bool IsExpired(const uint32_t nSystemTime) const;
     uint256 GetHash() const;
     
     ADD_SERIALIZE_METHODS;
@@ -109,6 +110,9 @@ public:
 
     /* All treasury proposals */
     std::vector<CTreasuryProposal> vTreasuryProposals;
+    
+    /* All treasury redeemscripts and other scripts */
+    std::vector<CScript> vRedeemScripts;
 
     CTreasuryMempool()
     {
@@ -129,6 +133,7 @@ public:
         strTreasuryDir.clear();
         strTreasuryFile.clear();
         vTreasuryProposals.clear();
+        vRedeemScripts.clear();
     }
     
     ADD_SERIALIZE_METHODS;
@@ -138,6 +143,7 @@ public:
         READWRITE(this->nVersion);
         READWRITE(nLastSaved);
         READWRITE(vTreasuryProposals);
+        READWRITE(vRedeemScripts);
     }
     
     void SetTreasuryDir (const std::string &dir);
@@ -150,6 +156,7 @@ public:
     uint32_t GetVersion() const;
     uint32_t GetLastSaved() const;
     uint256 GetHash() const;
+    void DeleteExpiredProposals(const uint32_t nSystemTime);
 };
 
 /** Treasury Stuff */

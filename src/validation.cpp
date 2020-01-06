@@ -210,6 +210,7 @@ private:
 
 
 CCriticalSection cs_main;
+CCriticalSection cs_treasury;
 
 BlockMap& mapBlockIndex = g_chainstate.mapBlockIndex;
 CChain& chainActive = g_chainstate.chainActive;
@@ -4882,6 +4883,7 @@ int VersionBitsTipStateSinceHeight(const Consensus::Params& params, Consensus::D
 
 bool LoadTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error)
 {
+    AssertLockHeld(cs_treasury);
     fs::path pathDest(activeMempool.GetTreasuryDir());
     FILE* filestr = fsbridge::fopen(pathDest / activeMempool.GetTreasuryFile(), "rb");
     CAutoFile file(filestr, SER_DISK, CLIENT_VERSION);
@@ -4904,6 +4906,7 @@ bool LoadTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error)
 
 bool TreasuryMempoolSanityChecks(CTreasuryMempool &activeMempool, std::string &error, bool fCheckFileReplacement, CAutoFile *file)
 {
+    AssertLockHeld(cs_treasury);
     // We check, if the file already exists.
     // like mempool.dat or wallet.dat, we prevent that user's cannot overwrite other data.
     
@@ -4934,6 +4937,7 @@ bool TreasuryMempoolSanityChecks(CTreasuryMempool &activeMempool, std::string &e
                 error = "File corrupted. Sha256sum mismatch.";
                 return false;
             }
+            tempmempool.DeleteExpiredProposals(GetTime());
             activeMempool = tempmempool;
         } catch (const std::exception& e) {
             error = "Failed to deserialize treasury mempool data on disk. See debug.log for details.";
@@ -4946,7 +4950,10 @@ bool TreasuryMempoolSanityChecks(CTreasuryMempool &activeMempool, std::string &e
 
 bool DumpTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error)
 {
-    activeMempool.SetLastSaved(GetTime());
+    AssertLockHeld(cs_treasury);
+    const uint32_t nSystemtime = GetTime();
+    activeMempool.SetLastSaved(nSystemtime);
+    activeMempool.DeleteExpiredProposals(nSystemtime);
 
     try {
         fs::path pathDest(activeMempool.GetTreasuryDir());

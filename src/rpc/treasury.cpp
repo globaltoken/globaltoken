@@ -12,6 +12,7 @@
 #include <utilstrencodings.h>
 #include <utiltime.h>
 #include <random.h>
+#include <sync.h>
 
 #include <stdint.h>
 #include <sstream>
@@ -25,6 +26,7 @@ UniValue treasurymempoolInfoToJSON()
 {
     UniValue ret(UniValue::VOBJ);
     ret.pushKV("proposals", (int64_t) activeTreasury.vTreasuryProposals.size());
+    ret.pushKV("scripts", (int64_t) activeTreasury.vRedeemScripts.size());
     ret.pushKV("bytes", (int64_t) ::GetSerializeSize(activeTreasury, SER_NETWORK, PROTOCOL_VERSION));
     ret.pushKV("version", (int64_t) activeTreasury.GetVersion());
     ret.pushKV("lastsaved", (int64_t) activeTreasury.GetLastSaved());
@@ -42,6 +44,7 @@ UniValue proposaltoJSON(const CTreasuryProposal* proposal, int decodeProposalTX)
     result.pushKV("creationtime", (int64_t)proposal->nCreationTime);
     result.pushKV("lasteditedtime", (int64_t)proposal->nLastEdited);
     result.pushKV("expiretime", (int64_t)proposal->nExpireTime);
+    result.pushKV("expired", proposal->IsExpired(GetTime()));
     result.pushKV("headline", proposal->strHeadline);
     result.pushKV("description", proposal->strDescription);
     if(decodeProposalTX)
@@ -71,6 +74,7 @@ UniValue gettreasuryproposal(const JSONRPCRequest& request)
             "  \"creationtime\": xxxxx,      (int) The unix timestamp, when the proposal was created.\n"
             "  \"lasteditedtime\": xxxxx,    (int) The unix timestamp, when the proposal was edited last time.\n"
             "  \"expiretime\": xxxxx,        (int) The unix timestamp, when the proposal will expire.\n"
+            "  \"expired\": xxxxx,           (bool) Returns true if this proposal is expired, otherwise false.\n"
             "  \"headline\": xxxxx,          (string) The headline of this proposal.\n"
             "  \"description\": xxxxx,       (string) The proposal description.\n"
             "  \"tx\": {\n,                  (object) The decoded transation to json.\n"
@@ -81,6 +85,8 @@ UniValue gettreasuryproposal(const JSONRPCRequest& request)
             + HelpExampleCli("gettreasuryproposal", "")
             + HelpExampleRpc("gettreasuryproposal", "")
         );
+        
+    LOCK(cs_treasury);
         
     if (!activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
@@ -107,6 +113,86 @@ UniValue gettreasuryproposal(const JSONRPCRequest& request)
     return proposaltoJSON(currentProposal, nSettings);
 }
 
+UniValue gettreasuryscriptbyid(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 1 && request.params.size() != 2)
+        throw std::runtime_error(
+            "gettreasuryscriptbyid\n"
+            "\nReturns details of the treasury saved script, given by the ID. The ID can be found with gettreasuryscriptinfo.\n"
+            "\nArguments:\n"
+            "1. \"id\"             (required, int) The ID of the treasury script, that you want to see.\n"
+            "2. \"decodescript\"   (optional, int, default=0) How to decode the treasury script (0 = describe the treasury script, 1 = show hex and describe the script)\n"
+            "\nResult:\n"
+            "{\n"
+            "   (object) The object of the treasury script\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("gettreasuryscriptbyid", "")
+            + HelpExampleRpc("gettreasuryscriptbyid", "")
+        );
+        
+    LOCK(cs_treasury);
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    int nIndex = request.params[0].get_int();
+    
+    if (nIndex > activeTreasury.vRedeemScripts.size())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "ID not found. (Out of range)");
+    
+    int nSettings = (!request.params[1].isNull()) ? request.params[1].get_int() : 0;
+    
+    if(nSettings < 0 || nSettings > 1)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid decodescript param value.");
+
+    UniValue ret(UniValue::VOBJ);
+    ScriptPubKeyToUniv(activeTreasury.vRedeemScripts[nIndex], ret, nSettings);
+    return ret;
+}
+
+UniValue gettreasuryscriptinfo(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 0 && request.params.size() != 1)
+        throw std::runtime_error(
+            "gettreasuryscriptinfo\n"
+            "\nReturns details of the treasury saved scripts.\n"
+            "\nArguments:\n"
+            "1. \"decodescript\"   (optional, int, default=0) How to decode the treasury scripts (0 = describe the treasury script, 1 = show hex and describe the script)\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"count\": xxxxx,              (numeric) Current treasury scripts\n"
+            "  \"scripts\": xxxxx,            (array) Array of all saved treasury scripts.\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("gettreasuryscriptinfo", "")
+            + HelpExampleRpc("gettreasuryscriptinfo", "")
+        );
+        
+    LOCK(cs_treasury);
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    int nSettings = (!request.params[0].isNull()) ? request.params[0].get_int() : 0;
+    
+    if(nSettings < 0 || nSettings > 1)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid decodescript param value.");
+
+    UniValue ret(UniValue::VOBJ), scripts(UniValue::VARR);
+    ret.pushKV("count", (int64_t) activeTreasury.vRedeemScripts.size());
+    
+    for(size_t i = 0; i < activeTreasury.vRedeemScripts.size(); i++)
+    {
+        UniValue script(UniValue::VOBJ);
+        script.pushKV("id", (int)i);
+        ScriptPubKeyToUniv(activeTreasury.vRedeemScripts[i], script, nSettings);
+        scripts.push_back(script);
+    }
+    ret.pushKV("scripts", scripts);
+    return ret;
+}
+
 UniValue gettreasuryproposalinfo(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 0 && request.params.size() != 1)
@@ -124,7 +210,9 @@ UniValue gettreasuryproposalinfo(const JSONRPCRequest& request)
             + HelpExampleCli("gettreasuryproposalinfo", "")
             + HelpExampleRpc("gettreasuryproposalinfo", "")
         );
-        
+      
+    LOCK(cs_treasury);
+      
     if (!activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
     
@@ -187,7 +275,9 @@ UniValue gettreasurymempoolinfo(const JSONRPCRequest& request)
             + HelpExampleCli("gettreasurymempoolinfo", "")
             + HelpExampleRpc("gettreasurymempoolinfo", "")
         );
-        
+     
+    LOCK(cs_treasury);
+     
     if (!activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
 
@@ -208,6 +298,8 @@ UniValue opentreasurymempool(const JSONRPCRequest& request)
             + HelpExampleRpc("opentreasurymempool", "")
         );
     }
+    
+    LOCK(cs_treasury);
     
     if (activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "You have already a cached treasury mempool. Close, Abort or save it in order to open a new one.");
@@ -238,6 +330,8 @@ UniValue createtreasurymempool(const JSONRPCRequest& request)
             + HelpExampleRpc("createtreasurymempool", "")
         );
     }
+    
+    LOCK(cs_treasury);
     
     if (activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "You have already a cached treasury mempool. Close, Abort or save it in order to create a new one.");
@@ -272,6 +366,8 @@ UniValue createtreasuryproposal(const JSONRPCRequest& request)
             + HelpExampleRpc("createtreasuryproposal", "")
         );
     }
+    
+    LOCK(cs_treasury);
     
     if (!activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
@@ -327,6 +423,8 @@ UniValue savetreasurymempooltonewfile(const JSONRPCRequest& request)
         );
     }
     
+    LOCK(cs_treasury);
+    
     if (!activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
     
@@ -358,6 +456,8 @@ UniValue savetreasurymempool(const JSONRPCRequest& request)
         );
     }
     
+    LOCK(cs_treasury);
+    
     if (!activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
 
@@ -380,6 +480,8 @@ UniValue closetreasurymempool(const JSONRPCRequest& request)
             + HelpExampleRpc("closetreasurymempool", "")
         );
     }
+    
+    LOCK(cs_treasury);
     
     if (!activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
@@ -406,6 +508,8 @@ UniValue aborttreasurymempool(const JSONRPCRequest& request)
         );
     }
     
+    LOCK(cs_treasury);
+    
     if (!activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
     
@@ -421,6 +525,8 @@ static const CRPCCommand commands[] =
     { "treasury",           "gettreasurymempoolinfo",       &gettreasurymempoolinfo,       {} },
     { "treasury",           "closetreasurymempool",         &closetreasurymempool,         {} },
     { "treasury",           "aborttreasurymempool",         &aborttreasurymempool,         {} },
+    { "treasury",           "gettreasuryscriptinfo",        &gettreasuryscriptinfo,        {"decodescript"} },
+    { "treasury",           "gettreasuryscriptbyid",        &gettreasuryscriptbyid,        {"id","decodescript"} },
     { "treasury",           "gettreasuryproposalinfo",      &gettreasuryproposalinfo,      {"decodeproposal"} },
     { "treasury",           "gettreasuryproposal",          &gettreasuryproposal,          {"id", "txdecode"} },
     { "treasury",           "createtreasurymempool",        &createtreasurymempool,        {"directory","filename"}   },

@@ -18,6 +18,11 @@ bool CTreasuryProposal::IsDescriptionValid() const
     return strDescription.length() <= MAX_DESCRIPTION_LENGTH;
 }
 
+bool CTreasuryProposal::IsExpired(const uint32_t nSystemTime) const
+{
+    return nSystemTime >= nExpireTime;
+}
+
 uint256 CTreasuryProposal::GetHash() const
 {
     return SerializeHash(*this);
@@ -71,4 +76,13 @@ uint32_t CTreasuryMempool::GetLastSaved() const
 uint256 CTreasuryMempool::GetHash() const
 {
     return SerializeHash(*this);
+}
+
+void CTreasuryMempool::DeleteExpiredProposals(const uint32_t nSystemTime)
+{
+    for(size_t i = 0; i < vTreasuryProposals.size(); i++)
+    {
+        if(vTreasuryProposals[i].IsExpired(nSystemTime))
+            vTreasuryProposals.erase(vTreasuryProposals.begin() + i);
+    }
 }

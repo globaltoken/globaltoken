@@ -168,6 +168,9 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "rescanblockchain", 1, "stop_height"},
     { "gettreasuryproposal", 1, "txdecode"},
     { "gettreasuryproposalinfo", 0, "decodeproposal"},
+    { "gettreasuryscriptinfo", 0, "decodescript"},
+    { "gettreasuryscriptbyid", 0, "id"},
+    { "gettreasuryscriptbyid", 1, "decodescript"},
 };
 
 class CRPCConvertTable
