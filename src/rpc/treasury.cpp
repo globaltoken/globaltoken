@@ -138,8 +138,11 @@ UniValue gettreasuryscriptbyid(const JSONRPCRequest& request)
     
     int nIndex = request.params[0].get_int();
     
-    if (nIndex > activeTreasury.vRedeemScripts.size())
+    if (nIndex < 0 || nIndex > activeTreasury.vRedeemScripts.size())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "ID not found. (Out of range)");
+    
+    if (activeTreasury.vRedeemScripts.size() == 0)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "ID not found. (No Scripts saved)");
     
     int nSettings = (!request.params[1].isNull()) ? request.params[1].get_int() : 0;
     
