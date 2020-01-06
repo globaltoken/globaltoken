@@ -145,7 +145,6 @@ UniValue gettreasuryproposalinfo(const JSONRPCRequest& request)
     }
     else if(nSettings == 1)
     {
-        proposals.setObject();
         for(size_t i = 0; i < activeTreasury.vTreasuryProposals.size(); i++)
         {
             proposals.push_back(proposaltoJSON(&activeTreasury.vTreasuryProposals[i], 0));
@@ -153,7 +152,6 @@ UniValue gettreasuryproposalinfo(const JSONRPCRequest& request)
     }
     else if(nSettings == 2)
     {
-        proposals.setObject();
         for(size_t i = 0; i < activeTreasury.vTreasuryProposals.size(); i++)
         {
             proposals.push_back(proposaltoJSON(&activeTreasury.vTreasuryProposals[i], 1));
@@ -161,7 +159,6 @@ UniValue gettreasuryproposalinfo(const JSONRPCRequest& request)
     }
     else
     {
-        proposals.setObject();
         for(size_t i = 0; i < activeTreasury.vTreasuryProposals.size(); i++)
         {
             proposals.push_back(proposaltoJSON(&activeTreasury.vTreasuryProposals[i], 2));
@@ -296,13 +293,13 @@ UniValue createtreasuryproposal(const JSONRPCRequest& request)
     
     if(!proposal.IsHeadlineValid())
     {
-        strStream << "Headline exceeds max length with " << proposal.strHeadline.length() << "chars!";
+        strStream << "Headline exceeds max length with " << proposal.strHeadline.length() << " chars!";
         throw JSONRPCError(RPC_INVALID_PARAMETER, strStream.str());
     }
     
     if(!proposal.IsDescriptionValid())
     {
-        strStream << "Description exceeds max length with " << proposal.strDescription.length() << "chars!";
+        strStream << "Description exceeds max length with " << proposal.strDescription.length() << " chars!";
         throw JSONRPCError(RPC_INVALID_PARAMETER, strStream.str());
     }
     
