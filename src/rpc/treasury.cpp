@@ -148,7 +148,7 @@ UniValue gettreasuryproposalinfo(const JSONRPCRequest& request)
         proposals.setObject();
         for(size_t i = 0; i < activeTreasury.vTreasuryProposals.size(); i++)
         {
-            proposals.push_back(proposaltoJSON(&activeTreasury.vTreasuryProposals[i], 0);
+            proposals.push_back(proposaltoJSON(&activeTreasury.vTreasuryProposals[i], 0));
         }
     }
     else if(nSettings == 2)
@@ -156,7 +156,7 @@ UniValue gettreasuryproposalinfo(const JSONRPCRequest& request)
         proposals.setObject();
         for(size_t i = 0; i < activeTreasury.vTreasuryProposals.size(); i++)
         {
-            proposals.push_back(proposaltoJSON(&activeTreasury.vTreasuryProposals[i], 1);
+            proposals.push_back(proposaltoJSON(&activeTreasury.vTreasuryProposals[i], 1));
         }
     }
     else
@@ -164,7 +164,7 @@ UniValue gettreasuryproposalinfo(const JSONRPCRequest& request)
         proposals.setObject();
         for(size_t i = 0; i < activeTreasury.vTreasuryProposals.size(); i++)
         {
-            proposals.push_back(proposaltoJSON(&activeTreasury.vTreasuryProposals[i], 2);
+            proposals.push_back(proposaltoJSON(&activeTreasury.vTreasuryProposals[i], 2));
         }
     }
     ret.pushKV("proposals", proposals);

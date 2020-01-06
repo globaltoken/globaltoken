@@ -17,8 +17,8 @@ class CTreasuryProposal
 {
     
 private:
-    const int MAX_HEADLINE_LENGTH     = 512;
-    const int MAX_DESCRIPTION_LENGTH  = 32768;
+    static const int MAX_HEADLINE_LENGTH     = 512;
+    static const int MAX_DESCRIPTION_LENGTH  = 32768;
     
 public:
 
