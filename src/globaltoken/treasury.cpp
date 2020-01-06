@@ -8,9 +8,14 @@
 
 CTreasuryMempool activeTreasury;
 
-bool CTreasuryProposal::IsNull() const
+bool CTreasuryProposal::IsHeadlineValid() const
 {
-    return (nVersion == 0);
+    return strHeadline.length() <= MAX_HEADLINE_LENGTH;
+}
+
+bool CTreasuryProposal::IsDescriptionValid() const
+{
+    return strDescription.length() <= MAX_DESCRIPTION_LENGTH;
 }
 
 uint256 CTreasuryProposal::GetHash() const
@@ -61,4 +66,9 @@ uint32_t CTreasuryMempool::GetVersion() const
 uint32_t CTreasuryMempool::GetLastSaved() const
 {
     return nLastSaved;
+}
+
+uint256 CTreasuryMempool::GetHash() const
+{
+    return SerializeHash(*this);
 }

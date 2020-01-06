@@ -16,6 +16,10 @@
 class CTreasuryProposal
 {
     
+private:
+    const int MAX_HEADLINE_LENGTH     = 512;
+    const int MAX_DESCRIPTION_LENGTH  = 32768;
+    
 public:
 
     // the version of this proposal
@@ -60,6 +64,8 @@ public:
     }
     
     bool IsNull() const;
+    bool IsHeadlineValid() const;
+    bool IsDescriptionValid() const;
     uint256 GetHash() const;
     
     ADD_SERIALIZE_METHODS;
@@ -143,6 +149,7 @@ public:
     void SetLastSaved (const uint32_t nNewLastSaved);
     uint32_t GetVersion() const;
     uint32_t GetLastSaved() const;
+    uint256 GetHash() const;
 };
 
 /** Treasury Stuff */

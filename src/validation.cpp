@@ -4891,20 +4891,56 @@ bool LoadTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error)
         return false;
     }
 
-    try {
-        std::string strTreasuryMarker;
-        file >> strTreasuryMarker;
-        if (strTreasuryMarker != CONST_TREASURY_FILE_MARKER) {
-            return false;
-        }
-        file >> activeMempool;
-    } catch (const std::exception& e) {
-        error = "Failed to deserialize treasury mempool data on disk. See debug.log for details.";
-        LogPrintf("Failed to deserialize treasury mempool data on disk with path %s/%s: %s. Continuing anyway.\n", activeMempool.GetTreasuryDir().c_str(), activeMempool.GetTreasuryFile().c_str(), e.what());
+    if(!TreasuryMempoolSanityChecks(activeMempool, error, false, &file))
+    {
+        LogPrintf("Treasury Mempool Sanity checks failed: %s\n", error.c_str());
+        error = "Treasury mempool sanity checks failed at: " + error;
         return false;
     }
 
     LogPrintf("Imported treasury mempool proposals from disk: %i items loaded from file %s/%s | Last edited: %lu\n", activeMempool.vTreasuryProposals.size(), activeMempool.GetTreasuryDir().c_str(), activeMempool.GetTreasuryFile().c_str(), (unsigned long)activeMempool.GetLastSaved());
+    return true;
+}
+
+bool TreasuryMempoolSanityChecks(CTreasuryMempool &activeMempool, std::string &error, bool fCheckFileReplacement, CAutoFile *file)
+{
+    // We check, if the file already exists.
+    // like mempool.dat or wallet.dat, we prevent that user's cannot overwrite other data.
+    
+    fs::path pathDest(activeMempool.GetTreasuryDir());
+    if(fCheckFileReplacement && fs::exists(pathDest / (activeMempool.GetTreasuryFile())))
+    {
+        error = "File already exists, cannot overwrite existing file.";
+        return false;
+    }
+    
+    if(file != nullptr)
+    {
+        try {
+            // Check the treasury magic and the sha256 hash!
+            std::string strTreasuryMarker;
+            uint256 hash;
+            CTreasuryMempool tempmempool(activeMempool.GetTreasuryDir(), activeMempool.GetTreasuryFile());
+            *file >> strTreasuryMarker;
+            if (strTreasuryMarker != CONST_TREASURY_FILE_MARKER) 
+            {
+                error = "Invalid file format. Treasury magic not found!";
+                return false;
+            }
+            *file >> hash;
+            *file >> tempmempool;
+            if (hash != tempmempool.GetHash()) 
+            {
+                error = "File corrupted. Sha256sum mismatch.";
+                return false;
+            }
+            activeMempool = tempmempool;
+        } catch (const std::exception& e) {
+            error = "Failed to deserialize treasury mempool data on disk. See debug.log for details.";
+            LogPrintf("Failed to deserialize treasury mempool data on disk with path %s/%s: %s. Continuing anyway.\n", activeMempool.GetTreasuryDir().c_str(), activeMempool.GetTreasuryFile().c_str(), e.what());
+            return false;
+        }
+    }
     return true;
 }
 
@@ -4921,7 +4957,9 @@ bool DumpTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error)
         }
         CAutoFile file(filestr, SER_DISK, CLIENT_VERSION);
         std::string strTreasuryMarker = CONST_TREASURY_FILE_MARKER;
+        uint256 hash = activeMempool.GetHash();
         file << strTreasuryMarker;
+        file << hash;
         file << activeMempool;
         FileCommit(file.Get());
         file.fclose();

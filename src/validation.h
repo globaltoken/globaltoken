@@ -43,6 +43,7 @@ class CScriptCheck;
 class CBlockPolicyEstimator;
 class CTxMemPool;
 class CValidationState;
+class CAutoFile;
 struct ChainTxData;
 
 struct PrecomputedTransactionData;
@@ -513,6 +514,9 @@ bool LoadMempool();
 
 /** Dump the treasury mempool to disk. */
 bool DumpTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error);
+
+/** Sanity check the treasury mempool file from disk. */
+bool TreasuryMempoolSanityChecks(CTreasuryMempool &activeMempool, std::string &error, bool fCheckFileReplacement, CAutoFile *file);
 
 /** Load the treasury mempool from disk. */
 bool LoadTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error);

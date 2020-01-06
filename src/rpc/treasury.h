@@ -7,8 +7,12 @@
 #include <stdint.h>
 
 class UniValue;
+class CTreasuryProposal;
 
 /** Treasury Mempool information to JSON */
 UniValue treasurymempoolInfoToJSON();
+
+/** Treasury Proposal to JSON */
+UniValue proposaltoJSON(const CTreasuryProposal* proposal, int decodeProposalTX);
 
 #endif // BITCOIN_RPC_TREASURY_H
