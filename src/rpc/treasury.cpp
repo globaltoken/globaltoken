@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <rpc/treasury.h>
+#include <base58.h>
 #include <core_io.h>
 #include <rpc/server.h>
 #include <globaltoken/treasury.h>
@@ -14,6 +15,7 @@
 #include <random.h>
 #include <sync.h>
 #include <script/script.h>
+#include <script/standard.h>
 
 #include <stdint.h>
 #include <sstream>
