@@ -95,23 +95,128 @@ UniValue gettreasuryproposal(const JSONRPCRequest& request)
     const CTreasuryProposal *currentProposal = nullptr;
     uint256 proposalHash = uint256S(request.params[0].get_str());
     int nSettings = (!request.params[1].isNull()) ? request.params[1].get_int() : 0;
+    size_t nIndex = 0;
     
     if(nSettings < 0 || nSettings > 2)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid txdecode param value.");
     
-    for(size_t i = 0; i < activeTreasury.vTreasuryProposals.size(); i++)
-    {
-        if(activeTreasury.vTreasuryProposals[i].hashID == proposalHash)
-        {
-            currentProposal = &activeTreasury.vTreasuryProposals[i];
-            break;
-        }
-    }
-    
-    if(currentProposal == nullptr)
-        throw JSONRPCError(RPC_MISC_ERROR, "Treasury proposal not found.");
+    if(!activeTreasury.GetProposalvID(proposalHash, nIndex))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury proposal not found.");
 
-    return proposaltoJSON(currentProposal, nSettings);
+    return proposaltoJSON(&activeTreasury.vTreasuryProposals[nIndex], nSettings);
+}
+
+UniValue cleartreasuryscripts(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+            "cleartreasuryscripts\n"
+            "\nRemoves all treasury scripts from treasury mempool.\n"
+            "\nResult:\n"
+            "\n(string) Returns null.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("cleartreasuryscripts", "")
+            + HelpExampleRpc("cleartreasuryscripts", "")
+        );
+        
+    LOCK(cs_treasury);
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    activeTreasury.vRedeemScripts.clear();
+    return NullUniValue;
+}
+
+UniValue cleartreasuryproposals(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+            "cleartreasuryproposals\n"
+            "\nRemoves all treasury proposals from treasury mempool.\n"
+            "\nResult:\n"
+            "\n(string) Returns null.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("cleartreasuryproposals", "")
+            + HelpExampleRpc("cleartreasuryproposals", "")
+        );
+        
+    LOCK(cs_treasury);
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    activeTreasury.vTreasuryProposals.clear();
+    return NullUniValue;
+}
+
+UniValue extendtreasuryproposal(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+            "extendtreasuryproposal\n"
+            "\nExtends the expiration time, so this proposal keeps longer valid.\n"
+            "\nArguments:\n"
+            "1. ID          (required, hash) The hash (ID) of the proposal to delete.\n"
+            "\nResult:\n"
+            "\n(string) Returns null, if this proposal has been extended, otherwise it returns an error.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("extendtreasuryproposal", "")
+            + HelpExampleRpc("extendtreasuryproposal", "")
+        );
+        
+    LOCK(cs_treasury);
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    uint256 hash = uint256S(request.params[0].get_str());
+    size_t nIndex = 0;
+    int64_t nSystemTime = GetTime();
+    
+    if(!activeTreasury.GetProposalvID(hash, nIndex))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury proposal not found.");
+
+    int64_t nDifference = (int64_t)activeTreasury.vTreasuryProposals[nIndex].nExpireTime - nSystemTime;
+    
+    if(nDifference >= (60 * 60 * 24 * 7))
+        throw JSONRPCError(RPC_MISC_ERROR, "Proposal is not about to expire, so you cannot extend it!");
+    
+    activeTreasury.vTreasuryProposals[nIndex].nExpireTime = nSystemTime + (60 * 60 * 24 * 21); // Extend it for 3 weeks / 21 days.
+    activeTreasury.vTreasuryProposals[nIndex].nLastEdited = nSystemTime; // Modify last edited timestamp.
+    return NullUniValue;
+}
+
+UniValue deletetreasuryproposal(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+            "deletetreasuryproposal\n"
+            "\nRemoves a Treasury Redeem Script by ID. The ID can be found with gettreasuryscriptinfo.\n"
+            "\nArguments:\n"
+            "1. ID          (required, hash) The hash (ID) of the proposal to delete.\n"
+            "\nResult:\n"
+            "\n(string) Returns null, if this proposal has been deleted, otherwise it returns an error.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("deletetreasuryproposal", "")
+            + HelpExampleRpc("deletetreasuryproposal", "")
+        );
+        
+    LOCK(cs_treasury);
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    uint256 hash = uint256S(request.params[0].get_str());
+    size_t nIndex = 0;
+    uint32_t nSystemTime = GetTime();
+    
+    if(!activeTreasury.GetProposalvID(hash, nIndex))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury proposal not found.");
+
+    activeTreasury.vTreasuryProposals[nIndex].nExpireTime = nSystemTime - 1; // mark as expired.
+    activeTreasury.DeleteExpiredProposals(nSystemTime);
+    return NullUniValue;
 }
 
 UniValue removetreasuryscript(const JSONRPCRequest& request)
@@ -632,13 +737,17 @@ static const CRPCCommand commands[] =
     /** All treasury script functions */
     { "treasury",           "addtreasuryscript",            &addtreasuryscript,            {"hexscript"} },
     { "treasury",           "removetreasuryscript",         &removetreasuryscript,         {"id"} },
+    { "treasury",           "cleartreasuryscripts",         &cleartreasuryscripts,         {} },
     { "treasury",           "gettreasuryscriptinfo",        &gettreasuryscriptinfo,        {"decodescript"} },
     { "treasury",           "gettreasuryscriptbyid",        &gettreasuryscriptbyid,        {"id","decodescript"} },
     
     /** All treasury proposal functions */
     { "treasury",           "gettreasuryproposalinfo",      &gettreasuryproposalinfo,      {"decodeproposal"} },
     { "treasury",           "gettreasuryproposal",          &gettreasuryproposal,          {"id", "txdecode"} },
-    { "treasury",           "createtreasuryproposal",       &createtreasuryproposal,       {"headline","description"} }
+    { "treasury",           "createtreasuryproposal",       &createtreasuryproposal,       {"headline","description"} },
+    { "treasury",           "deletetreasuryproposal",       &deletetreasuryproposal,       {"id"} },
+    { "treasury",           "extendtreasuryproposal",       &extendtreasuryproposal,       {"id"} },
+    { "treasury",           "cleartreasuryproposals",       &cleartreasuryproposals,       {} }
 };
 
 void RegisterTreasuryRPCCommands(CRPCTable &t)

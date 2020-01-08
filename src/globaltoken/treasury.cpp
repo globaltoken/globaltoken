@@ -132,3 +132,16 @@ bool CTreasuryMempool::RemoveScriptByID(const size_t nIndex)
     vRedeemScripts.erase(vRedeemScripts.begin() + nIndex);
     return true;
 }
+
+bool CTreasuryMempool::GetProposalvID(const uint256& hash, size_t& nIndex) const
+{
+    for(size_t i = 0; i < activeTreasury.vTreasuryProposals.size(); i++)
+    {
+        if(activeTreasury.vTreasuryProposals[i].hashID == hash)
+        {
+            nIndex = i;
+            return true;
+        }
+    }
+    return false;
+}

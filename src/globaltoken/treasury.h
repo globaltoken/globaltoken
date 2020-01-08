@@ -167,6 +167,7 @@ public:
     void DeleteExpiredProposals(const uint32_t nSystemTime);
     bool SearchScriptByScript(const CScript &script, size_t &nIndex) const;
     bool RemoveScriptByID(const size_t nIndex);
+    bool GetProposalvID(const uint256& hash, size_t& nIndex) const;
 };
 
 /** Treasury Stuff */
