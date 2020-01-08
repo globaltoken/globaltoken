@@ -110,7 +110,7 @@ UniValue gettreasuryproposal(const JSONRPCRequest& request)
 
 UniValue cleartreasuryscripts(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 1)
+    if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
             "cleartreasuryscripts\n"
             "\nRemoves all treasury scripts from treasury mempool.\n"
@@ -132,7 +132,7 @@ UniValue cleartreasuryscripts(const JSONRPCRequest& request)
 
 UniValue cleartreasuryproposals(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 1)
+    if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
             "cleartreasuryproposals\n"
             "\nRemoves all treasury proposals from treasury mempool.\n"
