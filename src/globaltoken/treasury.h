@@ -20,6 +20,10 @@ private:
     static const int MAX_HEADLINE_LENGTH     = 512;
     static const int MAX_DESCRIPTION_LENGTH  = 32768;
     
+    // if this proposal is checked and the signer agreed with it.
+    // (memory-only)
+    bool fAgreed;
+    
 public:
 
     // the version of this proposal
@@ -53,6 +57,7 @@ public:
     
     void SetNull()
     {
+        fAgreed = false;
         nVersion = 0;
         hashID.SetNull();
         nCreationTime = 0;
@@ -67,6 +72,9 @@ public:
     bool IsHeadlineValid() const;
     bool IsDescriptionValid() const;
     bool IsExpired(const uint32_t nSystemTime) const;
+    bool IsAgreed() const;
+    bool SetAgreed() const;
+    bool UnsetAgreed() const;
     uint256 GetHash() const;
     
     ADD_SERIALIZE_METHODS;
@@ -157,6 +165,7 @@ public:
     uint32_t GetLastSaved() const;
     uint256 GetHash() const;
     void DeleteExpiredProposals(const uint32_t nSystemTime);
+    bool SearchScriptByScript(const CScript &script, size_t &nIndex) const;
 };
 
 /** Treasury Stuff */

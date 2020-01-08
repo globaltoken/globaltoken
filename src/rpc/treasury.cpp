@@ -13,6 +13,7 @@
 #include <utiltime.h>
 #include <random.h>
 #include <sync.h>
+#include <script/script.h>
 
 #include <stdint.h>
 #include <sstream>
@@ -111,6 +112,54 @@ UniValue gettreasuryproposal(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_MISC_ERROR, "Treasury proposal not found.");
 
     return proposaltoJSON(currentProposal, nSettings);
+}
+
+UniValue addtreasuryscript(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+            "addtreasuryscript\n"
+            "\nReturns details of the treasury saved script, given by the ID. The ID can be found with gettreasuryscriptinfo.\n"
+            "\nArguments:\n"
+            "1. \"hexscript\"       (required, string) The hex encoded treasury redeem script, that you want to add.\n"
+            "\nResult:\n"
+            "\n(int) If successful: the ID of the treasury script, that has been added.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("addtreasuryscript", "")
+            + HelpExampleRpc("addtreasuryscript", "")
+        );
+        
+    LOCK(cs_treasury);
+    RPCTypeCheck(request.params, {UniValue::VSTR});
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    CScript script;
+    size_t nIndex = 0;
+    if (request.params[0].get_str().size() > 1)
+    {
+        std::vector<unsigned char> scriptData(ParseHexV(request.params[0], "argument"));
+        script = CScript(scriptData.begin(), scriptData.end());
+    } 
+    else 
+    {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Empty scripts cannot be added!");
+    }
+    
+    if(!script.HasValidOps())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Redeem script includes unknown OP Codes!");
+    
+    if(script.IsUnspendable())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "The treasury script is unspendable!");
+    
+    if(activeTreasury.SearchScriptByScript(script, nIndex))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury redeemscript already exists in treasury mempool!");
+    
+    // Now all checks are done, and we can add this script.
+    activeTreasury.vRedeemScripts.push_back(script);
+    activeTreasury.SearchScriptByScript(script, nIndex);
+    return (int)nIndex;
 }
 
 UniValue gettreasuryscriptbyid(const JSONRPCRequest& request)
@@ -524,17 +573,23 @@ UniValue aborttreasurymempool(const JSONRPCRequest& request)
 static const CRPCCommand commands[] =
 { //  category              name                            actor (function)               argNames
   //  --------------------- ------------------------------  -----------------------------  ----------
+    /** All treasury mempool functions */
+    { "treasury",           "createtreasurymempool",        &createtreasurymempool,        {"directory","filename"}   },
+    { "treasury",           "opentreasurymempool",          &opentreasurymempool,          {"directory","filename"}   },
+    { "treasury",           "savetreasurymempooltonewfile", &savetreasurymempooltonewfile, {"directory","filename"}   },
     { "treasury",           "savetreasurymempool",          &savetreasurymempool,          {} },
     { "treasury",           "gettreasurymempoolinfo",       &gettreasurymempoolinfo,       {} },
     { "treasury",           "closetreasurymempool",         &closetreasurymempool,         {} },
     { "treasury",           "aborttreasurymempool",         &aborttreasurymempool,         {} },
+    
+    /** All treasury script functions */
+    { "treasury",           "addtreasuryscript",            &addtreasuryscript,            {"hexscript"} },
     { "treasury",           "gettreasuryscriptinfo",        &gettreasuryscriptinfo,        {"decodescript"} },
     { "treasury",           "gettreasuryscriptbyid",        &gettreasuryscriptbyid,        {"id","decodescript"} },
+    
+    /** All treasury proposal functions */
     { "treasury",           "gettreasuryproposalinfo",      &gettreasuryproposalinfo,      {"decodeproposal"} },
     { "treasury",           "gettreasuryproposal",          &gettreasuryproposal,          {"id", "txdecode"} },
-    { "treasury",           "createtreasurymempool",        &createtreasurymempool,        {"directory","filename"}   },
-    { "treasury",           "opentreasurymempool",          &opentreasurymempool,          {"directory","filename"}   },
-    { "treasury",           "savetreasurymempooltonewfile", &savetreasurymempooltonewfile, {"directory","filename"}   },
     { "treasury",           "createtreasuryproposal",       &createtreasuryproposal,       {"headline","description"} }
 };
 

@@ -5,6 +5,7 @@
 #include <globaltoken/treasury.h>
 #include <uint256.h>
 #include <hash.h>
+#include <script/script.h>
 
 CTreasuryMempool activeTreasury;
 
@@ -21,6 +22,29 @@ bool CTreasuryProposal::IsDescriptionValid() const
 bool CTreasuryProposal::IsExpired(const uint32_t nSystemTime) const
 {
     return nSystemTime >= nExpireTime;
+}
+
+bool CTreasuryProposal::IsAgreed() const
+{
+    return fAgreed;
+}
+
+bool CTreasuryProposal::SetAgreed() const
+{
+    if(fAgreed)
+        return false; // Already agreed
+    
+    fAgreed = true;
+    return fAgreed;
+}
+
+bool CTreasuryProposal::UnsetAgreed() const
+{
+    if(!fAgreed)
+        return false; // Already not agreed
+    
+    fAgreed = false;
+    return fAgreed;
 }
 
 uint256 CTreasuryProposal::GetHash() const
@@ -85,4 +109,17 @@ void CTreasuryMempool::DeleteExpiredProposals(const uint32_t nSystemTime)
         if(vTreasuryProposals[i].IsExpired(nSystemTime))
             vTreasuryProposals.erase(vTreasuryProposals.begin() + i);
     }
+}
+
+bool CTreasuryMempool::SearchScriptByScript(const CScript &script, size_t &nIndex) const
+{
+    for(size_t i = 0; i < vRedeemScripts.size(); i++)
+    {
+        if(vRedeemScripts[i] == script)
+        {
+            nIndex = i;
+            return true;
+        }
+    }
+    return false;
 }
