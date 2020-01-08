@@ -231,6 +231,14 @@ UniValue gettreasuryscriptbyid(const JSONRPCRequest& request)
 
     UniValue ret(UniValue::VOBJ);
     ScriptPubKeyToUniv(activeTreasury.vRedeemScripts[nIndex], ret, nSettings);
+    UniValue type;
+    type = find_value(ret, "type");
+
+    if (type.isStr() && type.get_str() != "scripthash") {
+        // P2SH cannot be wrapped in a P2SH. If this script is already a P2SH,
+        // don't return the address for a P2SH of the P2SH.
+        ret.pushKV("p2sh", EncodeDestination(CScriptID(activeTreasury.vRedeemScripts[nIndex])));
+    }
     return ret;
 }
 
@@ -270,6 +278,14 @@ UniValue gettreasuryscriptinfo(const JSONRPCRequest& request)
         UniValue script(UniValue::VOBJ);
         script.pushKV("id", (int)i);
         ScriptPubKeyToUniv(activeTreasury.vRedeemScripts[i], script, nSettings);
+        UniValue type;
+        type = find_value(script, "type");
+
+        if (type.isStr() && type.get_str() != "scripthash") {
+            // P2SH cannot be wrapped in a P2SH. If this script is already a P2SH,
+            // don't return the address for a P2SH of the P2SH.
+            script.pushKV("p2sh", EncodeDestination(CScriptID(activeTreasury.vRedeemScripts[i])));
+        }
         scripts.push_back(script);
     }
     ret.pushKV("scripts", scripts);
