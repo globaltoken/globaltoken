@@ -171,6 +171,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "gettreasuryscriptinfo", 0, "decodescript"},
     { "gettreasuryscriptbyid", 0, "id"},
     { "gettreasuryscriptbyid", 1, "decodescript"},
+    { "removetreasuryscript", 0, "id"},
 };
 
 class CRPCConvertTable

@@ -29,7 +29,7 @@ bool CTreasuryProposal::IsAgreed() const
     return fAgreed;
 }
 
-bool CTreasuryProposal::SetAgreed() const
+bool CTreasuryProposal::SetAgreed()
 {
     if(fAgreed)
         return false; // Already agreed
@@ -38,7 +38,7 @@ bool CTreasuryProposal::SetAgreed() const
     return fAgreed;
 }
 
-bool CTreasuryProposal::UnsetAgreed() const
+bool CTreasuryProposal::UnsetAgreed()
 {
     if(!fAgreed)
         return false; // Already not agreed
@@ -122,4 +122,13 @@ bool CTreasuryMempool::SearchScriptByScript(const CScript &script, size_t &nInde
         }
     }
     return false;
+}
+
+bool CTreasuryMempool::RemoveScriptByID(const size_t nIndex)
+{
+    if(nIndex >= vRedeemScripts.size())
+        return false;
+    
+    vRedeemScripts.erase(vRedeemScripts.begin() + nIndex);
+    return true;
 }

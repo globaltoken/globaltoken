@@ -73,8 +73,8 @@ public:
     bool IsDescriptionValid() const;
     bool IsExpired(const uint32_t nSystemTime) const;
     bool IsAgreed() const;
-    bool SetAgreed() const;
-    bool UnsetAgreed() const;
+    bool SetAgreed();
+    bool UnsetAgreed();
     uint256 GetHash() const;
     
     ADD_SERIALIZE_METHODS;
@@ -166,6 +166,7 @@ public:
     uint256 GetHash() const;
     void DeleteExpiredProposals(const uint32_t nSystemTime);
     bool SearchScriptByScript(const CScript &script, size_t &nIndex) const;
+    bool RemoveScriptByID(const size_t nIndex);
 };
 
 /** Treasury Stuff */

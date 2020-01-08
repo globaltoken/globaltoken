@@ -114,6 +114,37 @@ UniValue gettreasuryproposal(const JSONRPCRequest& request)
     return proposaltoJSON(currentProposal, nSettings);
 }
 
+UniValue removetreasuryscript(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+            "removetreasuryscript\n"
+            "\nRemoves a Treasury Redeem Script by ID. The ID can be found with gettreasuryscriptinfo.\n"
+            "\nArguments:\n"
+            "1. ID          (required, integer) The ID of the script, that should be removed.\n"
+            "\nResult:\n"
+            "\n(string) If successful: A string with the message, that it was successfully added and what the Script ID is.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("removetreasuryscript", "")
+            + HelpExampleRpc("removetreasuryscript", "")
+        );
+        
+    LOCK(cs_treasury);
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    int nIndex = request.params[0].get_int();
+    
+    if (nIndex < 0 || nIndex >= activeTreasury.vRedeemScripts.size())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "ID not found. (Out of range)");
+
+    if(activeTreasury.RemoveScriptByID(nIndex))
+        return std::string("Removed Redeemscript successfully!");
+    else
+        throw JSONRPCError(RPC_MISC_ERROR, "Could not delete Treasury Redeem Script.");
+}
+
 UniValue addtreasuryscript(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 1)
@@ -123,7 +154,7 @@ UniValue addtreasuryscript(const JSONRPCRequest& request)
             "\nArguments:\n"
             "1. \"hexscript\"       (required, string) The hex encoded treasury redeem script, that you want to add.\n"
             "\nResult:\n"
-            "\n(int) If successful: the ID of the treasury script, that has been added.\n"
+            "\n(string) If successful: A string with the message, that it was successfully added and what the Script ID is.\n"
             "\nExamples:\n"
             + HelpExampleCli("addtreasuryscript", "")
             + HelpExampleRpc("addtreasuryscript", "")
@@ -136,6 +167,7 @@ UniValue addtreasuryscript(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
     
     CScript script;
+    std::stringstream strStream;
     size_t nIndex = 0;
     if (request.params[0].get_str().size() > 1)
     {
@@ -159,7 +191,9 @@ UniValue addtreasuryscript(const JSONRPCRequest& request)
     // Now all checks are done, and we can add this script.
     activeTreasury.vRedeemScripts.push_back(script);
     activeTreasury.SearchScriptByScript(script, nIndex);
-    return (int)nIndex;
+    
+    strStream << "The treasury script has been added successfully with ID: " << nIndex;
+    return strStream.str();
 }
 
 UniValue gettreasuryscriptbyid(const JSONRPCRequest& request)
@@ -187,11 +221,8 @@ UniValue gettreasuryscriptbyid(const JSONRPCRequest& request)
     
     int nIndex = request.params[0].get_int();
     
-    if (nIndex < 0 || nIndex > activeTreasury.vRedeemScripts.size())
+    if (nIndex < 0 || nIndex >= activeTreasury.vRedeemScripts.size())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "ID not found. (Out of range)");
-    
-    if (activeTreasury.vRedeemScripts.size() == 0)
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "ID not found. (No Scripts saved)");
     
     int nSettings = (!request.params[1].isNull()) ? request.params[1].get_int() : 0;
     
@@ -584,6 +615,7 @@ static const CRPCCommand commands[] =
     
     /** All treasury script functions */
     { "treasury",           "addtreasuryscript",            &addtreasuryscript,            {"hexscript"} },
+    { "treasury",           "removetreasuryscript",         &removetreasuryscript,         {"id"} },
     { "treasury",           "gettreasuryscriptinfo",        &gettreasuryscriptinfo,        {"decodescript"} },
     { "treasury",           "gettreasuryscriptbyid",        &gettreasuryscriptbyid,        {"id","decodescript"} },
     
