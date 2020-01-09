@@ -60,6 +60,70 @@ UniValue proposaltoJSON(const CTreasuryProposal* proposal, int decodeProposalTX)
     return result;
 }
 
+UniValue votetreasuryproposal(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+            "votetreasuryproposal\n"
+            "\nVotes for a treasury proposal.\n"
+            "\nArguments:\n"
+            "1. \"id\"         (required, string) The proposal ID to vote for.\n"
+            "\nResult:\n"
+            "{\nNull, if voted otherwise it will return an error.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("votetreasuryproposal", "")
+            + HelpExampleRpc("votetreasuryproposal", "")
+        );
+        
+    LOCK(cs_treasury);
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    uint256 proposalHash = uint256S(request.params[0].get_str());
+    size_t nIndex = 0;
+    
+    if(!activeTreasury.GetProposalvID(proposalHash, nIndex))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury proposal not found.");
+    
+    if(!activeTreasury.vTreasuryProposals[nIndex].SetAgreed())
+        throw JSONRPCError(RPC_MISC_ERROR, "You already agreed with this proposal, use \"deltreasuryproposalvote\" to delete your vote.");
+
+    return NullUniValue;
+}
+
+UniValue deltreasuryproposalvote(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+            "deltreasuryproposalvote\n"
+            "\nRemoves your vote from a treasury proposal.\n"
+            "\nArguments:\n"
+            "1. \"id\"         (required, string) The proposal ID to vote for.\n"
+            "\nResult:\n"
+            "{\nNull, if the vote has been deleted, otherwise it returns an error.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("deltreasuryproposalvote", "")
+            + HelpExampleRpc("deltreasuryproposalvote", "")
+        );
+        
+    LOCK(cs_treasury);
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    uint256 proposalHash = uint256S(request.params[0].get_str());
+    size_t nIndex = 0;
+    
+    if(!activeTreasury.GetProposalvID(proposalHash, nIndex))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury proposal not found.");
+    
+    if(!activeTreasury.vTreasuryProposals[nIndex].UnsetAgreed())
+        throw JSONRPCError(RPC_MISC_ERROR, "This proposal is unvoted, use \"votetreasuryproposal\" to add your vote.");
+
+    return NullUniValue;
+}
+
 UniValue gettreasuryproposal(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 1 && request.params.size() != 2)
@@ -749,6 +813,8 @@ static const CRPCCommand commands[] =
     { "treasury",           "createtreasuryproposal",       &createtreasuryproposal,       {"headline","description"} },
     { "treasury",           "deletetreasuryproposal",       &deletetreasuryproposal,       {"id"} },
     { "treasury",           "extendtreasuryproposal",       &extendtreasuryproposal,       {"id"} },
+    { "treasury",           "votetreasuryproposal",         &votetreasuryproposal,         {"id"} },
+    { "treasury",           "deltreasuryproposalvote",      &deltreasuryproposalvote,      {"id"} },
     { "treasury",           "cleartreasuryproposals",       &cleartreasuryproposals,       {} }
 };
 
