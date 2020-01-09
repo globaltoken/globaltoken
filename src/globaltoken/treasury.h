@@ -5,6 +5,8 @@
 #ifndef GLOBALTOKEN_TREASURY_H
 #define GLOBALTOKEN_TREASURY_H
 
+#include <boost/filesystem.hpp>
+
 #include <script/script.h>
 #include <primitives/transaction.h>
 #include <serialize.h>
@@ -112,10 +114,7 @@ private:
     uint32_t nLastSaved;
 
     /* Directory of the current treasury file */
-    std::string strTreasuryDir;
-    
-    /* File of the current treasury file */
-    std::string strTreasuryFile;
+    boost::filesystem::path filePath;
     
     void BasicInit()
     {
@@ -136,19 +135,17 @@ public:
         SetNull();
     }
     
-    CTreasuryMempool(const std::string &dir, const std::string &filename)
+    CTreasuryMempool(const std::string &path)
     {
         BasicInit();
-        strTreasuryDir = dir;
-        strTreasuryFile = filename;
+        SetTreasuryFilePath(path);
     }
     
     void SetNull()
     {
         nVersion = 0;
         nLastSaved = 0;
-        strTreasuryDir.clear();
-        strTreasuryFile.clear();
+        filePath.clear();
         vTreasuryProposals.clear();
         vRedeemScripts.clear();
     }
@@ -163,10 +160,8 @@ public:
         READWRITE(vRedeemScripts);
     }
     
-    void SetTreasuryDir (const std::string &dir);
-    void SetTreasuryFile (const std::string &file);
-    std::string GetTreasuryDir () const;
-    std::string GetTreasuryFile () const;
+    void SetTreasuryFilePath (const std::string &path);
+    boost::filesystem::path GetTreasuryFilePath () const;
     bool IsCached() const;
     void SetVersion (const uint32_t nNewVersion);
     void SetLastSaved (const uint32_t nNewLastSaved);

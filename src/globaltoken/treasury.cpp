@@ -7,6 +7,8 @@
 #include <hash.h>
 #include <script/script.h>
 
+#include <boost/filesystem.hpp>
+
 CTreasuryMempool activeTreasury;
 
 bool CTreasuryProposal::IsNull() const
@@ -57,24 +59,14 @@ uint256 CTreasuryProposal::GetHash() const
     return SerializeHash(*this);
 }
 
-void CTreasuryMempool::SetTreasuryDir (const std::string &dir)
+void CTreasuryMempool::SetTreasuryFilePath (const std::string &path)
 {
-    strTreasuryDir = dir;
+    filePath = boost::filesystem::path(path);
 }
 
-void CTreasuryMempool::SetTreasuryFile (const std::string &file)
+boost::filesystem::path CTreasuryMempool::GetTreasuryFilePath () const
 {
-    strTreasuryFile = file;
-}
-
-std::string CTreasuryMempool::GetTreasuryDir () const
-{
-    return strTreasuryDir;
-}
-
-std::string CTreasuryMempool::GetTreasuryFile () const
-{
-    return strTreasuryFile;
+    return filePath;
 }
 
 bool CTreasuryMempool::IsCached() const

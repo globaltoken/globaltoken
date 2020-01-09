@@ -4884,12 +4884,11 @@ int VersionBitsTipStateSinceHeight(const Consensus::Params& params, Consensus::D
 bool LoadTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error)
 {
     AssertLockHeld(cs_treasury);
-    fs::path pathDest(activeMempool.GetTreasuryDir());
-    FILE* filestr = fsbridge::fopen(pathDest / activeMempool.GetTreasuryFile(), "rb");
+    FILE* filestr = fsbridge::fopen(activeMempool.GetTreasuryFilePath(), "rb");
     CAutoFile file(filestr, SER_DISK, CLIENT_VERSION);
     if (file.IsNull()) {
-        error = "Could not open treasurymempoolfile from Path: " + activeMempool.GetTreasuryDir() + "/" + activeMempool.GetTreasuryFile();
-        LogPrintf("Failed to open treasurymempool file from disk. Path: %s/%s\n", activeMempool.GetTreasuryDir().c_str(), activeMempool.GetTreasuryFile().c_str());
+        error = "Could not open treasurymempoolfile from Path: " + activeMempool.GetTreasuryFilePath().string();
+        LogPrintf("Failed to open treasurymempool file from disk. Path: %s\n", activeMempool.GetTreasuryFilePath().string().c_str());
         return false;
     }
 
@@ -4900,7 +4899,7 @@ bool LoadTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error)
         return false;
     }
 
-    LogPrintf("Imported treasury mempool proposals from disk: %i items loaded from file %s/%s | Last edited: %lu\n", activeMempool.vTreasuryProposals.size(), activeMempool.GetTreasuryDir().c_str(), activeMempool.GetTreasuryFile().c_str(), (unsigned long)activeMempool.GetLastSaved());
+    LogPrintf("Imported treasury mempool proposals from disk: %i items loaded from file %s | Last edited: %lu\n", activeMempool.vTreasuryProposals.size(), activeMempool.GetTreasuryFilePath().string().c_str(), (unsigned long)activeMempool.GetLastSaved());
     return true;
 }
 
@@ -4910,8 +4909,7 @@ bool TreasuryMempoolSanityChecks(CTreasuryMempool &activeMempool, std::string &e
     // We check, if the file already exists.
     // like mempool.dat or wallet.dat, we prevent that user's cannot overwrite other data.
     
-    fs::path pathDest(activeMempool.GetTreasuryDir());
-    if(fCheckFileReplacement && fs::exists(pathDest / (activeMempool.GetTreasuryFile())))
+    if(fCheckFileReplacement && fs::exists(activeMempool.GetTreasuryFilePath()))
     {
         error = "File already exists, cannot overwrite existing file.";
         return false;
@@ -4923,7 +4921,7 @@ bool TreasuryMempoolSanityChecks(CTreasuryMempool &activeMempool, std::string &e
             // Check the treasury magic and the sha256 hash!
             std::string strTreasuryMarker;
             uint256 hash;
-            CTreasuryMempool tempmempool(activeMempool.GetTreasuryDir(), activeMempool.GetTreasuryFile());
+            CTreasuryMempool tempmempool(activeMempool.GetTreasuryFilePath().string());
             *file >> strTreasuryMarker;
             if (strTreasuryMarker != CONST_TREASURY_FILE_MARKER) 
             {
@@ -4941,7 +4939,7 @@ bool TreasuryMempoolSanityChecks(CTreasuryMempool &activeMempool, std::string &e
             activeMempool = tempmempool;
         } catch (const std::exception& e) {
             error = "Failed to deserialize treasury mempool data on disk. See debug.log for details.";
-            LogPrintf("Failed to deserialize treasury mempool data on disk with path %s/%s: %s. Continuing anyway.\n", activeMempool.GetTreasuryDir().c_str(), activeMempool.GetTreasuryFile().c_str(), e.what());
+            LogPrintf("Failed to deserialize treasury mempool data on disk. File: %s, Error: %s. Continuing anyway.\n", activeMempool.GetTreasuryFilePath().string().c_str(), e.what());
             return false;
         }
     }
@@ -4954,12 +4952,13 @@ bool DumpTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error)
     const uint32_t nSystemtime = GetTime();
     activeMempool.SetLastSaved(nSystemtime);
     activeMempool.DeleteExpiredProposals(nSystemtime);
+    
+    fs::path pathTmp(activeMempool.GetTreasuryFilePath().string() + std::string(".new"));
 
     try {
-        fs::path pathDest(activeMempool.GetTreasuryDir());
-        FILE* filestr = fsbridge::fopen(pathDest / (activeMempool.GetTreasuryFile() + std::string(".new")), "wb");
+        FILE* filestr = fsbridge::fopen(pathTmp, "wb");
         if (!filestr) {
-            error = "Could not open file for write: " + activeMempool.GetTreasuryDir() + "/" + activeMempool.GetTreasuryFile();
+            error = "Could not open file for write: " + activeMempool.GetTreasuryFilePath().string();
             return false;
         }
         CAutoFile file(filestr, SER_DISK, CLIENT_VERSION);
@@ -4970,7 +4969,7 @@ bool DumpTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error)
         file << activeMempool;
         FileCommit(file.Get());
         file.fclose();
-        RenameOver(pathDest / (activeMempool.GetTreasuryFile() + std::string(".new")), pathDest / activeMempool.GetTreasuryFile());
+        RenameOver(pathTmp, activeMempool.GetTreasuryFilePath());
         LogPrintf("Dumped treasury mempool\n");
     } catch (const std::exception& e) {
         error = "Error while writing treasury mempool. See debug.log for details.";

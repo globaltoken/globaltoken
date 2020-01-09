@@ -43,8 +43,7 @@ UniValue treasurymempoolInfoToJSON()
     ret.pushKV("bytes", (int64_t) ::GetSerializeSize(activeTreasury, SER_NETWORK, PROTOCOL_VERSION));
     ret.pushKV("version", (int64_t) activeTreasury.GetVersion());
     ret.pushKV("lastsaved", (int64_t) activeTreasury.GetLastSaved());
-    ret.pushKV("datadir", activeTreasury.GetTreasuryDir());
-    ret.pushKV("filename", activeTreasury.GetTreasuryFile());
+    ret.pushKV("filepath", activeTreasury.GetTreasuryFilePath().string());
     return ret;
 }
 
@@ -894,8 +893,7 @@ UniValue gettreasurymempoolinfo(const JSONRPCRequest& request)
             "  \"bytes\": xxxxx,              (numeric) Size in bytes of this treasury memory pool\n"
             "  \"version\": xxxxx,            (numeric) The version of this treasury mempool\n"
             "  \"lastsaved\": xxxxx,          (numeric) Unix timestamp, when the mempool was last saved\n"
-            "  \"datadir\": xxxxx             (numeric) The current datadir of the loaded treasury memory pool\n"
-            "  \"filename\": xxxxx            (numeric) The current file of the loaded treasury memory pool\n"
+            "  \"filepath\": xxxxx            (numeric) The current path to the file of the loaded treasury memory pool\n"
             "}\n"
             "\nExamples:\n"
             + HelpExampleCli("gettreasurymempoolinfo", "")
@@ -912,16 +910,16 @@ UniValue gettreasurymempoolinfo(const JSONRPCRequest& request)
 
 UniValue opentreasurymempool(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 2) {
+    if (request.fHelp || request.params.size() != 1) {
         throw std::runtime_error(
             "opentreasurymempool\n"
             "\nReads the treasury mempool from disk.\n"
             "\nArguments:\n"
-            "1. \"directory\"   (required, string) The directory, where the treasury mempool is saved into.\n"
-            "2. \"filename\"    (required, string) The name of the file, to open.\n"
+            "1. \"pathtofile\"   (required, string) The directory, where the treasury mempool is saved into.\n"
             "\nExamples:\n"
-            + HelpExampleCli("opentreasurymempool", "")
-            + HelpExampleRpc("opentreasurymempool", "")
+            + HelpExampleCli("opentreasurymempool", "\"/usr/share/glttreasury/proposalmempool.dat\"")
+            + HelpExampleCli("opentreasurymempool", "\"C:\\Users\\Example\\Desktop\\proposalmempool.dat\"")
+            + HelpExampleRpc("opentreasurymempool", "\"C:\\Users\\Example\\Desktop\\proposalmempool.dat\"")
         );
     }
     
@@ -930,7 +928,7 @@ UniValue opentreasurymempool(const JSONRPCRequest& request)
     if (activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "You have already a cached treasury mempool. Close, Abort or save it in order to open a new one.");
     
-    CTreasuryMempool cachedTreasury = CTreasuryMempool(request.params[0].get_str(), request.params[1].get_str());
+    CTreasuryMempool cachedTreasury(request.params[0].get_str());
 
     std::string error;
     if (!LoadTreasuryMempool(cachedTreasury, error)) {
@@ -944,16 +942,16 @@ UniValue opentreasurymempool(const JSONRPCRequest& request)
 
 UniValue createtreasurymempool(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 2) {
+    if (request.fHelp || request.params.size() != 1) {
         throw std::runtime_error(
             "createtreasurymempool\n"
             "\nCreates the treasury mempool file on disk.\n"
             "\nArguments:\n"
-            "1. \"directory\"   (required, string) The directory, where the treasury mempool will be saved into.\n"
-            "2. \"filename\"    (required, string) The name of the file, to create.\n"
+            "1. \"pathtofile\"   (required, string) The directory, where the treasury mempool will be saved into.\n"
             "\nExamples:\n"
-            + HelpExampleCli("createtreasurymempool", "")
-            + HelpExampleRpc("createtreasurymempool", "")
+            + HelpExampleCli("createtreasurymempool", "\"/usr/share/glttreasury/proposalmempool.dat\"")
+            + HelpExampleCli("createtreasurymempool", "\"C:\\Users\\Example\\Desktop\\proposalmempool.dat\"")
+            + HelpExampleRpc("createtreasurymempool", "\"C:\\Users\\Example\\Desktop\\proposalmempool.dat\"")
         );
     }
     
@@ -962,7 +960,7 @@ UniValue createtreasurymempool(const JSONRPCRequest& request)
     if (activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "You have already a cached treasury mempool. Close, Abort or save it in order to create a new one.");
     
-    CTreasuryMempool cachedTreasury = CTreasuryMempool(request.params[0].get_str(), request.params[1].get_str());
+    CTreasuryMempool cachedTreasury(request.params[0].get_str());
     
     std::string error;
     if (!TreasuryMempoolSanityChecks(cachedTreasury, error, true, nullptr)) {
@@ -1036,16 +1034,16 @@ UniValue createtreasuryproposal(const JSONRPCRequest& request)
 
 UniValue savetreasurymempooltonewfile(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 2) {
+    if (request.fHelp || request.params.size() != 1) {
         throw std::runtime_error(
             "savetreasurymempooltonewfile\n"
             "\nSaves the treasury mempool to a new file.\n"
             "\nArguments:\n"
-            "1. \"directory\"   (required, string) The directory, where the treasury mempool will be saved into.\n"
-            "2. \"filename\"    (required, string) The name of the file, to create.\n"
+            "1. \"pathtofile\"   (required, string) The directory, where the treasury mempool will be saved into.\n"
             "\nExamples:\n"
-            + HelpExampleCli("savetreasurymempooltonewfile", "")
-            + HelpExampleRpc("savetreasurymempooltonewfile", "")
+            + HelpExampleCli("savetreasurymempooltonewfile", "\"/usr/share/glttreasury/proposalmempool.dat\"")
+            + HelpExampleCli("savetreasurymempooltonewfile", "\"C:\\Users\\Example\\Desktop\\proposalmempool.dat\"")
+            + HelpExampleRpc("savetreasurymempooltonewfile", "\"C:\\Users\\Example\\Desktop\\proposalmempool.dat\"")
         );
     }
     
@@ -1056,8 +1054,7 @@ UniValue savetreasurymempooltonewfile(const JSONRPCRequest& request)
     
     std::string error;
     CTreasuryMempool cachedTreasury = activeTreasury;
-    cachedTreasury.SetTreasuryDir(request.params[0].get_str());
-    cachedTreasury.SetTreasuryFile(request.params[1].get_str());
+    cachedTreasury.SetTreasuryFilePath(request.params[0].get_str());
     
     if (!TreasuryMempoolSanityChecks(cachedTreasury, error, true, nullptr)) {
         throw JSONRPCError(RPC_MISC_ERROR, std::string("Treasury Mempool Sanity checks failed: ") + error);
@@ -1148,9 +1145,9 @@ static const CRPCCommand commands[] =
 { //  category              name                            actor (function)               argNames
   //  --------------------- ------------------------------  -----------------------------  ----------
     /** All treasury mempool functions */
-    { "treasury",           "createtreasurymempool",        &createtreasurymempool,        {"directory","filename"}   },
-    { "treasury",           "opentreasurymempool",          &opentreasurymempool,          {"directory","filename"}   },
-    { "treasury",           "savetreasurymempooltonewfile", &savetreasurymempooltonewfile, {"directory","filename"}   },
+    { "treasury",           "createtreasurymempool",        &createtreasurymempool,        {"pathtofile"}   },
+    { "treasury",           "opentreasurymempool",          &opentreasurymempool,          {"pathtofile"}   },
+    { "treasury",           "savetreasurymempooltonewfile", &savetreasurymempooltonewfile, {"pathtofile"}   },
     { "treasury",           "savetreasurymempool",          &savetreasurymempool,          {} },
     { "treasury",           "gettreasurymempoolinfo",       &gettreasurymempoolinfo,       {} },
     { "treasury",           "closetreasurymempool",         &closetreasurymempool,         {} },
