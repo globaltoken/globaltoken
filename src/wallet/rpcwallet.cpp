@@ -3447,7 +3447,6 @@ UniValue signtreasuryproposalswithwallet(const JSONRPCRequest& request)
     UniValue result(UniValue::VARR);
     
     LOCK3(cs_main, pwallet->cs_wallet, cs_treasury);
-    AssertLockHeld(cs_treasury);
     EnsureWalletIsUnlocked(pwallet);
     
     CBasicKeyStore keystore;
@@ -3458,7 +3457,7 @@ UniValue signtreasuryproposalswithwallet(const JSONRPCRequest& request)
     if (!activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
     
-    if (!activeTreasury.vRedeemScripts.size() == 0)
+    if (activeTreasury.vRedeemScripts.size() == 0)
         throw JSONRPCError(RPC_MISC_ERROR, "No redeem scripts saved in treasury mempool.");
     
     for(size_t r = 0; r < activeTreasury.vRedeemScripts.size(); r++)

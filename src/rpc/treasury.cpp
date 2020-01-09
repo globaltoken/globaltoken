@@ -61,6 +61,75 @@ UniValue proposaltoJSON(const CTreasuryProposal* proposal, int decodeProposalTX)
     return result;
 }
 
+UniValue updateproposaltxfromhex(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 2)
+        throw std::runtime_error(
+            "updateproposaltxfromhex\n"
+            "\nUpdates a treasury proposal transaction from given hex.\n"
+            "\nArguments:\n"
+            "1. \"id\"            (required, string) The proposal ID to update the transaction for.\n"
+            "2. \"hextx\"         (required, string) The raw tx hex encoded, that should be inserted into the proposal.\n"
+            "\nResult:\n"
+            "{\nNull, if successfully updated, otherwise it will return an error.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("updateproposaltxfromhex", "")
+            + HelpExampleRpc("updateproposaltxfromhex", "")
+        );
+        
+    LOCK(cs_treasury);
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    uint256 proposalHash = uint256S(request.params[0].get_str());
+    size_t nIndex = 0;
+    CMutableTransaction mtx;
+    
+    if(!activeTreasury.GetProposalvID(proposalHash, nIndex))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury proposal not found.");
+    
+    if (!DecodeHexTx(mtx, request.params[1].get_str(), true)) {
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
+    }
+    
+    if(activeTreasury.vTreasuryProposals[nIndex].mtx.GetHash() == mtx.GetHash())
+        throw JSONRPCError(RPC_MISC_ERROR, "The transaction is already up to date.");
+
+    activeTreasury.vTreasuryProposals[nIndex].mtx = mtx;
+    return NullUniValue;
+}
+
+UniValue getproposaltxashex(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+            "getproposaltxashex\n"
+            "\nUpdates a treasury proposal transaction from given hex.\n"
+            "\nArguments:\n"
+            "1. \"id\"            (required, string) The proposal ID to get the hex tx for.\n"
+            "\nResult:\n"
+            "{\nThe hex encoded transaction, if successful, otherwise it will return an error.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getproposaltxashex", "")
+            + HelpExampleRpc("getproposaltxashex", "")
+        );
+        
+    LOCK(cs_treasury);
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    uint256 proposalHash = uint256S(request.params[0].get_str());
+    size_t nIndex = 0;
+    
+    if(!activeTreasury.GetProposalvID(proposalHash, nIndex))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury proposal not found.");
+
+    const CTransaction ctx(activeTreasury.vTreasuryProposals[nIndex].mtx);
+    return EncodeHexTx(ctx, RPCSerializationFlags());
+}
+
 UniValue votetreasuryproposal(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 1)
@@ -817,7 +886,11 @@ static const CRPCCommand commands[] =
     { "treasury",           "extendtreasuryproposal",       &extendtreasuryproposal,       {"id"} },
     { "treasury",           "votetreasuryproposal",         &votetreasuryproposal,         {"id"} },
     { "treasury",           "deltreasuryproposalvote",      &deltreasuryproposalvote,      {"id"} },
-    { "treasury",           "cleartreasuryproposals",       &cleartreasuryproposals,       {} }
+    { "treasury",           "cleartreasuryproposals",       &cleartreasuryproposals,       {} },
+    
+    /** All treasury proposal transaction functions */
+    { "treasury",           "updateproposaltxfromhex",      &updateproposaltxfromhex,      {"id","hextx"} },
+    { "treasury",           "getproposaltxashex",           &getproposaltxashex,           {"id"} },
 };
 
 void RegisterTreasuryRPCCommands(CRPCTable &t)
