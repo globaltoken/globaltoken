@@ -3502,7 +3502,7 @@ UniValue signtreasuryproposalswithwallet(const JSONRPCRequest& request)
         if(activeTreasury.vTreasuryProposals[i].IsAgreed())
         {
             // Sign the agreed transactions
-            result.push_back(SignTreasuryTransactionPartially(&activeTreasury.vTreasuryProposals[i].mtx, &keystore, request.params[1]));
+            result.push_back(SignTreasuryTransactionPartially(activeTreasury.vTreasuryProposals[i], &keystore, request.params[1]));
         }
     }
     return result;

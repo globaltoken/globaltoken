@@ -48,6 +48,7 @@ UniValue proposaltoJSON(const CTreasuryProposal* proposal, int decodeProposalTX)
     result.pushKV("lasteditedtime", (int64_t)proposal->nLastEdited);
     result.pushKV("expiretime", (int64_t)proposal->nExpireTime);
     result.pushKV("expired", proposal->IsExpired(GetTime()));
+    result.pushKV("agreed", proposal->IsAgreed());
     result.pushKV("headline", proposal->strHeadline);
     result.pushKV("description", proposal->strDescription);
     if(decodeProposalTX)
@@ -142,6 +143,7 @@ UniValue gettreasuryproposal(const JSONRPCRequest& request)
             "  \"lasteditedtime\": xxxxx,    (int) The unix timestamp, when the proposal was edited last time.\n"
             "  \"expiretime\": xxxxx,        (int) The unix timestamp, when the proposal will expire.\n"
             "  \"expired\": xxxxx,           (bool) Returns true if this proposal is expired, otherwise false.\n"
+            "  \"agreed\": xxxxx,            (bool) Returns true if a vote has been saved for this proposal, otherwise false.\n"
             "  \"headline\": xxxxx,          (string) The headline of this proposal.\n"
             "  \"description\": xxxxx,       (string) The proposal description.\n"
             "  \"tx\": {\n,                  (object) The decoded transation to json.\n"

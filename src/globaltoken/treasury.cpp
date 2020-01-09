@@ -35,7 +35,7 @@ bool CTreasuryProposal::SetAgreed()
         return false; // Already agreed
     
     fAgreed = true;
-    return fAgreed;
+    return true;
 }
 
 bool CTreasuryProposal::UnsetAgreed()
@@ -44,7 +44,7 @@ bool CTreasuryProposal::UnsetAgreed()
         return false; // Already not agreed
     
     fAgreed = false;
-    return fAgreed;
+    return true;
 }
 
 uint256 CTreasuryProposal::GetHash() const

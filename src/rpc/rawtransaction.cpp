@@ -11,6 +11,7 @@
 #include <consensus/validation.h>
 #include <core_io.h>
 #include <init.h>
+#include <globaltoken/treasury.h>
 #include <keystore.h>
 #include <validation.h>
 #include <validationinterface.h>
@@ -861,8 +862,10 @@ UniValue SignTransaction(CMutableTransaction& mtx, const UniValue& prevTxsUnival
     return result;
 }
 
-UniValue SignTreasuryTransactionPartially(CMutableTransaction& mtx, CBasicKeyStore *keystore, const UniValue& hashType)
+UniValue SignTreasuryTransactionPartially(CTreasuryProposal& tpsl, CBasicKeyStore *keystore, const UniValue& hashType)
 {
+    CMutableTransaction &mtx = tpsl.mtx;
+    
     // Fetch previous transactions (inputs):
     CCoinsView viewDummy;
     CCoinsViewCache view(&viewDummy);
@@ -938,7 +941,7 @@ UniValue SignTreasuryTransactionPartially(CMutableTransaction& mtx, CBasicKeySto
     bool fComplete = vErrors.empty();
 
     UniValue result(UniValue::VOBJ);
-    result.pushKV("hex", EncodeHexTx(mtx));
+    result.pushKV("proposalid", tpsl.hashID.GetHex());
     result.pushKV("complete", fComplete);
     if (!vErrors.empty()) {
         result.pushKV("errors", vErrors);
