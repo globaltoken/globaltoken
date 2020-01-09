@@ -68,6 +68,15 @@ public:
         mtx = CMutableTransaction();
     }
     
+    friend bool operator==(const CTreasuryProposal& a, const CTreasuryProposal& b)
+    {
+        return (a.fAgreed == b.fAgreed && a.nVersion == b.nVersion
+                && a.hashID == b.hashID && a.nCreationTime == b.nCreationTime
+                && a.nLastEdited == b.nLastEdited && a.nExpireTime == b.nExpireTime
+                && a.strHeadline == b.strHeadline && a.strDescription == b.strDescription
+                && a.mtx == b.mtx);
+    }
+    
     bool IsNull() const;
     bool IsHeadlineValid() const;
     bool IsDescriptionValid() const;

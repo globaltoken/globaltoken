@@ -9,6 +9,11 @@
 
 CTreasuryMempool activeTreasury;
 
+bool CTreasuryProposal::IsNull() const
+{
+    return (this == CTreasuryProposal());
+}
+
 bool CTreasuryProposal::IsHeadlineValid() const
 {
     return strHeadline.length() <= MAX_HEADLINE_LENGTH;

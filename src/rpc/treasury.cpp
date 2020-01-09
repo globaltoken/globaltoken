@@ -61,6 +61,276 @@ UniValue proposaltoJSON(const CTreasuryProposal* proposal, int decodeProposalTX)
     return result;
 }
 
+UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 0 && request.params.size() != 1)
+        throw std::runtime_error(
+            "broadcastsignedproposal ( allowhighfees )\n"
+            "\nSubmits signed treasury proposal transaction (serialized, hex-encoded) to local node and network.\n"
+            "\nAlso see createrawtransaction, updateproposaltxfromhex and signtreasuryproposalswithwallet calls.\n"
+            "\nArguments:\n"
+            "1. allowhighfees    (boolean, optional, default=false) Allow high fees\n"
+            "\nResult:\n"
+            "[\n"
+            "  {\n"
+            "      \"proposal\"           (hash) The proposal ID hash of this entry.\n"
+            "      \"txid\"               (hash) The TXID of this proposal.\n"
+            "      \"sent\"               (bool) Returns true, if this transaction has been broadcasted successfully, otherwise false.\n"
+            "      \"error\"              (string) If this transaction was not successfully broadcasted, it will tell you the error with this argument.\n"
+            "  }\n"
+            "]\n"
+            "\nCreate a transaction\n"
+            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\" : \\\"mytxid\\\",\\\"vout\\\":0}]\" \"{\\\"myaddress\\\":0.01}\"") +
+            "Sign the transaction, and get back the hex\n"
+            + HelpExampleCli("updateproposaltxfromhex", "\"proposalsid\" \"myhex\"") +
+            "\nSend the transaction (signed hex)\n"
+            + HelpExampleCli("broadcastsignedproposal", "\"proposalid\"") +
+            "\nAs a json rpc call\n"
+            + HelpExampleRpc("broadcastsignedproposal", "\"proposalid\"")
+        );
+        
+    RPCTypeCheck(request.params, {UniValue::VBOOL});
+    UniValue ret(UniValue::VARR);
+        
+    LOCK(cs_treasury);
+
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    if(activeTreasury.vTreasuryProposals.size() == 0)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "No treasury proposals in mempool.");
+    
+    ObserveSafeMode();
+
+    std::promise<void> promise;
+
+    CAmount nMaxRawTxFee = maxTxFee;
+    if (!request.params[0].isNull() && request.params[0].get_bool())
+        nMaxRawTxFee = 0;
+    
+    if(!g_connman)
+        throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
+    
+    std::vector<CTreasuryProposal> vPps;
+    
+    for(size_t i = 0; i < activeTreasury.vTreasuryProposals.size(); i++)
+    {
+        const CTransaction txConst(activeTreasury.vTreasuryProposals[i].mtx);
+        for (unsigned int input = 0; input < activeTreasury.vTreasuryProposals[i].mtx.vin.size(); input++) 
+        {
+            CTxIn& txin = activeTreasury.vTreasuryProposals[i].mtx.vin[input];
+            const Coin& coin = view.AccessCoin(txin.prevout);
+            if (coin.IsSpent())
+                continue;
+            
+            const CScript& prevPubKey = coin.out.scriptPubKey;
+            const CAmount& amount = coin.out.nValue;
+
+            // The Script should return no error, that means it's complete.
+            ScriptError serror = SCRIPT_ERR_OK;
+            if (!VerifyScript(txin.scriptSig, prevPubKey, &txin.scriptWitness, STANDARD_SCRIPT_VERIFY_FLAGS, TransactionSignatureChecker(&txConst, input, amount), &serror)) 
+                continue;
+        }
+        vPps.push_back(activeTreasury.vTreasuryProposals[i]);
+    }
+    
+    if(vPps.size() == 0)
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "No signed transactions found!");
+
+    { // cs_main scope
+    LOCK(cs_main);
+    CCoinsViewCache &view = *pcoinsTip;
+    
+    for(size_t i = 0; i < vPps.size(); i++)
+    {
+        
+        UniValue obj(UniValue::VOBJ);
+        CMutableTransaction mtx = vPps[i].mtx;
+        CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
+        const uint256& hashTx = tx->GetHash();
+        std::string strErrMsg;
+        bool fSent = false, fHaveChain = false;
+        
+        obj.pushKV("proposal", vPps[i].hashID.GetHex());
+        obj.pushKV("txid", hashTx.GetHex());
+        
+        for (size_t o = 0; !fHaveChain && o < tx->vout.size(); o++) {
+            const Coin& existingCoin = view.AccessCoin(COutPoint(hashTx, o));
+            fHaveChain = !existingCoin.IsSpent();
+        }
+        bool fHaveMempool = mempool.exists(hashTx);
+        if (!fHaveMempool && !fHaveChain) {
+            // push to local node and sync with wallets
+            CValidationState state;
+            bool fMissingInputs;
+            if (!AcceptToMemoryPool(mempool, state, std::move(tx), &fMissingInputs,
+                                    nullptr /* plTxnReplaced */, false /* bypass_limits */, nMaxRawTxFee)) {
+                if (state.IsInvalid()) {
+                    strErrMsg = FormatStateMessage(state);
+                } else {
+                    if (fMissingInputs) {
+                        strErrMsg = "Missing inputs";
+                    }
+                    strErrMsg = FormatStateMessage(state);
+                }
+            } else {
+                // If wallet is enabled, ensure that the wallet has been made aware
+                // of the new transaction prior to returning. This prevents a race
+                // where a user might call sendrawtransaction with a transaction
+                // to/from their wallet, immediately call some wallet RPC, and get
+                // a stale result because callbacks have not yet been processed.
+                CallFunctionInValidationInterfaceQueue([&promise] {
+                    promise.set_value();
+                });
+                
+                fSent = true;
+            }
+        } else if (fHaveChain) {
+            strErrMsg = "transaction already in block chain";
+        } else {
+            // Make sure we don't block forever if re-sending
+            // a transaction already in mempool.
+            promise.set_value();
+        }
+        
+        obj.pushKV("sent", fSent);
+        if(strErrMsg.length() > 0)
+            obj.pushKV("error", strErrMsg);
+        
+        if(!fSent)
+            vPps.SetNull();
+        
+        ret.push_back(obj);
+    }
+
+    } // cs_main
+    
+    for(size_t i = 0; i < vPps.size(); i++)
+    {
+        if(vPps[i].IsNull())
+            vPps.erase(vPps.begin() + i);
+    }
+
+    promise.get_future().wait();
+
+    for(size_t i = 0; i < vPps.size(); i++)
+    {
+        const CTransaction ctx(vPps[i].mtx);
+        size_t nIndex = 0;
+        RelayTransactionFromExtern(ctx, g_connman.get());
+        
+        if(!activeTreasury.GetProposalvID(vPps[i].hashID, nIndex))
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "Could not find treasury proposal while broadcasting the transaction");
+        
+        activeTreasury.vTreasuryProposals[nIndex].nExpireTime = GetTime() + (60 * 60 * 15); // This proposal has been successful completed, let it expire now in 15 minutes, so last checks can be done and then it will be deleted.
+    }
+
+    return ret;
+}
+
+UniValue broadcastsignedproposal(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
+        throw std::runtime_error(
+            "broadcastsignedproposal \"id\" ( allowhighfees )\n"
+            "\nSubmits signed treasury proposal transaction (serialized, hex-encoded) to local node and network.\n"
+            "\nAlso see createrawtransaction, updateproposaltxfromhex and signtreasuryproposalswithwallet calls.\n"
+            "\nArguments:\n"
+            "1. \"id\"           (string, required) The proposal ID, that has a signed transaction and now should be broadcasted via network.\n"
+            "2. allowhighfees    (boolean, optional, default=false) Allow high fees\n"
+            "\nResult:\n"
+            "\nThe transaction ID, if successful, otherwise it returns an error.\n"
+            "\nCreate a transaction\n"
+            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\" : \\\"mytxid\\\",\\\"vout\\\":0}]\" \"{\\\"myaddress\\\":0.01}\"") +
+            "Sign the transaction, and get back the hex\n"
+            + HelpExampleCli("updateproposaltxfromhex", "\"proposalsid\" \"myhex\"") +
+            "\nSend the transaction (signed hex)\n"
+            + HelpExampleCli("broadcastsignedproposal", "\"proposalid\"") +
+            "\nAs a json rpc call\n"
+            + HelpExampleRpc("broadcastsignedproposal", "\"proposalid\"")
+        );
+        
+    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VBOOL});
+        
+    LOCK(cs_treasury);
+
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    uint256 proposalHash = uint256S(request.params[0].get_str());
+    size_t nIndex = 0;
+    
+    if(!activeTreasury.GetProposalvID(proposalHash, nIndex))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury proposal not found.");
+    
+    ObserveSafeMode();
+
+    std::promise<void> promise;
+    
+    CTreasuryProposal* pProposal = &activeTreasury.vTreasuryProposals[nIndex];
+
+    CMutableTransaction mtx = pProposal->mtx;
+    CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
+    const uint256& hashTx = tx->GetHash();
+
+    CAmount nMaxRawTxFee = maxTxFee;
+    if (!request.params[1].isNull() && request.params[1].get_bool())
+        nMaxRawTxFee = 0;
+
+    { // cs_main scope
+    LOCK(cs_main);
+    CCoinsViewCache &view = *pcoinsTip;
+    bool fHaveChain = false;
+    for (size_t o = 0; !fHaveChain && o < tx->vout.size(); o++) {
+        const Coin& existingCoin = view.AccessCoin(COutPoint(hashTx, o));
+        fHaveChain = !existingCoin.IsSpent();
+    }
+    bool fHaveMempool = mempool.exists(hashTx);
+    if (!fHaveMempool && !fHaveChain) {
+        // push to local node and sync with wallets
+        CValidationState state;
+        bool fMissingInputs;
+        if (!AcceptToMemoryPool(mempool, state, std::move(tx), &fMissingInputs,
+                                nullptr /* plTxnReplaced */, false /* bypass_limits */, nMaxRawTxFee)) {
+            if (state.IsInvalid()) {
+                throw JSONRPCError(RPC_TRANSACTION_REJECTED, FormatStateMessage(state));
+            } else {
+                if (fMissingInputs) {
+                    throw JSONRPCError(RPC_TRANSACTION_ERROR, "Missing inputs");
+                }
+                throw JSONRPCError(RPC_TRANSACTION_ERROR, FormatStateMessage(state));
+            }
+        } else {
+            // If wallet is enabled, ensure that the wallet has been made aware
+            // of the new transaction prior to returning. This prevents a race
+            // where a user might call sendrawtransaction with a transaction
+            // to/from their wallet, immediately call some wallet RPC, and get
+            // a stale result because callbacks have not yet been processed.
+            CallFunctionInValidationInterfaceQueue([&promise] {
+                promise.set_value();
+            });
+        }
+    } else if (fHaveChain) {
+        throw JSONRPCError(RPC_TRANSACTION_ALREADY_IN_CHAIN, "transaction already in block chain");
+    } else {
+        // Make sure we don't block forever if re-sending
+        // a transaction already in mempool.
+        promise.set_value();
+    }
+
+    } // cs_main
+
+    promise.get_future().wait();
+
+    if(!g_connman)
+        throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
+
+    RelayTransactionFromExtern(*tx, g_connman.get());
+    pProposal->nExpireTime = GetTime() + (60 * 60 * 15); // This proposal has been successful completed, let it expire now in 15 minutes, so last checks can be done and then it will be deleted.
+
+    return hashTx.GetHex();
+}
+
 UniValue updateproposaltxfromhex(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 2)
@@ -891,6 +1161,8 @@ static const CRPCCommand commands[] =
     /** All treasury proposal transaction functions */
     { "treasury",           "updateproposaltxfromhex",      &updateproposaltxfromhex,      {"id","hextx"} },
     { "treasury",           "getproposaltxashex",           &getproposaltxashex,           {"id"} },
+    { "treasury",           "broadcastallsignedproposals",  &broadcastallsignedproposals,  {"allowhighfees"} },
+    { "treasury",           "broadcastsignedproposal",      &broadcastsignedproposal,      {"id","allowhighfees"} },
 };
 
 void RegisterTreasuryRPCCommands(CRPCTable &t)
