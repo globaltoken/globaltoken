@@ -11,7 +11,7 @@ CTreasuryMempool activeTreasury;
 
 bool CTreasuryProposal::IsNull() const
 {
-    return (this == CTreasuryProposal());
+    return (*this == CTreasuryProposal());
 }
 
 bool CTreasuryProposal::IsHeadlineValid() const

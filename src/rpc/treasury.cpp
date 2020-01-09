@@ -2,18 +2,27 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <rpc/treasury.h>
 #include <base58.h>
 #include <core_io.h>
-#include <rpc/server.h>
+#include <coins.h>
+#include <consensus/validation.h>
 #include <globaltoken/treasury.h>
 #include <protocol.h>
 #include <serialize.h>
+#include <init.h>
+#include <net.h>
+#include <net_processing.h>
+#include <policy/policy.h>
 #include <validation.h>
+#include <validationinterface.h>
+#include <rpc/safemode.h>
+#include <rpc/server.h>
+#include <rpc/treasury.h>
 #include <utilstrencodings.h>
 #include <utiltime.h>
 #include <random.h>
 #include <sync.h>
+#include <txmempool.h>
 #include <script/script.h>
 #include <script/standard.h>
 
@@ -23,6 +32,7 @@
 #include <univalue.h>
 
 #include <mutex>
+#include <future>
 #include <condition_variable>
 
 UniValue treasurymempoolInfoToJSON()
@@ -102,8 +112,6 @@ UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
     
     ObserveSafeMode();
 
-    std::promise<void> promise;
-
     CAmount nMaxRawTxFee = maxTxFee;
     if (!request.params[0].isNull() && request.params[0].get_bool())
         nMaxRawTxFee = 0;
@@ -112,16 +120,23 @@ UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
     
     std::vector<CTreasuryProposal> vPps;
+
+    { // cs_main scope
+    LOCK(cs_main);
+    CCoinsViewCache &view = *pcoinsTip;
     
     for(size_t i = 0; i < activeTreasury.vTreasuryProposals.size(); i++)
     {
         const CTransaction txConst(activeTreasury.vTreasuryProposals[i].mtx);
+        bool fFailed = true;
         for (unsigned int input = 0; input < activeTreasury.vTreasuryProposals[i].mtx.vin.size(); input++) 
         {
             CTxIn& txin = activeTreasury.vTreasuryProposals[i].mtx.vin[input];
             const Coin& coin = view.AccessCoin(txin.prevout);
             if (coin.IsSpent())
-                continue;
+            {
+                break;
+            }
             
             const CScript& prevPubKey = coin.out.scriptPubKey;
             const CAmount& amount = coin.out.nValue;
@@ -129,21 +144,22 @@ UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
             // The Script should return no error, that means it's complete.
             ScriptError serror = SCRIPT_ERR_OK;
             if (!VerifyScript(txin.scriptSig, prevPubKey, &txin.scriptWitness, STANDARD_SCRIPT_VERIFY_FLAGS, TransactionSignatureChecker(&txConst, input, amount), &serror)) 
-                continue;
+            {
+                break;
+            }
+            fFailed = false;
         }
-        vPps.push_back(activeTreasury.vTreasuryProposals[i]);
+        
+        if(!fFailed)
+            vPps.push_back(activeTreasury.vTreasuryProposals[i]);
     }
     
     if(vPps.size() == 0)
         throw JSONRPCError(RPC_INTERNAL_ERROR, "No signed transactions found!");
-
-    { // cs_main scope
-    LOCK(cs_main);
-    CCoinsViewCache &view = *pcoinsTip;
     
     for(size_t i = 0; i < vPps.size(); i++)
     {
-        
+        std::promise<void> promise;
         UniValue obj(UniValue::VOBJ);
         CMutableTransaction mtx = vPps[i].mtx;
         CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
@@ -198,9 +214,10 @@ UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
             obj.pushKV("error", strErrMsg);
         
         if(!fSent)
-            vPps.SetNull();
+            vPps[i].SetNull();
         
         ret.push_back(obj);
+        promise.get_future().wait();
     }
 
     } // cs_main
@@ -210,8 +227,6 @@ UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
         if(vPps[i].IsNull())
             vPps.erase(vPps.begin() + i);
     }
-
-    promise.get_future().wait();
 
     for(size_t i = 0; i < vPps.size(); i++)
     {
