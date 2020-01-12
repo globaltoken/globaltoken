@@ -49,6 +49,7 @@
 #include <masternodeman.h>
 #include <masternode-payments.h>
 
+#include <inttypes.h>
 #include <future>
 #include <sstream>
 
