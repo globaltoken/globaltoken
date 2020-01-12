@@ -28,6 +28,8 @@ private:
     
 public:
 
+    static const int MAX_TX_INPUTS = 1200;
+
     // the version of this proposal
     uint32_t nVersion;
 
@@ -86,6 +88,9 @@ public:
     bool IsAgreed() const;
     bool SetAgreed();
     bool UnsetAgreed();
+    void UpdateTimeData(const uint32_t nSystemTime);
+    void RemoveOverflowedProposalTxInputs();
+    void ClearProposalTxInputScriptSigs();
     uint256 GetHash() const;
     
     ADD_SERIALIZE_METHODS;
@@ -129,6 +134,9 @@ public:
     
     /* All treasury redeemscripts and other scripts */
     std::vector<CScript> vRedeemScripts;
+    
+    /* The current treasury change address script */
+    CScript scriptChangeAddress;
 
     CTreasuryMempool()
     {
@@ -148,6 +156,7 @@ public:
         filePath.clear();
         vTreasuryProposals.clear();
         vRedeemScripts.clear();
+        scriptChangeAddress.clear();
     }
     
     ADD_SERIALIZE_METHODS;
@@ -158,6 +167,7 @@ public:
         READWRITE(nLastSaved);
         READWRITE(vTreasuryProposals);
         READWRITE(vRedeemScripts);
+        READWRITE(scriptChangeAddress);
     }
     
     void SetTreasuryFilePath (const std::string &path);

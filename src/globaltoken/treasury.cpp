@@ -54,6 +54,28 @@ bool CTreasuryProposal::UnsetAgreed()
     return true;
 }
 
+void CTreasuryProposal::UpdateTimeData(const uint32_t nSystemTime)
+{
+    nLastEdited = nSystemTime;
+    nExpireTime = nSystemTime + (60 * 60 * 24 * 31);
+}
+
+void CTreasuryProposal::RemoveOverflowedProposalTxInputs()
+{
+    for(size_t i = mtx.vin.size(); i > CTreasuryProposal::MAX_TX_INPUTS; i--)
+    {
+        mtx.vin.erase(mtx.vin.begin() + i);
+    }
+}
+
+void CTreasuryProposal::ClearProposalTxInputScriptSigs()
+{
+    for(size_t i = 0; i < mtx.vin.size(); i++)
+    {
+        mtx.vin[i].scriptSig.clear();
+    }
+}
+
 uint256 CTreasuryProposal::GetHash() const
 {
     return SerializeHash(*this);
@@ -101,10 +123,13 @@ uint256 CTreasuryMempool::GetHash() const
 
 void CTreasuryMempool::DeleteExpiredProposals(const uint32_t nSystemTime)
 {
-    for(size_t i = 0; i < vTreasuryProposals.size(); i++)
+    for(int i = 0; i < vTreasuryProposals.size(); i++)
     {
         if(vTreasuryProposals[i].IsExpired(nSystemTime))
+        {
             vTreasuryProposals.erase(vTreasuryProposals.begin() + i);
+            i--;
+        }
     }
 }
 
