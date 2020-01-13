@@ -3485,6 +3485,7 @@ UniValue fundproposaltx(const JSONRPCRequest& request)
     bool lockUnspents = false;
     UniValue subtractFeeFromOutputs;
     std::set<int> setSubtractFeeFromOutputs;
+    coinControl.fAllowWatchOnly = true; // by default
 
     if (!request.params[1].isNull()) {
       if (request.params[1].type() == UniValue::VBOOL) {
@@ -3638,7 +3639,7 @@ UniValue signtreasuryproposalswithwallet(const JSONRPCRequest& request)
             + HelpExampleRpc("signtreasuryproposalswithwallet", "")
         );
 
-    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VSTR}, true);
+    RPCTypeCheck(request.params, {UniValue::VSTR}, true);
     UniValue result(UniValue::VARR);
     
     LOCK3(cs_main, pwallet->cs_wallet, cs_treasury);
@@ -3696,7 +3697,7 @@ UniValue signtreasuryproposalswithwallet(const JSONRPCRequest& request)
         if(activeTreasury.vTreasuryProposals[i].IsAgreed())
         {
             // Sign the agreed transactions
-            result.push_back(SignTreasuryTransactionPartially(activeTreasury.vTreasuryProposals[i], &keystore, request.params[1]));
+            result.push_back(SignTreasuryTransactionPartially(activeTreasury.vTreasuryProposals[i], &keystore, request.params[0]));
         }
     }
     return result;

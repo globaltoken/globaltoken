@@ -1318,19 +1318,19 @@ UniValue createproposaltx(const JSONRPCRequest& request)
     if(!activeTreasury.GetProposalvID(proposalHash, nIndex))
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury proposal not found.");
 
-    UniValue inputs = request.params[0].get_array();
-    UniValue sendTo = request.params[1].get_obj();
+    UniValue inputs = request.params[1].get_array();
+    UniValue sendTo = request.params[2].get_obj();
 
     CMutableTransaction rawTx;
 
-    if (!request.params[2].isNull()) {
-        int64_t nLockTime = request.params[2].get_int64();
+    if (!request.params[3].isNull()) {
+        int64_t nLockTime = request.params[3].get_int64();
         if (nLockTime < 0 || nLockTime > std::numeric_limits<uint32_t>::max())
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, locktime out of range");
         rawTx.nLockTime = nLockTime;
     }
 
-    bool rbfOptIn = request.params[3].isTrue();
+    bool rbfOptIn = request.params[4].isTrue();
 
     for (unsigned int idx = 0; idx < inputs.size(); idx++) {
         const UniValue& input = inputs[idx];
@@ -1393,7 +1393,7 @@ UniValue createproposaltx(const JSONRPCRequest& request)
         rawTx.vout.push_back(out);
     }
 
-    if (!request.params[3].isNull() && rbfOptIn != SignalsOptInRBF(rawTx)) {
+    if (!request.params[4].isNull() && rbfOptIn != SignalsOptInRBF(rawTx)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter combination: Sequence number(s) contradict replaceable option");
     }
     
@@ -2232,7 +2232,7 @@ UniValue signtreasuryproposalswithkey(const JSONRPCRequest& request)
     if (activeTreasury.vRedeemScripts.size() == 0)
         throw JSONRPCError(RPC_MISC_ERROR, "No redeem scripts saved in treasury mempool.");
     
-    const UniValue& keys = request.params[1].get_array();
+    const UniValue& keys = request.params[0].get_array();
     for (unsigned int idx = 0; idx < keys.size(); ++idx) {
         UniValue k = keys[idx];
         CBitcoinSecret vchSecret;

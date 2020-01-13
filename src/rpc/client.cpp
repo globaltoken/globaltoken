@@ -184,6 +184,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "delproposaltxrecipient", 1, "recipient"},
     { "editproposaltxrecamount", 1, "vout" },
     { "editproposaltxrecamount", 2, "newamount" },
+    { "addproposaltxrecipients", 1, "recipients" },
 };
 
 class CRPCConvertTable
