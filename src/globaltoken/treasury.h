@@ -91,6 +91,8 @@ public:
     void UpdateTimeData(const uint32_t nSystemTime);
     void RemoveOverflowedProposalTxInputs();
     void ClearProposalTxInputScriptSigs();
+    void InsertTxDummyInputIfNeeded();
+    void RemoveTxDummyInputIfNeeded();
     uint256 GetHash() const;
     
     ADD_SERIALIZE_METHODS;
@@ -179,6 +181,8 @@ public:
     uint32_t GetLastSaved() const;
     uint256 GetHash() const;
     void DeleteExpiredProposals(const uint32_t nSystemTime);
+    void InsertDummyInputs();
+    void RemoveDummyInputs();
     bool SearchScriptByScript(const CScript &script, size_t &nIndex) const;
     bool RemoveScriptByID(const size_t nIndex);
     bool GetProposalvID(const uint256& hash, size_t& nIndex) const;

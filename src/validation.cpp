@@ -4158,6 +4158,7 @@ bool VerifyAuxpowBlockIndex(std::string &strErrMsg, const Consensus::Params& con
 void ClearAuxpowValidationCache()
 {
     vAuxpowValidation.clear();
+    vAuxpowValidation.shrink_to_fit();
 }
 
 CVerifyDB::CVerifyDB()
@@ -4937,6 +4938,7 @@ bool TreasuryMempoolSanityChecks(CTreasuryMempool &activeMempool, std::string &e
                 return false;
             }
             tempmempool.DeleteExpiredProposals(GetTime());
+            tempmempool.RemoveDummyInputs();
             activeMempool = tempmempool;
         } catch (const std::exception& e) {
             error = "Failed to deserialize treasury mempool data on disk. See debug.log for details.";
@@ -4953,6 +4955,7 @@ bool DumpTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error)
     const uint32_t nSystemtime = GetTime();
     activeMempool.SetLastSaved(nSystemtime);
     activeMempool.DeleteExpiredProposals(nSystemtime);
+    activeMempool.InsertDummyInputs();
     
     fs::path pathTmp(activeMempool.GetTreasuryFilePath().string() + std::string(".new"));
 

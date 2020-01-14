@@ -293,7 +293,7 @@ UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
     if (!activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
     
-    if(activeTreasury.vTreasuryProposals.size() == 0)
+    if(activeTreasury.vTreasuryProposals.empty())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "No treasury proposals in mempool.");
 
     CAmount nMaxRawTxFee = maxTxFee;
@@ -1419,7 +1419,7 @@ UniValue moveunusableproposaltxinputs(const JSONRPCRequest& request)
     if (!activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
     
-    if(activeTreasury.vTreasuryProposals.size() == 0)
+    if(activeTreasury.vTreasuryProposals.empty())
         throw JSONRPCError(RPC_INTERNAL_ERROR, "No treasury proposals found.");
     
     if(activeTreasury.scriptChangeAddress == CScript())
@@ -1467,20 +1467,21 @@ UniValue moveunusableproposaltxinputs(const JSONRPCRequest& request)
     }
     
     // Remove unspendable transaction inputs and overflow inputs
-    for (int input = 0; input < activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.size(); input++) 
+    for (size_t input = activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.size(); input > 0; input--) 
     {
-        if (view.AccessCoin(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin[input].prevout).IsSpent())
+        size_t inputIndex = input - 1;
+        if (view.AccessCoin(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin[inputIndex].prevout).IsSpent())
         {
-            activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.erase(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.begin() + input);
-            input--; // reset the index
+            activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.erase(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.begin() + inputIndex);
         }
     }
     
-    for (int input = activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.size(); input > CTreasuryProposal::MAX_TX_INPUTS; input--) 
+    for (size_t input = activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.size(); input > CTreasuryProposal::MAX_TX_INPUTS; input--) 
     {
-        activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin[input].scriptSig.clear();
-        vTxIn.push_back(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin[input]);
-        activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.erase(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.begin() + input);
+        size_t inputIndex = input - 1;
+        activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin[inputIndex].scriptSig.clear();
+        vTxIn.push_back(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin[inputIndex]);
+        activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.erase(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.begin() + inputIndex);
     }
     
     // Remove double unspent entries.
@@ -1493,25 +1494,25 @@ UniValue moveunusableproposaltxinputs(const JSONRPCRequest& request)
     vTxIn.erase(itend, vTxIn.end());
     
     // Remove double inputs
-    for (int input = 0; input < activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.size(); input++) 
+    for (size_t input = 0; input < activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.size(); input++) 
     {
-        for (int icheck = 0; icheck < activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.size(); icheck++) 
+        for (size_t icheck = activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.size(); icheck > 0; icheck--) 
         {
-            if (activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin[input] == activeTreasury.vTreasuryProposals[nToProposal].mtx.vin[icheck])
+            size_t nTmpIndex = icheck - 1;
+            if (activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin[input] == activeTreasury.vTreasuryProposals[nToProposal].mtx.vin[nTmpIndex])
             {
-                activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.erase(activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.begin() + icheck);
-                icheck--; // reset the index
+                activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.erase(activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.begin() + nTmpIndex);
             }
         }
     }
     
     // Remove unspendable transaction inputs and overflow inputs from pToMtx
-    for (int input = 0; input < activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.size(); input++) 
+    for (size_t input = activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.size(); input > 0; input--) 
     {
-        if (view.AccessCoin(activeTreasury.vTreasuryProposals[nToProposal].mtx.vin[input].prevout).IsSpent())
+        size_t nTmpIndex = input - 1;
+        if (view.AccessCoin(activeTreasury.vTreasuryProposals[nToProposal].mtx.vin[nTmpIndex].prevout).IsSpent())
         {
-            activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.erase(activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.begin() + input);
-            input--; // reset the index
+            activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.erase(activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.begin() + nTmpIndex);
         }
     }
     
@@ -1519,7 +1520,7 @@ UniValue moveunusableproposaltxinputs(const JSONRPCRequest& request)
     
     for (size_t input = activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.size(); input < CTreasuryProposal::MAX_TX_INPUTS; input++) 
     {
-        if(vTxIn.size() != 0)
+        if(!vTxIn.empty())
         {
             activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.push_back(vTxIn[0]);
             currentAmount += view.AccessCoin(vTxIn[0].prevout).out.nValue;
@@ -1589,7 +1590,7 @@ UniValue handleproposaltxinputs(const JSONRPCRequest& request)
     if (!activeTreasury.IsCached())
         throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
     
-    if(activeTreasury.vTreasuryProposals.size() == 0)
+    if(activeTreasury.vTreasuryProposals.empty())
         throw JSONRPCError(RPC_INTERNAL_ERROR, "No treasury proposals found.");
     
     if(activeTreasury.scriptChangeAddress == CScript())
@@ -1620,20 +1621,21 @@ UniValue handleproposaltxinputs(const JSONRPCRequest& request)
     for (unsigned int i = 0; i < activeTreasury.vTreasuryProposals.size(); i++) 
     {
         activeTreasury.vTreasuryProposals[i].UpdateTimeData(GetTime());
-        for (int input = 0; input < activeTreasury.vTreasuryProposals[i].mtx.vin.size(); input++) 
+        for (size_t input = activeTreasury.vTreasuryProposals[i].mtx.vin.size(); input > 0; input--) 
         {
-            if (view.AccessCoin(activeTreasury.vTreasuryProposals[i].mtx.vin[input].prevout).IsSpent())
+            size_t nTmpIndex = input - 1;
+            if (view.AccessCoin(activeTreasury.vTreasuryProposals[i].mtx.vin[nTmpIndex].prevout).IsSpent())
             {
-                activeTreasury.vTreasuryProposals[i].mtx.vin.erase(activeTreasury.vTreasuryProposals[i].mtx.vin.begin() + input);
-                input--; // reset the index
+                activeTreasury.vTreasuryProposals[i].mtx.vin.erase(activeTreasury.vTreasuryProposals[i].mtx.vin.begin() + nTmpIndex);
             }
         }
         
-        for (int input = activeTreasury.vTreasuryProposals[i].mtx.vin.size(); input > CTreasuryProposal::MAX_TX_INPUTS; input--) 
+        for (size_t input = activeTreasury.vTreasuryProposals[i].mtx.vin.size(); input > CTreasuryProposal::MAX_TX_INPUTS; input--) 
         {
-            activeTreasury.vTreasuryProposals[i].mtx.vin[input].scriptSig.clear();
-            vTxIn.push_back(activeTreasury.vTreasuryProposals[i].mtx.vin[input]);
-            activeTreasury.vTreasuryProposals[i].mtx.vin.erase(activeTreasury.vTreasuryProposals[i].mtx.vin.begin() + input);
+            size_t nTmpIndex = input - 1;
+            activeTreasury.vTreasuryProposals[i].mtx.vin[nTmpIndex].scriptSig.clear();
+            vTxIn.push_back(activeTreasury.vTreasuryProposals[i].mtx.vin[nTmpIndex]);
+            activeTreasury.vTreasuryProposals[i].mtx.vin.erase(activeTreasury.vTreasuryProposals[i].mtx.vin.begin() + nTmpIndex);
         }
     }
     
@@ -1656,12 +1658,12 @@ UniValue handleproposaltxinputs(const JSONRPCRequest& request)
             
             for (int input = 0; input < activeTreasury.vTreasuryProposals[i].mtx.vin.size(); input++) 
             {
-                for (int icheck = 0; icheck < activeTreasury.vTreasuryProposals[p].mtx.vin.size(); icheck++) 
+                for (size_t icheck = activeTreasury.vTreasuryProposals[p].mtx.vin.size(); icheck > 0; icheck--) 
                 {
-                    if (activeTreasury.vTreasuryProposals[i].mtx.vin[input] == activeTreasury.vTreasuryProposals[p].mtx.vin[icheck])
+                    size_t nTmpIndex = icheck - 1;
+                    if (activeTreasury.vTreasuryProposals[i].mtx.vin[input] == activeTreasury.vTreasuryProposals[p].mtx.vin[nTmpIndex])
                     {
-                        activeTreasury.vTreasuryProposals[p].mtx.vin.erase(activeTreasury.vTreasuryProposals[p].mtx.vin.begin() + icheck);
-                        icheck--; // reset the index
+                        activeTreasury.vTreasuryProposals[p].mtx.vin.erase(activeTreasury.vTreasuryProposals[p].mtx.vin.begin() + nTmpIndex);
                     }
                 }
             }
@@ -1767,12 +1769,12 @@ UniValue prepareproposaltx(const JSONRPCRequest& request)
         view.SetBackend(viewDummy); // switch back to avoid locking mempool for too long
     }
     
-    for (int input = 0; input < activeTreasury.vTreasuryProposals[nIndex].mtx.vin.size(); input++) 
+    for (size_t input = activeTreasury.vTreasuryProposals[nIndex].mtx.vin.size(); input > 0; input--) 
     {
-        if (view.AccessCoin(activeTreasury.vTreasuryProposals[nIndex].mtx.vin[input].prevout).IsSpent())
+        size_t nTmpIndex = input - 1;
+        if (view.AccessCoin(activeTreasury.vTreasuryProposals[nIndex].mtx.vin[nTmpIndex].prevout).IsSpent())
         {
-            activeTreasury.vTreasuryProposals[nIndex].mtx.vin.erase(activeTreasury.vTreasuryProposals[nIndex].mtx.vin.begin() + input);
-            input--; // reset the index
+            activeTreasury.vTreasuryProposals[nIndex].mtx.vin.erase(activeTreasury.vTreasuryProposals[nIndex].mtx.vin.begin() + nTmpIndex);
         }
     }
     

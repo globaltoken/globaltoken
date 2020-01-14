@@ -64,7 +64,8 @@ void CTreasuryProposal::RemoveOverflowedProposalTxInputs()
 {
     for(size_t i = mtx.vin.size(); i > CTreasuryProposal::MAX_TX_INPUTS; i--)
     {
-        mtx.vin.erase(mtx.vin.begin() + i);
+        size_t nIndex = i - 1;
+        mtx.vin.erase(mtx.vin.begin() + nIndex);
     }
 }
 
@@ -73,6 +74,25 @@ void CTreasuryProposal::ClearProposalTxInputScriptSigs()
     for(size_t i = 0; i < mtx.vin.size(); i++)
     {
         mtx.vin[i].scriptSig.clear();
+    }
+}
+
+void CTreasuryProposal::InsertTxDummyInputIfNeeded()
+{
+    if(mtx.vin.empty() && mtx.vout.size() > 0)
+    {
+        CTxIn in(COutPoint(uint256(), 0), CScript(), 0);
+        mtx.vin.push_back(in);
+    }
+}
+
+void CTreasuryProposal::RemoveTxDummyInputIfNeeded()
+{
+    if(mtx.vin.size() == 1 && mtx.vout.size() > 0)
+    {
+        CTxIn in(COutPoint(uint256(), 0), CScript(), 0);
+        if(mtx.vin[0] == in)
+            mtx.vin.erase(mtx.vin.begin());
     }
 }
 
@@ -123,13 +143,29 @@ uint256 CTreasuryMempool::GetHash() const
 
 void CTreasuryMempool::DeleteExpiredProposals(const uint32_t nSystemTime)
 {
-    for(int i = 0; i < vTreasuryProposals.size(); i++)
+    for(size_t i = vTreasuryProposals.size(); i > 0; i--)
     {
-        if(vTreasuryProposals[i].IsExpired(nSystemTime))
+        size_t index = i - 1;
+        if(vTreasuryProposals[index].IsExpired(nSystemTime))
         {
-            vTreasuryProposals.erase(vTreasuryProposals.begin() + i);
-            i--;
+            vTreasuryProposals.erase(vTreasuryProposals.begin() + index);
         }
+    }
+}
+
+void CTreasuryMempool::InsertDummyInputs()
+{
+    for(size_t i = 0; i < vTreasuryProposals.size(); i++)
+    {
+        vTreasuryProposals[i].InsertTxDummyInputIfNeeded();
+    }
+}
+
+void CTreasuryMempool::RemoveDummyInputs()
+{
+    for(size_t i = 0; i < vTreasuryProposals.size(); i++)
+    {
+        vTreasuryProposals[i].RemoveTxDummyInputIfNeeded();
     }
 }
 

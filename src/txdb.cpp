@@ -32,6 +32,7 @@ static const char DB_REINDEX_FLAG = 'R';
 static const char DB_LAST_BLOCK = 'l';
 
 std::vector<uint256> vAuxpowValidation;
+vAuxpowValidation.reserve(445724); // the estimated amount of auxpow blocks between hardfork 1 and hardfork 2
 
 namespace {
 
