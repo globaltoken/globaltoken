@@ -439,7 +439,7 @@ UniValue updateproposaltxfromhex(const JSONRPCRequest& request)
             "1. \"id\"            (required, string) The proposal ID to update the transaction for.\n"
             "2. \"hextx\"         (required, string) The raw tx hex encoded, that should be inserted into the proposal.\n"
             "\nResult:\n"
-            "{\nNull, if successfully updated, otherwise it will return an error.\n"
+            "\nNull, if successfully updated, otherwise it will return an error.\n"
             "\nExamples:\n"
             + HelpExampleCli("updateproposaltxfromhex", "")
             + HelpExampleRpc("updateproposaltxfromhex", "")
@@ -500,6 +500,37 @@ UniValue getproposaltxashex(const JSONRPCRequest& request)
     return EncodeHexTx(ctx, RPCSerializationFlags());
 }
 
+UniValue votealltreasuryproposals(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 0)
+        throw std::runtime_error(
+            "votealltreasuryproposals\n"
+            "\nAgrees with all treasury proposals and votes for them.\n"
+            "\nResult:\n"
+            "\nReturns null.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("votealltreasuryproposals", "")
+            + HelpExampleRpc("votealltreasuryproposals", "")
+        );
+        
+    LOCK(cs_treasury);
+    uint32_t nSystemTime = GetTime();
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    if(activeTreasury.vTreasuryProposals.empty())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "There are no treasury proposals in mempool.");
+    
+    for(size_t i = 0; i < activeTreasury.vTreasuryProposals.size(); i++)
+    {
+        if(activeTreasury.vTreasuryProposals[i].SetAgreed())
+            activeTreasury.vTreasuryProposals[i].UpdateTimeData(nSystemTime);
+    }
+
+    return NullUniValue;
+}
+
 UniValue votetreasuryproposal(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 1)
@@ -509,7 +540,7 @@ UniValue votetreasuryproposal(const JSONRPCRequest& request)
             "\nArguments:\n"
             "1. \"id\"         (required, string) The proposal ID to vote for.\n"
             "\nResult:\n"
-            "{\nNull, if voted otherwise it will return an error.\n"
+            "\nNull, if voted otherwise it will return an error.\n"
             "\nExamples:\n"
             + HelpExampleCli("votetreasuryproposal", "")
             + HelpExampleRpc("votetreasuryproposal", "")
@@ -534,6 +565,37 @@ UniValue votetreasuryproposal(const JSONRPCRequest& request)
     return NullUniValue;
 }
 
+UniValue delalltreasuryproposalvotes(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 0)
+        throw std::runtime_error(
+            "delalltreasuryproposalvotes\n"
+            "\nRemoves votes from all treasury proposals.\n"
+            "\nResult:\n"
+            "\nReturns null.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("delalltreasuryproposalvotes", "")
+            + HelpExampleRpc("delalltreasuryproposalvotes", "")
+        );
+        
+    LOCK(cs_treasury);
+    uint32_t nSystemTime = GetTime();
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    if(activeTreasury.vTreasuryProposals.empty())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "There are no treasury proposals in mempool.");
+    
+    for(size_t i = 0; i < activeTreasury.vTreasuryProposals.size(); i++)
+    {
+        if(activeTreasury.vTreasuryProposals[i].UnsetAgreed())
+            activeTreasury.vTreasuryProposals[i].UpdateTimeData(nSystemTime);
+    }
+
+    return NullUniValue;
+}
+
 UniValue deltreasuryproposalvote(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 1)
@@ -543,7 +605,7 @@ UniValue deltreasuryproposalvote(const JSONRPCRequest& request)
             "\nArguments:\n"
             "1. \"id\"         (required, string) The proposal ID to vote for.\n"
             "\nResult:\n"
-            "{\nNull, if the vote has been deleted, otherwise it returns an error.\n"
+            "\nNull, if the vote has been deleted, otherwise it returns an error.\n"
             "\nExamples:\n"
             + HelpExampleCli("deltreasuryproposalvote", "")
             + HelpExampleRpc("deltreasuryproposalvote", "")
@@ -1440,10 +1502,10 @@ UniValue moveunusableproposaltxinputs(const JSONRPCRequest& request)
     std::vector<CTxIn> vTxIn;
     UniValue ret(UniValue::VARR);
     
-    if(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.size() < CTreasuryProposal::MAX_TX_INPUTS)
+    if(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.size() <= CTreasuryProposal::MAX_TX_INPUTS)
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Treasury proposal (from) Transaction is not a overflowed transaction!");
     
-    if(activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.size() > CTreasuryProposal::MAX_TX_INPUTS)
+    if(activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.size() >= CTreasuryProposal::MAX_TX_INPUTS)
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Treasury proposal (to) Transaction is already overflowed and cannot be filled with more inputs!");
     
     // Fetch previous transactions (inputs):
@@ -2445,7 +2507,9 @@ static const CRPCCommand commands[] =
     { "treasury",           "deletetreasuryproposal",       &deletetreasuryproposal,       {"id"} },
     { "treasury",           "extendtreasuryproposal",       &extendtreasuryproposal,       {"id"} },
     { "treasury",           "votetreasuryproposal",         &votetreasuryproposal,         {"id"} },
+    { "treasury",           "votealltreasuryproposals",     &votealltreasuryproposals,     {} },
     { "treasury",           "deltreasuryproposalvote",      &deltreasuryproposalvote,      {"id"} },
+    { "treasury",           "delalltreasuryproposalvotes",  &delalltreasuryproposalvotes,  {} },
     { "treasury",           "cleartreasuryproposals",       &cleartreasuryproposals,       {} },
     
     /** All treasury proposal transaction functions */
