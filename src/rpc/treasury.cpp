@@ -240,9 +240,7 @@ bool BroadcastSignedTreasuryProposalTransaction(CTreasuryProposal* pProposal, Un
     fSent = true;
 
     RelayTransactionFromExtern(*tx, g_connman.get());
-    uint32_t nExpireTime = GetTime();
-    nExpireTime += 60 * 60 * 15;
-    pProposal->nExpireTime = nExpireTime; // This proposal has been successful completed, let it expire now in 15 minutes, so last checks can be done and then it will be deleted.
+    pProposal->nExpireTime = GetTime() + (60 * 30); // This proposal has been successful completed, let it expire now in 30 minutes, so last checks can be done and then it will be deleted.
     
     ret.pushKV("txid", hashTx.GetHex());
     ret.pushKV("sent", fSent);
