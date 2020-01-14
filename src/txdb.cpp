@@ -32,7 +32,6 @@ static const char DB_REINDEX_FLAG = 'R';
 static const char DB_LAST_BLOCK = 'l';
 
 std::vector<uint256> vAuxpowValidation;
-vAuxpowValidation.reserve(445724); // the estimated amount of auxpow blocks between hardfork 1 and hardfork 2
 
 namespace {
 
@@ -268,6 +267,8 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
     std::unique_ptr<CDBIterator> pcursor(NewIterator());
 
     pcursor->Seek(std::make_pair(DB_BLOCK_INDEX, uint256()));
+    
+    vAuxpowValidation.reserve(445724); // the estimated amount of auxpow blocks between hardfork 1 and hardfork 2
 
     // Load mapBlockIndex
     while (pcursor->Valid()) {

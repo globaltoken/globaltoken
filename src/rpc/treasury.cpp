@@ -250,7 +250,7 @@ bool BroadcastSignedTreasuryProposalTransaction(CTreasuryProposal* pProposal, Un
 
 UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 0 && request.params.size() != 1)
+    if (request.fHelp || (request.params.size() != 0 && request.params.size() != 1))
         throw std::runtime_error(
             "broadcastsignedproposal ( allowhighfees )\n"
             "\nSubmits signed treasury proposal transaction (serialized, hex-encoded) to local node and network.\n"
@@ -570,7 +570,7 @@ UniValue deltreasuryproposalvote(const JSONRPCRequest& request)
 
 UniValue gettreasuryproposal(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 1 && request.params.size() != 2)
+    if (request.fHelp || (request.params.size() != 1 && request.params.size() != 2))
         throw std::runtime_error(
             "gettreasuryproposal\n"
             "\nReturns details of the treasury proposals.\n"
@@ -927,7 +927,7 @@ UniValue addtreasuryscript(const JSONRPCRequest& request)
 
 UniValue gettreasuryscriptbyid(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 1 && request.params.size() != 2)
+    if (request.fHelp || (request.params.size() != 1 && request.params.size() != 2))
         throw std::runtime_error(
             "gettreasuryscriptbyid\n"
             "\nReturns details of the treasury saved script, given by the ID. The ID can be found with gettreasuryscriptinfo.\n"
@@ -973,7 +973,7 @@ UniValue gettreasuryscriptbyid(const JSONRPCRequest& request)
 
 UniValue gettreasuryscriptinfo(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 0 && request.params.size() != 1)
+    if (request.fHelp || (request.params.size() != 0 && request.params.size() != 1))
         throw std::runtime_error(
             "gettreasuryscriptinfo\n"
             "\nReturns details of the treasury saved scripts.\n"
@@ -1023,7 +1023,7 @@ UniValue gettreasuryscriptinfo(const JSONRPCRequest& request)
 
 UniValue gettreasuryproposalinfo(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 0 && request.params.size() != 1)
+    if (request.fHelp || (request.params.size() != 0 && request.params.size() != 1))
         throw std::runtime_error(
             "gettreasuryproposalinfo\n"
             "\nReturns details of the treasury proposals.\n"
@@ -2129,7 +2129,7 @@ UniValue addproposaltxrecipients(const JSONRPCRequest& request)
 
 UniValue signtreasuryproposalswithkey(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 1 && request.params.size() != 2)
+    if (request.fHelp || (request.params.size() != 1 && request.params.size() != 2))
         throw std::runtime_error(
             "signtreasuryproposalswithkey [\"privatekey1\",...] ( sighashtype )\n"
             "\nSign all agreed treasury proposals with given private keys.\n"

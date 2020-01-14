@@ -4116,12 +4116,14 @@ bool VerifyAuxpowBlockIndex(std::string &strErrMsg, const Consensus::Params& con
     CBlockHeader currentBlockHeader;
     size_t vectorsize = vAuxpowValidation.size();
     
+    // Sort the vector by hash, so we can speed up mapBlockIndex loading time
+    sort(vAuxpowValidation.begin(), vAuxpowValidation.end());
+    
     for(size_t i = 0; i < vectorsize; i++)
     {
-        uint256 currentBlockHash = vAuxpowValidation[i];
-        if (mapBlockIndex.count(currentBlockHash) != 0)
+        if (mapBlockIndex.count(vAuxpowValidation[i]) != 0)
         {
-            pAuxPowValidationCheckIndex = mapBlockIndex[currentBlockHash];
+            pAuxPowValidationCheckIndex = mapBlockIndex[vAuxpowValidation[i]];
             
             if(pAuxPowValidationCheckIndex == nullptr)
             {
