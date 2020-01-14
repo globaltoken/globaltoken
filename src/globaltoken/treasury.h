@@ -28,7 +28,7 @@ private:
     
 public:
 
-    static const int MAX_TX_INPUTS = 1200;
+    static const int MAX_TX_INPUTS = 1317;
 
     // the version of this proposal
     uint32_t nVersion;

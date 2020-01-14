@@ -3485,7 +3485,20 @@ UniValue fundproposaltx(const JSONRPCRequest& request)
     bool lockUnspents = false;
     UniValue subtractFeeFromOutputs;
     std::set<int> setSubtractFeeFromOutputs;
-    coinControl.fAllowWatchOnly = true; // by default
+
+    if(activeTreasury.scriptChangeAddress == CScript())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury mempool change address not set!");
+
+    CTxDestination destination;
+
+    if (!IsTreasuryChangeAddrValid(activeTreasury.scriptChangeAddress, destination)) {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Treasury mempool change address is not a script address!");
+    }
+
+    coinControl.destChange = destination;
+
+    coinControl.fAllowWatchOnly = true;
+    lockUnspents = true;
 
     if (!request.params[1].isNull()) {
       if (request.params[1].type() == UniValue::VBOOL) {
@@ -3508,22 +3521,8 @@ UniValue fundproposaltx(const JSONRPCRequest& request)
             },
             true, true);
 
-        if(activeTreasury.scriptChangeAddress == CScript())
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury mempool change address not set!");
-
-        CTxDestination destination;
-
-        if (!IsTreasuryChangeAddrValid(activeTreasury.scriptChangeAddress, destination)) {
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Treasury mempool change address is not a script address!");
-        }
-
-        coinControl.destChange = destination;
-
         if (options.exists("changePosition"))
             changePosition = options["changePosition"].get_int();
-
-        coinControl.fAllowWatchOnly = true;
-        lockUnspents = true;
 
         if (options.exists("feeRate"))
         {
@@ -3642,7 +3641,7 @@ UniValue signtreasuryproposalswithwallet(const JSONRPCRequest& request)
     RPCTypeCheck(request.params, {UniValue::VSTR}, true);
     UniValue result(UniValue::VARR);
     
-    LOCK3(cs_main, pwallet->cs_wallet, cs_treasury);
+    LOCK3(cs_treasury, cs_main, pwallet->cs_wallet);
     EnsureWalletIsUnlocked(pwallet);
     
     CBasicKeyStore keystore;

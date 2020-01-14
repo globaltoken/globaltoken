@@ -163,6 +163,93 @@ UniValue GetProposalTxInfo(const CTreasuryProposal* pProposal)
     return ret;
 }
 
+bool BroadcastSignedTreasuryProposalTransaction(CTreasuryProposal* pProposal, UniValue& result, const CAmount& nMaxRawTxFee)
+{    
+    AssertLockHeld(cs_treasury);
+    
+    ObserveSafeMode();
+
+    std::promise<void> promise;
+    UniValue ret(UniValue::VOBJ);
+    CMutableTransaction mtx = pProposal->mtx;
+    CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
+    const uint256& hashTx = tx->GetHash();
+    bool fSent = false;
+
+    { // cs_main scope
+    LOCK(cs_main);
+    CCoinsViewCache &view = *pcoinsTip;
+    bool fHaveChain = false;
+    for (size_t o = 0; !fHaveChain && o < tx->vout.size(); o++) {
+        const Coin& existingCoin = view.AccessCoin(COutPoint(hashTx, o));
+        fHaveChain = !existingCoin.IsSpent();
+    }
+    bool fHaveMempool = mempool.exists(hashTx);
+    if (!fHaveMempool && !fHaveChain) {
+        // push to local node and sync with wallets
+        CValidationState state;
+        bool fMissingInputs;
+        if (!AcceptToMemoryPool(mempool, state, std::move(tx), &fMissingInputs,
+                                nullptr /* plTxnReplaced */, false /* bypass_limits */, nMaxRawTxFee)) {
+            if (state.IsInvalid()) {
+                ret.pushKV("txid", hashTx.GetHex());
+                ret.pushKV("sent", fSent);
+                ret.pushKV("error", JSONRPCError(RPC_TRANSACTION_REJECTED, FormatStateMessage(state)));
+                result.pushKVs(ret);
+                return fSent;
+            } else {
+                if (fMissingInputs) {
+                    ret.pushKV("txid", hashTx.GetHex());
+                    ret.pushKV("sent", fSent);
+                    ret.pushKV("error", JSONRPCError(RPC_TRANSACTION_ERROR, "Missing inputs"));
+                    result.pushKVs(ret);
+                    return fSent;
+                }
+                ret.pushKV("txid", hashTx.GetHex());
+                ret.pushKV("sent", fSent);
+                ret.pushKV("error", JSONRPCError(RPC_TRANSACTION_ERROR, FormatStateMessage(state)));
+                result.pushKVs(ret);
+                return fSent;
+            }
+        } else {
+            // If wallet is enabled, ensure that the wallet has been made aware
+            // of the new transaction prior to returning. This prevents a race
+            // where a user might call sendrawtransaction with a transaction
+            // to/from their wallet, immediately call some wallet RPC, and get
+            // a stale result because callbacks have not yet been processed.
+            CallFunctionInValidationInterfaceQueue([&promise] {
+                promise.set_value();
+            });
+        }
+    } else if (fHaveChain) {
+        ret.pushKV("txid", hashTx.GetHex());
+        ret.pushKV("sent", fSent);
+        ret.pushKV("error", JSONRPCError(RPC_TRANSACTION_ALREADY_IN_CHAIN, "transaction already in block chain"));
+        result.pushKVs(ret);
+        return fSent;
+    } else {
+        // Make sure we don't block forever if re-sending
+        // a transaction already in mempool.
+        promise.set_value();
+    }
+
+    } // cs_main
+
+    promise.get_future().wait();
+
+    fSent = true;
+
+    RelayTransactionFromExtern(*tx, g_connman.get());
+    uint32_t nExpireTime = GetTime();
+    nExpireTime += 60 * 60 * 15;
+    pProposal->nExpireTime = nExpireTime; // This proposal has been successful completed, let it expire now in 15 minutes, so last checks can be done and then it will be deleted.
+    
+    ret.pushKV("txid", hashTx.GetHex());
+    ret.pushKV("sent", fSent);
+    result.pushKVs(ret);
+    return fSent;
+}
+
 UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 0 && request.params.size() != 1)
@@ -210,17 +297,12 @@ UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
     
     if(activeTreasury.vTreasuryProposals.size() == 0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "No treasury proposals in mempool.");
-    
-    ObserveSafeMode();
 
     CAmount nMaxRawTxFee = maxTxFee;
     if (!request.params[0].isNull() && request.params[0].get_bool())
         nMaxRawTxFee = 0;
     
-    if(!g_connman)
-        throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
-    
-    std::vector<CTreasuryProposal> vPps;
+    std::vector<CTreasuryProposal*> vPps;
 
     { // cs_main scope
     LOCK(cs_main);
@@ -232,12 +314,10 @@ UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
         bool fFailed = true;
         for (unsigned int input = 0; input < activeTreasury.vTreasuryProposals[i].mtx.vin.size(); input++) 
         {
-            CTxIn& txin = activeTreasury.vTreasuryProposals[i].mtx.vin[input];
+            const CTxIn& txin = activeTreasury.vTreasuryProposals[i].mtx.vin[input];
             const Coin& coin = view.AccessCoin(txin.prevout);
             if (coin.IsSpent())
-            {
                 break;
-            }
             
             const CScript& prevPubKey = coin.out.scriptPubKey;
             const CAmount& amount = coin.out.nValue;
@@ -245,105 +325,26 @@ UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
             // The Script should return no error, that means it's complete.
             ScriptError serror = SCRIPT_ERR_OK;
             if (!VerifyScript(txin.scriptSig, prevPubKey, &txin.scriptWitness, STANDARD_SCRIPT_VERIFY_FLAGS, TransactionSignatureChecker(&txConst, input, amount), &serror)) 
-            {
                 break;
-            }
+            
             fFailed = false;
         }
         
         if(!fFailed)
-            vPps.push_back(activeTreasury.vTreasuryProposals[i]);
+            vPps.push_back(&activeTreasury.vTreasuryProposals[i]);
     }
+    } // cs_main
     
     if(vPps.size() == 0)
         throw JSONRPCError(RPC_INTERNAL_ERROR, "No signed transactions found!");
     
     for(size_t i = 0; i < vPps.size(); i++)
     {
-        std::promise<void> promise;
         UniValue obj(UniValue::VOBJ);
-        CMutableTransaction mtx = vPps[i].mtx;
-        CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
-        const uint256& hashTx = tx->GetHash();
-        std::string strErrMsg;
-        bool fSent = false, fHaveChain = false;
-        
-        obj.pushKV("proposal", vPps[i].hashID.GetHex());
-        obj.pushKV("txid", hashTx.GetHex());
-        
-        for (size_t o = 0; !fHaveChain && o < tx->vout.size(); o++) {
-            const Coin& existingCoin = view.AccessCoin(COutPoint(hashTx, o));
-            fHaveChain = !existingCoin.IsSpent();
-        }
-        bool fHaveMempool = mempool.exists(hashTx);
-        if (!fHaveMempool && !fHaveChain) {
-            // push to local node and sync with wallets
-            CValidationState state;
-            bool fMissingInputs;
-            if (!AcceptToMemoryPool(mempool, state, std::move(tx), &fMissingInputs,
-                                    nullptr /* plTxnReplaced */, false /* bypass_limits */, nMaxRawTxFee)) {
-                if (state.IsInvalid()) {
-                    strErrMsg = FormatStateMessage(state);
-                } else {
-                    if (fMissingInputs) {
-                        strErrMsg = "Missing inputs";
-                    }
-                    strErrMsg = FormatStateMessage(state);
-                }
-            } else {
-                // If wallet is enabled, ensure that the wallet has been made aware
-                // of the new transaction prior to returning. This prevents a race
-                // where a user might call sendrawtransaction with a transaction
-                // to/from their wallet, immediately call some wallet RPC, and get
-                // a stale result because callbacks have not yet been processed.
-                CallFunctionInValidationInterfaceQueue([&promise] {
-                    promise.set_value();
-                });
-                
-                fSent = true;
-            }
-        } else if (fHaveChain) {
-            strErrMsg = "transaction already in block chain";
-        } else {
-            // Make sure we don't block forever if re-sending
-            // a transaction already in mempool.
-            promise.set_value();
-        }
-        
-        obj.pushKV("sent", fSent);
-        if(strErrMsg.length() > 0)
-            obj.pushKV("error", strErrMsg);
-        
-        if(!fSent)
-            vPps[i].SetNull();
-        
+        obj.pushKV("proposal", vPps[i]->hashID.GetHex());
+        BroadcastSignedTreasuryProposalTransaction(vPps[i], obj, nMaxRawTxFee);
         ret.push_back(obj);
-        promise.get_future().wait();
     }
-
-    } // cs_main
-    
-    for(int i = 0; i < vPps.size(); i++)
-    {
-        if(vPps[i].IsNull())
-        {
-            vPps.erase(vPps.begin() + i);
-            i--; // reset the index
-        }
-    }
-
-    for(size_t i = 0; i < vPps.size(); i++)
-    {
-        const CTransaction ctx(vPps[i].mtx);
-        size_t nIndex = 0;
-        RelayTransactionFromExtern(ctx, g_connman.get());
-        
-        if(!activeTreasury.GetProposalvID(vPps[i].hashID, nIndex))
-            throw JSONRPCError(RPC_INTERNAL_ERROR, "Could not find treasury proposal while broadcasting the transaction");
-        
-        activeTreasury.vTreasuryProposals[nIndex].nExpireTime = GetTime() + (60 * 60 * 15); // This proposal has been successful completed, let it expire now in 15 minutes, so last checks can be done and then it will be deleted.
-    }
-
     return ret;
 }
 
@@ -372,6 +373,7 @@ UniValue broadcastsignedproposal(const JSONRPCRequest& request)
     RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VBOOL});
         
     LOCK(cs_treasury);
+    UniValue obj(UniValue::VOBJ);
     
     if(!g_connman)
         throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
@@ -387,76 +389,46 @@ UniValue broadcastsignedproposal(const JSONRPCRequest& request)
     
     uint256 proposalHash = uint256S(request.params[0].get_str());
     size_t nIndex = 0;
+    bool fSigned = false;
+    
+    CAmount nMaxRawTxFee = maxTxFee;
+    if (!request.params[1].isNull() && request.params[1].get_bool())
+        nMaxRawTxFee = 0;
     
     if(!activeTreasury.GetProposalvID(proposalHash, nIndex))
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury proposal not found.");
     
-    ObserveSafeMode();
-
-    std::promise<void> promise;
-    
     CTreasuryProposal* pProposal = &activeTreasury.vTreasuryProposals[nIndex];
-
-    CMutableTransaction mtx = pProposal->mtx;
-    CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
-    const uint256& hashTx = tx->GetHash();
-
-    CAmount nMaxRawTxFee = maxTxFee;
-    if (!request.params[1].isNull() && request.params[1].get_bool())
-        nMaxRawTxFee = 0;
-
+    
     { // cs_main scope
     LOCK(cs_main);
     CCoinsViewCache &view = *pcoinsTip;
-    bool fHaveChain = false;
-    for (size_t o = 0; !fHaveChain && o < tx->vout.size(); o++) {
-        const Coin& existingCoin = view.AccessCoin(COutPoint(hashTx, o));
-        fHaveChain = !existingCoin.IsSpent();
-    }
-    bool fHaveMempool = mempool.exists(hashTx);
-    if (!fHaveMempool && !fHaveChain) {
-        // push to local node and sync with wallets
-        CValidationState state;
-        bool fMissingInputs;
-        if (!AcceptToMemoryPool(mempool, state, std::move(tx), &fMissingInputs,
-                                nullptr /* plTxnReplaced */, false /* bypass_limits */, nMaxRawTxFee)) {
-            if (state.IsInvalid()) {
-                throw JSONRPCError(RPC_TRANSACTION_REJECTED, FormatStateMessage(state));
-            } else {
-                if (fMissingInputs) {
-                    throw JSONRPCError(RPC_TRANSACTION_ERROR, "Missing inputs");
-                }
-                throw JSONRPCError(RPC_TRANSACTION_ERROR, FormatStateMessage(state));
-            }
-        } else {
-            // If wallet is enabled, ensure that the wallet has been made aware
-            // of the new transaction prior to returning. This prevents a race
-            // where a user might call sendrawtransaction with a transaction
-            // to/from their wallet, immediately call some wallet RPC, and get
-            // a stale result because callbacks have not yet been processed.
-            CallFunctionInValidationInterfaceQueue([&promise] {
-                promise.set_value();
-            });
-        }
-    } else if (fHaveChain) {
-        throw JSONRPCError(RPC_TRANSACTION_ALREADY_IN_CHAIN, "transaction already in block chain");
-    } else {
-        // Make sure we don't block forever if re-sending
-        // a transaction already in mempool.
-        promise.set_value();
-    }
+    const CTransaction txConst(pProposal->mtx);
+    for (unsigned int input = 0; input < pProposal->mtx.vin.size(); input++) 
+    {
+        const CTxIn& txin = pProposal->mtx.vin[input];
+        const Coin& coin = view.AccessCoin(txin.prevout);
+        if (coin.IsSpent())
+            break;
+        
+        const CScript& prevPubKey = coin.out.scriptPubKey;
+        const CAmount& amount = coin.out.nValue;
 
+        // The Script should return no error, that means it's complete.
+        ScriptError serror = SCRIPT_ERR_OK;
+        if (!VerifyScript(txin.scriptSig, prevPubKey, &txin.scriptWitness, STANDARD_SCRIPT_VERIFY_FLAGS, TransactionSignatureChecker(&txConst, input, amount), &serror)) 
+            break;
+        
+        fSigned = true;
+    }
     } // cs_main
+    
+    if(fSigned)
+        BroadcastSignedTreasuryProposalTransaction(pProposal, obj, nMaxRawTxFee);
+    else
+        throw JSONRPCError(RPC_TRANSACTION_ERROR, "Treasury proposal transaction not signed yet!");
 
-    promise.get_future().wait();
-
-    if(!g_connman)
-        throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
-
-    RelayTransactionFromExtern(*tx, g_connman.get());
-    pProposal->nExpireTime = GetTime() + (60 * 60 * 15); // This proposal has been successful completed, let it expire now in 15 minutes, so last checks can be done and then it will be deleted.
-
-    return hashTx.GetHex();
+    return obj;
 }
 
 UniValue updateproposaltxfromhex(const JSONRPCRequest& request)
@@ -1467,15 +1439,13 @@ UniValue moveunusableproposaltxinputs(const JSONRPCRequest& request)
     if(fromProposal == toProposal)
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Treasury proposals must be different!");
     
-    CTreasuryProposal *pFromProposal = &activeTreasury.vTreasuryProposals[nFromProposal], *pToProposal = &activeTreasury.vTreasuryProposals[nToProposal];
-    CMutableTransaction* pFromMtx = &pFromProposal->mtx, *pToMtx = &pToProposal->mtx;
     std::vector<CTxIn> vTxIn;
     UniValue ret(UniValue::VARR);
     
-    if(pFromMtx->vin.size() < CTreasuryProposal::MAX_TX_INPUTS)
+    if(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.size() < CTreasuryProposal::MAX_TX_INPUTS)
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Treasury proposal (from) Transaction is not a overflowed transaction!");
     
-    if(pToMtx->vin.size() > CTreasuryProposal::MAX_TX_INPUTS)
+    if(activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.size() > CTreasuryProposal::MAX_TX_INPUTS)
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Treasury proposal (to) Transaction is already overflowed and cannot be filled with more inputs!");
     
     // Fetch previous transactions (inputs):
@@ -1486,12 +1456,12 @@ UniValue moveunusableproposaltxinputs(const JSONRPCRequest& request)
         CCoinsViewCache &viewChain = *pcoinsTip;
         CCoinsViewMemPool viewMempool(&viewChain, mempool);
         view.SetBackend(viewMempool); // temporarily switch cache backend to db+mempool view
-        for (const CTxIn& txin : pFromMtx->vin) 
+        for (const CTxIn& txin : activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin) 
         {
             view.AccessCoin(txin.prevout); // Load entries from viewChain into view; can fail.
         }
         
-        for (const CTxIn& txin : pToMtx->vin) 
+        for (const CTxIn& txin : activeTreasury.vTreasuryProposals[nToProposal].mtx.vin) 
         {
             view.AccessCoin(txin.prevout); // Load entries from viewChain into view; can fail.
         }
@@ -1499,20 +1469,20 @@ UniValue moveunusableproposaltxinputs(const JSONRPCRequest& request)
     }
     
     // Remove unspendable transaction inputs and overflow inputs
-    for (int input = 0; input < pFromMtx->vin.size(); input++) 
+    for (int input = 0; input < activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.size(); input++) 
     {
-        if (view.AccessCoin(pFromMtx->vin[input].prevout).IsSpent())
+        if (view.AccessCoin(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin[input].prevout).IsSpent())
         {
-            pFromMtx->vin.erase(pFromMtx->vin.begin() + input);
+            activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.erase(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.begin() + input);
             input--; // reset the index
         }
     }
     
-    for (int input = pFromMtx->vin.size(); input > CTreasuryProposal::MAX_TX_INPUTS; input--) 
+    for (int input = activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.size(); input > CTreasuryProposal::MAX_TX_INPUTS; input--) 
     {
-        pFromMtx->vin[input].scriptSig.clear();
-        vTxIn.push_back(pFromMtx->vin[input]);
-        pFromMtx->vin.erase(pFromMtx->vin.begin() + input);
+        activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin[input].scriptSig.clear();
+        vTxIn.push_back(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin[input]);
+        activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.erase(activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.begin() + input);
     }
     
     // Remove double unspent entries.
@@ -1525,35 +1495,35 @@ UniValue moveunusableproposaltxinputs(const JSONRPCRequest& request)
     vTxIn.erase(itend, vTxIn.end());
     
     // Remove double inputs
-    for (int input = 0; input < pFromMtx->vin.size(); input++) 
+    for (int input = 0; input < activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin.size(); input++) 
     {
-        for (int icheck = 0; icheck < pToMtx->vin.size(); icheck++) 
+        for (int icheck = 0; icheck < activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.size(); icheck++) 
         {
-            if (pFromMtx->vin[input] == pToMtx->vin[icheck])
+            if (activeTreasury.vTreasuryProposals[nFromProposal].mtx.vin[input] == activeTreasury.vTreasuryProposals[nToProposal].mtx.vin[icheck])
             {
-                pToMtx->vin.erase(pToMtx->vin.begin() + icheck);
+                activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.erase(activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.begin() + icheck);
                 icheck--; // reset the index
             }
         }
     }
     
     // Remove unspendable transaction inputs and overflow inputs from pToMtx
-    for (int input = 0; input < pToMtx->vin.size(); input++) 
+    for (int input = 0; input < activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.size(); input++) 
     {
-        if (view.AccessCoin(pToMtx->vin[input].prevout).IsSpent())
+        if (view.AccessCoin(activeTreasury.vTreasuryProposals[nToProposal].mtx.vin[input].prevout).IsSpent())
         {
-            pToMtx->vin.erase(pToMtx->vin.begin() + input);
+            activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.erase(activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.begin() + input);
             input--; // reset the index
         }
     }
     
     CAmount currentAmount = 0;
     
-    for (size_t input = pToMtx->vin.size(); input < CTreasuryProposal::MAX_TX_INPUTS; input++) 
+    for (size_t input = activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.size(); input < CTreasuryProposal::MAX_TX_INPUTS; input++) 
     {
         if(vTxIn.size() != 0)
         {
-            pToMtx->vin.push_back(vTxIn[0]);
+            activeTreasury.vTreasuryProposals[nToProposal].mtx.vin.push_back(vTxIn[0]);
             currentAmount += view.AccessCoin(vTxIn[0].prevout).out.nValue;
             vTxIn.erase(vTxIn.begin());
         }
@@ -1564,20 +1534,20 @@ UniValue moveunusableproposaltxinputs(const JSONRPCRequest& request)
     }
     
     if(currentAmount > 0)
-        pToMtx->vout.push_back(CTxOut(currentAmount, activeTreasury.scriptChangeAddress));
+        activeTreasury.vTreasuryProposals[nToProposal].mtx.vout.push_back(CTxOut(currentAmount, activeTreasury.scriptChangeAddress));
     
     // Now we return the edited vTreasuryProposals
     
-    pFromProposal->UpdateTimeData(GetTime());
-    pToProposal->UpdateTimeData(GetTime());
+    activeTreasury.vTreasuryProposals[nFromProposal].UpdateTimeData(GetTime());
+    activeTreasury.vTreasuryProposals[nToProposal].UpdateTimeData(GetTime());
     
     UniValue from(UniValue::VOBJ), to(UniValue::VOBJ);
-    from.pushKV("id", pFromProposal->hashID.GetHex());
-    from.pushKVs(GetProposalTxInfo(pFromProposal));
+    from.pushKV("id", activeTreasury.vTreasuryProposals[nFromProposal].hashID.GetHex());
+    from.pushKVs(GetProposalTxInfo(&activeTreasury.vTreasuryProposals[nFromProposal]));
     ret.push_back(from);
     
-    to.pushKV("id", pToProposal->hashID.GetHex());
-    to.pushKVs(GetProposalTxInfo(pToProposal));
+    to.pushKV("id", activeTreasury.vTreasuryProposals[nToProposal].hashID.GetHex());
+    to.pushKVs(GetProposalTxInfo(&activeTreasury.vTreasuryProposals[nToProposal]));
     ret.push_back(to);
 
     return ret;
@@ -1627,8 +1597,6 @@ UniValue handleproposaltxinputs(const JSONRPCRequest& request)
     if(activeTreasury.scriptChangeAddress == CScript())
         throw JSONRPCError(RPC_INTERNAL_ERROR, "No treasury change address set.");
     
-    CTreasuryProposal *pProposal = nullptr;
-    CMutableTransaction* pMtx = nullptr;
     std::vector<CTxIn> vTxIn;
     UniValue ret(UniValue::VARR);
     
@@ -1653,23 +1621,21 @@ UniValue handleproposaltxinputs(const JSONRPCRequest& request)
     // Remove unspendable transaction inputs and overflow inputs
     for (unsigned int i = 0; i < activeTreasury.vTreasuryProposals.size(); i++) 
     {
-        pProposal = &activeTreasury.vTreasuryProposals[i];
-        pMtx = &pProposal->mtx;
-        pProposal->UpdateTimeData(GetTime());
-        for (int input = 0; input < pMtx->vin.size(); input++) 
+        activeTreasury.vTreasuryProposals[i].UpdateTimeData(GetTime());
+        for (int input = 0; input < activeTreasury.vTreasuryProposals[i].mtx.vin.size(); input++) 
         {
-            if (view.AccessCoin(pMtx->vin[input].prevout).IsSpent())
+            if (view.AccessCoin(activeTreasury.vTreasuryProposals[i].mtx.vin[input].prevout).IsSpent())
             {
-                pMtx->vin.erase(pMtx->vin.begin() + input);
+                activeTreasury.vTreasuryProposals[i].mtx.vin.erase(activeTreasury.vTreasuryProposals[i].mtx.vin.begin() + input);
                 input--; // reset the index
             }
         }
         
-        for (int input = pMtx->vin.size(); input > CTreasuryProposal::MAX_TX_INPUTS; input--) 
+        for (int input = activeTreasury.vTreasuryProposals[i].mtx.vin.size(); input > CTreasuryProposal::MAX_TX_INPUTS; input--) 
         {
-            pMtx->vin[input].scriptSig.clear();
-            vTxIn.push_back(pMtx->vin[input]);
-            pMtx->vin.erase(pMtx->vin.begin() + input);
+            activeTreasury.vTreasuryProposals[i].mtx.vin[input].scriptSig.clear();
+            vTxIn.push_back(activeTreasury.vTreasuryProposals[i].mtx.vin[input]);
+            activeTreasury.vTreasuryProposals[i].mtx.vin.erase(activeTreasury.vTreasuryProposals[i].mtx.vin.begin() + input);
         }
     }
     
@@ -1685,21 +1651,18 @@ UniValue handleproposaltxinputs(const JSONRPCRequest& request)
     // Remove double inputs
     for (unsigned int i = 0; i < activeTreasury.vTreasuryProposals.size(); i++) 
     {
-        pProposal = &activeTreasury.vTreasuryProposals[i]; 
         for (unsigned int p = 0; p < activeTreasury.vTreasuryProposals.size(); p++) 
         {
-            CTreasuryProposal *pCurrentProposal = &activeTreasury.vTreasuryProposals[p];
-            
-            if(pProposal == pCurrentProposal)
+            if(activeTreasury.vTreasuryProposals[i] == activeTreasury.vTreasuryProposals[p])
                 continue;
             
-            for (int input = 0; input < pProposal->mtx.vin.size(); input++) 
+            for (int input = 0; input < activeTreasury.vTreasuryProposals[i].mtx.vin.size(); input++) 
             {
-                for (int icheck = 0; icheck < pCurrentProposal->mtx.vin.size(); icheck++) 
+                for (int icheck = 0; icheck < activeTreasury.vTreasuryProposals[p].mtx.vin.size(); icheck++) 
                 {
-                    if (pProposal->mtx.vin[input] == pCurrentProposal->mtx.vin[icheck])
+                    if (activeTreasury.vTreasuryProposals[i].mtx.vin[input] == activeTreasury.vTreasuryProposals[p].mtx.vin[icheck])
                     {
-                        pCurrentProposal->mtx.vin.erase(pCurrentProposal->mtx.vin.begin() + icheck);
+                        activeTreasury.vTreasuryProposals[p].mtx.vin.erase(activeTreasury.vTreasuryProposals[p].mtx.vin.begin() + icheck);
                         icheck--; // reset the index
                     }
                 }
@@ -1710,15 +1673,13 @@ UniValue handleproposaltxinputs(const JSONRPCRequest& request)
     // Add unused inputs to existing proposal transactions and spent them as change money.
     for (unsigned int i = 0; i < activeTreasury.vTreasuryProposals.size(); i++) 
     {
-        pProposal = &activeTreasury.vTreasuryProposals[i];
-        pMtx = &pProposal->mtx;
         CAmount currentAmount = 0;
         
-        for (size_t input = pMtx->vin.size(); input < CTreasuryProposal::MAX_TX_INPUTS; input++) 
+        for (size_t input = activeTreasury.vTreasuryProposals[i].mtx.vin.size(); input < CTreasuryProposal::MAX_TX_INPUTS; input++) 
         {
             if(vTxIn.size() != 0)
             {
-                pMtx->vin.push_back(vTxIn[0]);
+                activeTreasury.vTreasuryProposals[i].mtx.vin.push_back(vTxIn[0]);
                 currentAmount += view.AccessCoin(vTxIn[0].prevout).out.nValue;
                 vTxIn.erase(vTxIn.begin());
             }
@@ -1729,13 +1690,13 @@ UniValue handleproposaltxinputs(const JSONRPCRequest& request)
         }
         
         if(currentAmount > 0)
-            pMtx->vout.push_back(CTxOut(currentAmount, activeTreasury.scriptChangeAddress));
+            activeTreasury.vTreasuryProposals[i].mtx.vout.push_back(CTxOut(currentAmount, activeTreasury.scriptChangeAddress));
     }
     
     // Now we return the edited vTreasuryProposals
     for (size_t i = 0; i < activeTreasury.vTreasuryProposals.size(); i++) 
     {
-        pProposal = &activeTreasury.vTreasuryProposals[i]; 
+        const CTreasuryProposal* pProposal = &activeTreasury.vTreasuryProposals[i]; 
         UniValue preobj(UniValue::VOBJ);
         preobj.pushKV("id", pProposal->hashID.GetHex());
         preobj.pushKVs(GetProposalTxInfo(pProposal));
@@ -1792,9 +1753,6 @@ UniValue prepareproposaltx(const JSONRPCRequest& request)
     if(!activeTreasury.GetProposalvID(proposalHash, nIndex))
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury proposal not found.");
     
-    CTreasuryProposal *pProposal = &activeTreasury.vTreasuryProposals[nIndex];
-    CMutableTransaction* pMtx = &pProposal->mtx;
-    
     // Fetch previous transactions (inputs):
     CCoinsView viewDummy;
     CCoinsViewCache view(&viewDummy);
@@ -1804,33 +1762,34 @@ UniValue prepareproposaltx(const JSONRPCRequest& request)
         CCoinsViewMemPool viewMempool(&viewChain, mempool);
         view.SetBackend(viewMempool); // temporarily switch cache backend to db+mempool view
 
-        for (const CTxIn& txin : pMtx->vin) {
+        for (const CTxIn& txin : activeTreasury.vTreasuryProposals[nIndex].mtx.vin) {
             view.AccessCoin(txin.prevout); // Load entries from viewChain into view; can fail.
         }
 
         view.SetBackend(viewDummy); // switch back to avoid locking mempool for too long
     }
     
-    for (int input = 0; input < pMtx->vin.size(); input++) 
+    for (int input = 0; input < activeTreasury.vTreasuryProposals[nIndex].mtx.vin.size(); input++) 
     {
-        if (view.AccessCoin(pMtx->vin[input].prevout).IsSpent())
+        if (view.AccessCoin(activeTreasury.vTreasuryProposals[nIndex].mtx.vin[input].prevout).IsSpent())
         {
-            pMtx->vin.erase(pMtx->vin.begin() + input);
+            activeTreasury.vTreasuryProposals[nIndex].mtx.vin.erase(activeTreasury.vTreasuryProposals[nIndex].mtx.vin.begin() + input);
             input--; // reset the index
         }
     }
     
-    pProposal->RemoveOverflowedProposalTxInputs();
-    pProposal->ClearProposalTxInputScriptSigs();
+    activeTreasury.vTreasuryProposals[nIndex].RemoveOverflowedProposalTxInputs();
+    activeTreasury.vTreasuryProposals[nIndex].ClearProposalTxInputScriptSigs();
     
-    for (int output = 0; output < pMtx->vout.size(); output++) 
+    for (int output = 0; output < activeTreasury.vTreasuryProposals[nIndex].mtx.vout.size(); output++) 
     {
-        pMtx->vout[output].nValue = MAX_MONEY;
+        activeTreasury.vTreasuryProposals[nIndex].mtx.vout[output].nValue = 0;
     }
     
-    pProposal->UpdateTimeData(GetTime());
+    activeTreasury.vTreasuryProposals[nIndex].mtx.vout.push_back(CTxOut(view.GetValueIn(CTransaction(activeTreasury.vTreasuryProposals[nIndex].mtx)), activeTreasury.scriptChangeAddress));
+    activeTreasury.vTreasuryProposals[nIndex].UpdateTimeData(GetTime());
 
-    return GetProposalTxInfo(pProposal);
+    return GetProposalTxInfo(&activeTreasury.vTreasuryProposals[nIndex]);
 }
 
 UniValue editproposaltxrecamount(const JSONRPCRequest& request)
@@ -1838,7 +1797,7 @@ UniValue editproposaltxrecamount(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 3)
         throw std::runtime_error(
             "editproposaltxrecamount \"id\"\n"
-            "\nEdits the output amount of one treasury proposal recipient and returns the new output information for this transaction.\nIf this transaction output is successfully edited, it returns equivalent data like getproposaltxamount, otherwise it displays an error.\n"
+            "\nEdits the output amount of one treasury proposal recipient and returns the new output information for this transaction.\nIf this transaction output is successfully edited, it returns equivalent data like getproposaltxamountinfo, otherwise it displays an error.\n"
 
             "\nArguments:\n"
             "1. \"id\"                     (hash, required) The proposal ID where you want to get the recipients from.\n"
@@ -1867,22 +1826,18 @@ UniValue editproposaltxrecamount(const JSONRPCRequest& request)
     uint256 proposalHash = uint256S(request.params[0].get_str());
     size_t nIndex = 0;
     int nOut = request.params[1].get_int();
-    CMutableTransaction* pMtx = nullptr;
     
     if(!activeTreasury.GetProposalvID(proposalHash, nIndex))
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury proposal not found.");
     
-    pMtx = &activeTreasury.vTreasuryProposals[nIndex].mtx;
-    
-    if(nOut < 0 || pMtx->vout.size() >= nOut)
+    if(nOut < 0 || nOut >= activeTreasury.vTreasuryProposals[nIndex].mtx.vout.size())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury proposal recipient ID out of range.");
     
     CAmount nAmount = AmountFromValue(request.params[2]);
     if (nAmount <= 0)
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount for send");
     
-    pMtx->vout[nOut].nValue = nAmount;
-    
+    activeTreasury.vTreasuryProposals[nIndex].mtx.vout[nOut].nValue = nAmount;
     activeTreasury.vTreasuryProposals[nIndex].UpdateTimeData(GetTime());
 
     return GetProposalTxInfo(&activeTreasury.vTreasuryProposals[nIndex]);
@@ -1902,7 +1857,7 @@ UniValue getproposaltxinfo(const JSONRPCRequest& request)
             "  \"inputs\": xxxxx,          (numeric) Current transaction inputs of this proposal\n"
             "  \"outputs\": xxxxx,         (numeric) Current transaction outputs of this proposal\n"
             "  \"bytes\": xxxxx,           (numeric) Total transaction output amount in " + CURRENCY_UNIT + "\n"
-            "  \"signed\": xxxxx           (numeric) The fee of this transaction, can be missing, if this transaction is not final.\n"
+            "  \"signed\": xxxxx           (boolean) Returns true if this transaction is signed and ready to be sent, otherwise false.\n"
             "}\n"
 
             "\nExamples:\n"
@@ -2008,11 +1963,11 @@ UniValue getproposaltxrecipients(const JSONRPCRequest& request)
     return ret;
 }
 
-UniValue getproposaltxamount(const JSONRPCRequest& request)
+UniValue getproposaltxamountinfo(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
-            "getproposaltxamount \"id\"\n"
+            "getproposaltxamountinfo \"id\"\n"
             "\nOutputs the current proposal's tx input and output amounts.\n"
 
             "\nArguments:\n"
@@ -2028,8 +1983,8 @@ UniValue getproposaltxamount(const JSONRPCRequest& request)
             "}\n"
 
             "\nExamples:\n"
-            + HelpExampleCli("getproposaltxamount", "\"id\"")
-            + HelpExampleRpc("getproposaltxamount", "\"id\"")
+            + HelpExampleCli("getproposaltxamountinfo", "\"id\"")
+            + HelpExampleRpc("getproposaltxamountinfo", "\"id\"")
         );
 
     RPCTypeCheck(request.params, {UniValue::VSTR}, false);
@@ -2503,7 +2458,7 @@ static const CRPCCommand commands[] =
     { "treasury",           "clearproposaltxrecipients",    &clearproposaltxrecipients,    {"id"} },
     { "treasury",           "addproposaltxrecipients",      &addproposaltxrecipients,      {"id","recipients"} },
     { "treasury",           "delproposaltxrecipient",       &delproposaltxrecipient,       {"id","recipient"} },
-    { "treasury",           "getproposaltxamount",          &getproposaltxamount,          {"id"} },
+    { "treasury",           "getproposaltxamountinfo",      &getproposaltxamountinfo,      {"id"} },
     { "treasury",           "getproposaltxrecipients",      &getproposaltxrecipients,      {"id"} },
     { "treasury",           "getproposaltxinfo",            &getproposaltxinfo,            {"id"} },
     { "treasury",           "editproposaltxrecamount",      &editproposaltxrecamount,      {"id","vout","newamount"} },
