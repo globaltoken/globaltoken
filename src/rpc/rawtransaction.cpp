@@ -904,6 +904,7 @@ UniValue SignTreasuryTransactionPartially(CTreasuryProposal& tpsl, CBasicKeyStor
 
     // Script verification errors
     UniValue vErrors(UniValue::VARR);
+    bool fComplete = true;
 
     // Use CTransaction for the constant parts of the
     // transaction to avoid rehashing.
@@ -918,6 +919,7 @@ UniValue SignTreasuryTransactionPartially(CTreasuryProposal& tpsl, CBasicKeyStor
         }
         const CScript& prevPubKey = coin.out.scriptPubKey;
         const CAmount& amount = coin.out.nValue;
+        const CScript& currentSignature = txin.scriptSig;
 
         SignatureData sigdata;
         // Only sign SIGHASH_SINGLE if there's a corresponding output:
@@ -929,19 +931,26 @@ UniValue SignTreasuryTransactionPartially(CTreasuryProposal& tpsl, CBasicKeyStor
         UpdateTransaction(mtx, i, sigdata);
 
         ScriptError serror = SCRIPT_ERR_OK;
-        if (!VerifyScript(txin.scriptSig, prevPubKey, &txin.scriptWitness, STANDARD_SCRIPT_VERIFY_FLAGS, TransactionSignatureChecker(&txConst, i, amount), &serror)) {
-            if (serror == SCRIPT_ERR_INVALID_STACK_OPERATION) {
-                // Unable to sign input and verification failed (possible attempt to partially sign).
-                TxInErrorToJSON(txin, vErrors, "Unable to sign input, invalid stack size (possibly missing key)");
-            } else {
-                TxInErrorToJSON(txin, vErrors, ScriptErrorString(serror));
+        if (!VerifyScript(txin.scriptSig, prevPubKey, &txin.scriptWitness, STANDARD_SCRIPT_VERIFY_FLAGS, TransactionSignatureChecker(&txConst, i, amount), &serror)) 
+        {
+            if(fComplete)
+                fComplete = false;
+            
+            if(serror != SCRIPT_ERR_SIG_NULLFAIL)
+            {
+                if (serror == SCRIPT_ERR_INVALID_STACK_OPERATION && currentSignature == sigdata.scriptSig) {
+                    // Unable to sign input and verification failed (possible attempt to partially sign).
+                    TxInErrorToJSON(txin, vErrors, "Unable to sign input, invalid stack size (possibly missing key)");
+                } else {
+                    TxInErrorToJSON(txin, vErrors, ScriptErrorString(serror));
+                }
             }
         }
     }
-    bool fComplete = vErrors.empty();
 
     UniValue result(UniValue::VOBJ);
     result.pushKV("proposalid", tpsl.hashID.GetHex());
+    result.pushKV("signed", vErrors.empty());
     result.pushKV("complete", fComplete);
     if (!vErrors.empty()) {
         result.pushKV("errors", vErrors);
