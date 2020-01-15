@@ -151,7 +151,8 @@ UniValue GetProposalTxInfo(const CTreasuryProposal* pProposal)
         nLoopInternal++;
             
     }
-    
+    if(fCompletelySigned)
+        ret.pushKV("txid", pMtx->GetHash().GetHex());
     ret.pushKV("inputs", (int)pMtx->vin.size());
     ret.pushKV("inputamount", ValueFromAmount(amountInputs));
     ret.pushKV("outputs", (int)pMtx->vout.size());
@@ -1594,13 +1595,15 @@ UniValue moveunusableproposaltxinputs(const JSONRPCRequest& request)
         }
     }
     
+    uint32_t nSystemTime = GetTime();
+    
     if(currentAmount > 0)
         activeTreasury.vTreasuryProposals[nToProposal].mtx.vout.push_back(CTxOut(currentAmount, activeTreasury.scriptChangeAddress));
     
     // Now we return the edited vTreasuryProposals
     
-    activeTreasury.vTreasuryProposals[nFromProposal].UpdateTimeData(GetTime());
-    activeTreasury.vTreasuryProposals[nToProposal].UpdateTimeData(GetTime());
+    activeTreasury.vTreasuryProposals[nFromProposal].UpdateTimeData(nSystemTime);
+    activeTreasury.vTreasuryProposals[nToProposal].UpdateTimeData(nSystemTime);
     
     UniValue from(UniValue::VOBJ), to(UniValue::VOBJ);
     from.pushKV("id", activeTreasury.vTreasuryProposals[nFromProposal].hashID.GetHex());
@@ -1679,10 +1682,12 @@ UniValue handleproposaltxinputs(const JSONRPCRequest& request)
         view.SetBackend(viewDummy); // switch back to avoid locking mempool for too long
     }
     
+    uint32_t nSystemTime = GetTime();
+    
     // Remove unspendable transaction inputs and overflow inputs
     for (unsigned int i = 0; i < activeTreasury.vTreasuryProposals.size(); i++) 
     {
-        activeTreasury.vTreasuryProposals[i].UpdateTimeData(GetTime());
+        activeTreasury.vTreasuryProposals[i].UpdateTimeData(nSystemTime);
         for (size_t input = activeTreasury.vTreasuryProposals[i].mtx.vin.size(); input > 0; input--) 
         {
             size_t nTmpIndex = input - 1;
@@ -1842,15 +1847,49 @@ UniValue prepareproposaltx(const JSONRPCRequest& request)
     
     activeTreasury.vTreasuryProposals[nIndex].RemoveOverflowedProposalTxInputs();
     activeTreasury.vTreasuryProposals[nIndex].ClearProposalTxInputScriptSigs();
-    
-    for (int output = 0; output < activeTreasury.vTreasuryProposals[nIndex].mtx.vout.size(); output++) 
-    {
-        activeTreasury.vTreasuryProposals[nIndex].mtx.vout[output].nValue = 0;
-    }
-    
-    activeTreasury.vTreasuryProposals[nIndex].mtx.vout.push_back(CTxOut(view.GetValueIn(CTransaction(activeTreasury.vTreasuryProposals[nIndex].mtx)), activeTreasury.scriptChangeAddress));
     activeTreasury.vTreasuryProposals[nIndex].UpdateTimeData(GetTime());
-
+    
+    CAmount inAmount = view.GetValueIn(CTransaction(activeTreasury.vTreasuryProposals[nIndex].mtx));
+    CTxOut txoutput = CTxOut(inAmount, activeTreasury.scriptChangeAddress), emptyout = CTxOut(0, CScript());
+    
+    if(activeTreasury.vTreasuryProposals[nIndex].mtx.vout.empty())
+    {
+        if(inAmount > 0)
+            activeTreasury.vTreasuryProposals[nIndex].mtx.vout.push_back(txoutput);
+    }
+    else
+    {
+        bool fOutfound = false;
+        for (size_t output = 0; output < activeTreasury.vTreasuryProposals[nIndex].mtx.vout.size(); output++) 
+        {
+            CTxOut &out = activeTreasury.vTreasuryProposals[nIndex].mtx.vout[output];
+            if(out.scriptPubKey == txoutput.scriptPubKey && !fOutfound)
+            {
+                fOutfound = true;
+                out = txoutput;
+            }
+            else if(out.scriptPubKey == txoutput.scriptPubKey && fOutfound)
+            {
+                // Mark double entry for deletion
+                out = emptyout;
+            }
+            else
+            {
+                out.nValue = 0;
+            }
+        }
+        
+        // Delete double entries
+        for (size_t output = activeTreasury.vTreasuryProposals[nIndex].mtx.vout.size(); output > 0; output--) 
+        {
+            size_t nTmpIndex = output - 1;
+            if(activeTreasury.vTreasuryProposals[nIndex].mtx.vout[nTmpIndex] == emptyout)
+                activeTreasury.vTreasuryProposals[nIndex].mtx.vout.erase(activeTreasury.vTreasuryProposals[nIndex].mtx.vout.begin() + nTmpIndex);
+        }
+        
+        if(inAmount > 0 && !fOutfound)
+            activeTreasury.vTreasuryProposals[nIndex].mtx.vout.push_back(txoutput);
+    }
     return GetProposalTxInfo(&activeTreasury.vTreasuryProposals[nIndex]);
 }
 
@@ -2025,6 +2064,50 @@ UniValue getproposaltxrecipients(const JSONRPCRequest& request)
     return ret;
 }
 
+UniValue getproposaltxamountinfos(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 0)
+        throw std::runtime_error(
+            "getproposaltxamountinfos\n"
+            "\nOutputs the current proposal's tx input and output amounts for all proposal transactions.\n"
+
+            "\nResult:                     (array) Array of proposal transaction information objects.\n"
+            "{\n"
+            "  \"txid\": xxxxx,            (string) If signed, the transaction ID of this treasury proposal\n"
+            "  \"inputs\": xxxxx,          (numeric) Current transaction inputs of this proposal\n"
+            "  \"inputamount\": xxxxx,     (numeric) Total transaction input amount in " + CURRENCY_UNIT + "\n"
+            "  \"outputs\": xxxxx,         (numeric) Current transaction outputs of this proposal\n"
+            "  \"outputamount\": xxxxx,    (numeric) Total transaction output amount in " + CURRENCY_UNIT + "\n"
+            "  \"signed\": xxxxx,          (bool) Outputs true if this transaction is fully signed and ready for sending, otherwise false.\n"
+            "  \"fee\": xxxxx              (numeric) The fee of this transaction, can be missing, if this transaction is not final.\n"
+            "}\n"
+
+            "\nExamples:\n"
+            + HelpExampleCli("getproposaltxamountinfos", "")
+            + HelpExampleRpc("getproposaltxamountinfos", "")
+        );
+
+    LOCK(cs_treasury);
+    UniValue obj(UniValue::VARR);
+        
+    if (!activeTreasury.IsCached())
+        throw JSONRPCError(RPC_MISC_ERROR, "No treasury mempool loaded.");
+    
+    if (activeTreasury.vTreasuryProposals.empty())
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "No treasury proposals in mempool.");
+    
+    for (size_t i = 0; i < activeTreasury.vTreasuryProposals.size(); i++) 
+    {
+        const CTreasuryProposal* pProposal = &activeTreasury.vTreasuryProposals[i]; 
+        UniValue preobj(UniValue::VOBJ);
+        preobj.pushKV("id", pProposal->hashID.GetHex());
+        preobj.pushKVs(GetProposalTxInfo(pProposal));
+        obj.push_back(preobj);
+    }
+
+    return obj;
+}
+
 UniValue getproposaltxamountinfo(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 1)
@@ -2036,6 +2119,7 @@ UniValue getproposaltxamountinfo(const JSONRPCRequest& request)
             "1. \"id\"                     (hash, required) The proposal ID where you want to delete a recipient from\n"
             "\nResult:\n"
             "{\n"
+            "  \"txid\": xxxxx,            (string) If signed, the transaction ID of this treasury proposal\n"
             "  \"inputs\": xxxxx,          (numeric) Current transaction inputs of this proposal\n"
             "  \"inputamount\": xxxxx,     (numeric) Total transaction input amount in " + CURRENCY_UNIT + "\n"
             "  \"outputs\": xxxxx,         (numeric) Current transaction outputs of this proposal\n"
@@ -2512,6 +2596,7 @@ static const CRPCCommand commands[] =
     { "treasury",           "deltreasuryproposalvote",      &deltreasuryproposalvote,      {"id"} },
     { "treasury",           "delalltreasuryproposalvotes",  &delalltreasuryproposalvotes,  {} },
     { "treasury",           "cleartreasuryproposals",       &cleartreasuryproposals,       {} },
+    { "treasury",           "signtreasuryproposalswithkey", &signtreasuryproposalswithkey, {"privkeys","sighashtype"} },
     
     /** All treasury proposal transaction functions */
     { "treasury",           "updateproposaltxfromhex",      &updateproposaltxfromhex,      {"id","hextx"} },
@@ -2524,6 +2609,7 @@ static const CRPCCommand commands[] =
     { "treasury",           "addproposaltxrecipients",      &addproposaltxrecipients,      {"id","recipients"} },
     { "treasury",           "delproposaltxrecipient",       &delproposaltxrecipient,       {"id","recipient"} },
     { "treasury",           "getproposaltxamountinfo",      &getproposaltxamountinfo,      {"id"} },
+    { "treasury",           "getproposaltxamountinfos",     &getproposaltxamountinfos,     {} },
     { "treasury",           "getproposaltxrecipients",      &getproposaltxrecipients,      {"id"} },
     { "treasury",           "getproposaltxinfo",            &getproposaltxinfo,            {"id"} },
     { "treasury",           "editproposaltxrecamount",      &editproposaltxrecamount,      {"id","vout","newamount"} },
@@ -2532,8 +2618,7 @@ static const CRPCCommand commands[] =
     { "treasury",           "moveunusableproposaltxinputs", &moveunusableproposaltxinputs, {"fromid","toid"} },
     { "treasury",           "settreasurychangeaddr",        &settreasurychangeaddr,        {"address"} },
     { "treasury",           "gettreasurychangeaddr",        &gettreasurychangeaddr,        {} },
-    { "treasury",           "deltreasurychangeaddr",        &deltreasurychangeaddr,        {} },
-    { "treasury",           "signtreasuryproposalswithkey", &signtreasuryproposalswithkey, {"privkeys","sighashtype"}}
+    { "treasury",           "deltreasurychangeaddr",        &deltreasurychangeaddr,        {} }
 };
 
 void RegisterTreasuryRPCCommands(CRPCTable &t)
