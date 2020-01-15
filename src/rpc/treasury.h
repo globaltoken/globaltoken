@@ -11,6 +11,9 @@ class UniValue;
 class CTreasuryProposal;
 class CScript;
 
+/** Sign the treasury transaction partially */
+UniValue SignTreasuryTransactionPartially(CTreasuryProposal& tpsl, CBasicKeyStore *keystore, const UniValue& hashType);
+
 /** Treasury Mempool information to JSON */
 UniValue treasurymempoolInfoToJSON();
 

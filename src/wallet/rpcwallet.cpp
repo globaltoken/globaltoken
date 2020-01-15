@@ -12,7 +12,6 @@
 #include <core_io.h>
 #include <instantx.h>
 #include <httpserver.h>
-#include <globaltoken/treasury.h>
 #include <validation.h>
 #include <net.h>
 #include <policy/feerate.h>
@@ -24,7 +23,6 @@
 #include <rpc/safemode.h>
 #include <rpc/server.h>
 #include <rpc/util.h>
-#include <rpc/treasury.h>
 #include <script/sign.h>
 #include <timedata.h>
 #include <util.h>
@@ -35,6 +33,11 @@
 #include <wallet/wallet.h>
 #include <wallet/walletdb.h>
 #include <wallet/walletutil.h>
+
+#ifdef ENABLE_TREASURY
+#include <globaltoken/treasury.h>
+#include <rpc/treasury.h>
+#endif
 
 #include <init.h>  // For StartShutdown
 
@@ -3401,6 +3404,7 @@ UniValue fundrawtransaction(const JSONRPCRequest& request)
     return result;
 }
 
+#ifdef ENABLE_TREASURY
 UniValue fundproposaltx(const JSONRPCRequest& request)
 {
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
@@ -3702,6 +3706,7 @@ UniValue signtreasuryproposalswithwallet(const JSONRPCRequest& request)
     }
     return result;
 }
+#endif
 
 UniValue signrawtransactionwithwallet(const JSONRPCRequest& request)
 {
@@ -4423,9 +4428,11 @@ static const CRPCCommand commands[] =
     { "wallet",             "walletpassphrase",                 &walletpassphrase,              {"passphrase","timeout"} },
     { "wallet",             "removeprunedfunds",                &removeprunedfunds,             {"txid"} },
     { "wallet",             "rescanblockchain",                 &rescanblockchain,              {"start_height", "stop_height"} },
-    
+
+#ifdef ENABLE_TREASURY    
     { "treasury",           "signtreasuryproposalswithwallet",  &signtreasuryproposalswithwallet,{"sighashtype"} },
     { "treasury",           "fundproposaltx",                   &fundproposaltx,                 {"id","options","iswitness"} },
+#endif
     
     { "wallet",             "instantsendtoaddress",             &instantsendtoaddress,          {"address","amount","comment","comment_to","subtractfeefromamount","replaceable","conf_target","estimate_mode"} },
 

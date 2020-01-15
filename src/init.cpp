@@ -21,7 +21,6 @@
 #include <compat/sanity.h>
 #include <consensus/validation.h>
 #include <fs.h>
-#include <globaltoken/treasury.h>
 #include <httpserver.h>
 #include <httprpc.h>
 #include <key.h>
@@ -48,6 +47,9 @@
 #include <util.h>
 #include <utilmoneystr.h>
 #include <validationinterface.h>
+#ifdef ENABLE_TREASURY
+#include <globaltoken/treasury.h>
+#endif
 #ifdef ENABLE_WALLET
 #include <wallet/init.h>
 #include <wallet/wallet.h>
@@ -247,13 +249,15 @@ void Shutdown()
     if (fDumpMempoolLater && gArgs.GetArg("-persistmempool", DEFAULT_PERSIST_MEMPOOL)) {
         DumpMempool();
     }
-    
+
+#ifdef ENABLE_TREASURY
     if(activeTreasury.IsCached())
     {
         LOCK(cs_treasury);
         std::string error;
         DumpTreasuryMempool(activeTreasury, error);
     }
+#endif   
 
     if (fFeeEstimatesInitialized)
     {

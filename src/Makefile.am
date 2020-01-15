@@ -152,7 +152,6 @@ BITCOIN_CORE_H = \
   rpc/server.h \
   rpc/rawtransaction.h \
   rpc/register.h \
-  rpc/treasury.h \
   rpc/util.h \
   scheduler.h \
   script/ismine.h \
@@ -197,6 +196,9 @@ BITCOIN_CORE_H = \
   zmq/zmqnotificationinterface.h \
   zmq/zmqpublishnotifier.h
 
+if USE_TREASURY
+  BITCOIN_CORE_H += rpc/treasury.h
+endif
 
 obj/build.h: FORCE
 	@$(MKDIR_P) $(builddir)/obj
@@ -248,7 +250,6 @@ libbitcoin_server_a_SOURCES = \
   rpc/rawtransaction.cpp \
   rpc/safemode.cpp \
   rpc/server.cpp \
-  rpc/treasury.cpp \
   script/sigcache.cpp \
   spork.cpp \
   timedata.cpp \
@@ -260,6 +261,10 @@ libbitcoin_server_a_SOURCES = \
   validationinterface.cpp \
   versionbits.cpp \
   $(BITCOIN_CORE_H)
+  
+if USE_TREASURY
+  libbitcoin_server_a_SOURCES += rpc/treasury.cpp
+endif
 
 if ENABLE_ZMQ
 libbitcoin_zmq_a_CPPFLAGS = $(BITCOIN_INCLUDES) $(ZMQ_CFLAGS)
@@ -466,8 +471,6 @@ libbitcoin_consensus_a_SOURCES = \
   primitives/transaction.h \
   globaltoken/multihasher.cpp \
   globaltoken/multihasher.h \
-  globaltoken/treasury.cpp \
-  globaltoken/treasury.h \
   pubkey.cpp \
   pubkey.h \
   script/bitcoinconsensus.cpp \
@@ -484,6 +487,12 @@ libbitcoin_consensus_a_SOURCES = \
   utilstrencodings.cpp \
   utilstrencodings.h \
   version.h
+  
+if USE_TREASURY
+libbitcoin_consensus_a_SOURCES += \
+  globaltoken/treasury.cpp \
+  globaltoken/treasury.h
+endif
   
 # hardfork library
 globaltoken_libglobaltoken_hardfork_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)

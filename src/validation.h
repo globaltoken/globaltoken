@@ -15,12 +15,14 @@
 #include <amount.h>
 #include <coins.h>
 #include <fs.h>
-#include <globaltoken/treasury.h>
 #include <protocol.h> // For CMessageHeader::MessageStartChars
 #include <policy/feerate.h>
 #include <script/script_error.h>
 #include <sync.h>
 #include <versionbits.h>
+#ifdef ENABLE_TREASURY
+#include <globaltoken/treasury.h>
+#endif
 
 #include <algorithm>
 #include <exception>
@@ -160,7 +162,9 @@ struct BlockHasher
 
 extern CScript COINBASE_FLAGS;
 extern CCriticalSection cs_main;
+#ifdef ENABLE_TREASURY
 extern CCriticalSection cs_treasury;
+#endif
 extern CBlockPolicyEstimator feeEstimator;
 extern CTxMemPool mempool;
 typedef std::unordered_map<uint256, CBlockIndex*, BlockHasher> BlockMap;
@@ -513,6 +517,7 @@ bool DumpMempool();
 /** Load the mempool from disk. */
 bool LoadMempool();
 
+#ifdef ENABLE_TREASURY
 /** Dump the treasury mempool to disk. */
 bool DumpTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error);
 
@@ -521,5 +526,6 @@ bool TreasuryMempoolSanityChecks(CTreasuryMempool &activeMempool, std::string &e
 
 /** Load the treasury mempool from disk. */
 bool LoadTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error);
+#endif
 
 #endif // BITCOIN_VALIDATION_H

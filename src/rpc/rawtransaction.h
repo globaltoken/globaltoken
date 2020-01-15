@@ -8,10 +8,8 @@
 class CBasicKeyStore;
 struct CMutableTransaction;
 class UniValue;
-class CTreasuryProposal;
 
 /** Sign a transaction with the given keystore and previous transactions */
 UniValue SignTransaction(CMutableTransaction& mtx, const UniValue& prevTxs, CBasicKeyStore *keystore, bool tempKeystore, const UniValue& hashType);
-UniValue SignTreasuryTransactionPartially(CTreasuryProposal& tpsl, CBasicKeyStore *keystore, const UniValue& hashType);
 
 #endif // BITCOIN_RPC_RAWTRANSACTION_H

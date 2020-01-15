@@ -18,7 +18,6 @@
 #include <consensus/validation.h>
 #include <cuckoocache.h>
 #include <globaltoken/hardfork.h>
-#include <globaltoken/treasury.h>
 #include <hash.h>
 #include <init.h>
 #include <policy/fees.h>
@@ -43,6 +42,10 @@
 #include <utilstrencodings.h>
 #include <validationinterface.h>
 #include <warnings.h>
+
+#ifdef ENABLE_TREASURY
+#include <globaltoken/treasury.h>
+#endif
 
 #include <instantx.h>
 #include <spork.h>
@@ -211,7 +214,9 @@ private:
 
 
 CCriticalSection cs_main;
+#ifdef ENABLE_TREASURY
 CCriticalSection cs_treasury;
+#endif
 
 BlockMap& mapBlockIndex = g_chainstate.mapBlockIndex;
 CChain& chainActive = g_chainstate.chainActive;
@@ -4884,7 +4889,7 @@ int VersionBitsTipStateSinceHeight(const Consensus::Params& params, Consensus::D
     LOCK(cs_main);
     return VersionBitsStateSinceHeight(chainActive.Tip(), params, pos, versionbitscache);
 }
-
+#ifdef ENABLE_TREASURY
 bool LoadTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error)
 {
     AssertLockHeld(cs_treasury);
@@ -4984,6 +4989,7 @@ bool DumpTreasuryMempool(CTreasuryMempool &activeMempool, std::string &error)
     }
     return true;
 }
+#endif
 
 static const uint64_t MEMPOOL_DUMP_VERSION = 1;
 
