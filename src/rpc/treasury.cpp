@@ -30,6 +30,7 @@
 #include <txmempool.h>
 #include <script/script.h>
 #include <script/standard.h>
+#include <script/sign.h>
 
 #include <algorithm>
 #include <stdint.h>

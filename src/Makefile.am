@@ -196,7 +196,7 @@ BITCOIN_CORE_H = \
   zmq/zmqnotificationinterface.h \
   zmq/zmqpublishnotifier.h
 
-if USE_TREASURY
+if ENABLE_TREASURY
   BITCOIN_CORE_H += rpc/treasury.h
 endif
 
@@ -262,7 +262,7 @@ libbitcoin_server_a_SOURCES = \
   versionbits.cpp \
   $(BITCOIN_CORE_H)
   
-if USE_TREASURY
+if ENABLE_TREASURY
   libbitcoin_server_a_SOURCES += rpc/treasury.cpp
 endif
 
@@ -488,7 +488,7 @@ libbitcoin_consensus_a_SOURCES = \
   utilstrencodings.h \
   version.h
   
-if USE_TREASURY
+if ENABLE_TREASURY
 libbitcoin_consensus_a_SOURCES += \
   globaltoken/treasury.cpp \
   globaltoken/treasury.h

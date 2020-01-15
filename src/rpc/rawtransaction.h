@@ -12,4 +12,7 @@ class UniValue;
 /** Sign a transaction with the given keystore and previous transactions */
 UniValue SignTransaction(CMutableTransaction& mtx, const UniValue& prevTxs, CBasicKeyStore *keystore, bool tempKeystore, const UniValue& hashType);
 
+/** Pushes a JSON object for script verification or signing errors to vErrorsRet. */
+void TxInErrorToJSON(const CTxIn& txin, UniValue& vErrorsRet, const std::string& strMessage);
+
 #endif // BITCOIN_RPC_RAWTRANSACTION_H
