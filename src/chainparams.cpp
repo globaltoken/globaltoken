@@ -106,7 +106,7 @@ public:
         consensus.BIP66Height = 360000; // not hashed yet ...
         consensus.Hardfork1.Initialize(1 /* Hardfork ID */, 1537617600 /* Hardfork Activation Time */, 327036 /* Hardfork Activation Height */, uint256S("0xfa2a1f17edbb39496a4d1c9ee643797bc2b0d72dd9038e3646872c0fd7d3fd56") /* Hardfork Activation Blockhash */);
         consensus.Hardfork2.Initialize(2 /* Hardfork ID */, 1564660800 /* Hardfork Activation Time */, 772760 /* Hardfork Activation Height */, uint256S("0x4a6c9ff09d78d7b83722429db684f9fa4b1a1d4ba9dbb0b4fedb80d078bb9efe") /* Hardfork Activation Blockhash */);
-        consensus.Hardfork3.Initialize(3 /* Hardfork ID */, 1577365200 /* Hardfork Activation Time */, 999999 /* Hardfork Activation Height - unknown yet*/, uint256() /* Hardfork Activation Blockhash - unknown yet*/);
+        consensus.Hardfork3.Initialize(3 /* Hardfork ID */, 1577365200 /* Hardfork Activation Time */, 981992 /* Hardfork Activation Height */, uint256S("0x370e07ba5368d13d538e3b3d424d3481ddd6cc079b1309fae4cd091adef58539") /* Hardfork Activation Blockhash */);
         consensus.nMaxAuxpowBlocks = 2;
         consensus.aPOWAlgos[ALGO_SHA256D]         = CPOWAlgoProperties(ALGO_SHA256D, uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.aPOWAlgos[ALGO_SCRYPT]          = CPOWAlgoProperties(ALGO_SCRYPT, uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
@@ -210,7 +210,7 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 1519862400; // Thu, 01 Mar 2018.
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000000000015bf8b830c325f590cc");
+        consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000000000015bfb3aa02d64c18bcc");
 
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x0000003c2e7d758e5ba8c89a875f379b5463ad00b6fec73c704098e26a49ecd7"); //400009
@@ -253,31 +253,12 @@ public:
         // This is fine at runtime as we'll fall back to using them as a oneshot if they don't support the
         // service bits we want, but we should get them updated to support all service bits wanted by any
         // release ASAP to avoid it where possible.
-        vSeeds.emplace_back("134.255.221.7"); // Globaltoken base node
-        vSeeds.emplace_back("globaltoken.org"); // GlobalToken base node II
-        vSeeds.emplace_back("explorer.globaltoken.org"); // GlobalToken base node III
-        vSeeds.emplace_back("lameserver.de"); // GlobalToken Node by Astrali
-        vSeeds.emplace_back("pool.cryptopowered.club"); // GlobalToken Cryptopowered node
-        vSeeds.emplace_back("bit2pool.com"); // GlobalToken Bit2Pool node
-        // Hardfork Seednodes
-        vSeeds.emplace_back("185.206.144.200"); // GlobalToken Hardfork node: 01/18
-        vSeeds.emplace_back("185.206.145.201"); // GlobalToken Hardfork node: 02/18
-        vSeeds.emplace_back("185.206.146.200"); // GlobalToken Hardfork node: 03/18
-        vSeeds.emplace_back("185.206.147.203"); // GlobalToken Hardfork node: 04/18
-        vSeeds.emplace_back("185.205.209.67");  // GlobalToken Hardfork node: 05/18
-        vSeeds.emplace_back("185.206.147.202"); // GlobalToken Hardfork node: 06/18
-        vSeeds.emplace_back("185.205.209.137"); // GlobalToken Hardfork node: 07/18
-        vSeeds.emplace_back("185.203.119.194"); // GlobalToken Hardfork node: 08/18
-        vSeeds.emplace_back("185.203.119.195"); // GlobalToken Hardfork node: 09/18
-        vSeeds.emplace_back("185.206.144.201"); // GlobalToken Hardfork node: 10/18
-        vSeeds.emplace_back("185.141.62.86");   // GlobalToken Hardfork node: 11/18
-        vSeeds.emplace_back("185.141.62.87");   // GlobalToken Hardfork node: 12/18
-        vSeeds.emplace_back("185.141.62.88");   // GlobalToken Hardfork node: 13/18
-        vSeeds.emplace_back("185.141.62.89");   // GlobalToken Hardfork node: 14/18
-        vSeeds.emplace_back("185.141.62.90");   // GlobalToken Hardfork node: 15/18
-        vSeeds.emplace_back("185.141.62.91");   // GlobalToken Hardfork node: 16/18
-        vSeeds.emplace_back("185.141.62.92");   // GlobalToken Hardfork node: 17/18
-        vSeeds.emplace_back("185.203.118.117"); // GlobalToken Hardfork node: 18/18
+        vSeeds.emplace_back("globaltoken.org"); // GlobalToken base node I
+        vSeeds.emplace_back("explorer.globaltoken.org"); // GlobalToken base node II
+        vSeeds.emplace_back("lameserver.de"); // GlobalToken base node III
+        vSeeds.emplace_back("pool.cryptopowered.club"); // GlobalToken base node IV
+        vSeeds.emplace_back("bit2pool.com"); // GlobalToken base node V
+        vSeeds.emplace_back("173.249.20.245"); // GlobalToken base node VI
 
         base58Prefixes[PUBKEY_ADDRESS]     = std::vector<unsigned char>(1,38);
         base58Prefixes[SCRIPT_ADDRESS_OLD] = std::vector<unsigned char>(1,5);
@@ -301,30 +282,33 @@ public:
 
         checkpointData = {
             {
-                {     0, uint256S("0x00000000fe3e3e93344a6b73888137397413eb11f601b4231b5196390d24d3b6")},
-                {   253, uint256S("0x000000000001a9597538194df736eda73c35c17d78ec14ac99b9d392d0892ce3")},
-                { 44446, uint256S("0x000000000004ddd47d2e6033af4d034e63171d61e4eaca2702f9e8b9a8ffdb5a")},
-                { 87757, uint256S("0x000000000001356d0e351660b8356f8f6a12a5b029b2c10a5b47d753b8cd8f29")},
-                {174987, uint256S("0x0000000000004a80520dfce6d2017d6f403a9def13fe99629d31f6b7a90b7c31")},
-                {214590, uint256S("0x00000000000003886a3080ff818eb6027a98f1ac33c532b730fbe4c0fde704ca")},
-                {282595, uint256S("0x00000000000000e335a60ca393eee3445f551d5bf6987e47d3a70e043b8dff5b")},
-                {300000, uint256S("0x00000000000000c22e9be2faab7b2f05b0e834f434b0a82b0a12b55351b9d3c4")},
-                {327035, uint256S("0x0000000000000072f4e5960b252d812991c4c13810b2324d623f824572cb5251")}, // last old chain height
-                {327036, uint256S("0xfa2a1f17edbb39496a4d1c9ee643797bc2b0d72dd9038e3646872c0fd7d3fd56")}, // first hardfork chain block
-                {328101, uint256S("0x320c067ac8c5cdebbd12df990556b1237f0b41c7dac54a232906f4ce7a180655")},
-                {500000, uint256S("0xac8482b87e86587589e3c170dae61d6ac12567903c3c79beb4a9234c6f9b4760")},
-                {772759, uint256S("0x225092228bdfe8be531bb889eddff6a9b4e2fa987a6ec075653c8b51274e1b29")}, // last hardfork 1 block
-                {772760, uint256S("0x4a6c9ff09d78d7b83722429db684f9fa4b1a1d4ba9dbb0b4fedb80d078bb9efe")}, // second hardfork chain block
-                {960000, uint256S("0xddef3a7916b73edef49dbc5246814df6d9af590ebe2f1f8a53968dd8616a6036")}
+                {     0,  uint256S("0x00000000fe3e3e93344a6b73888137397413eb11f601b4231b5196390d24d3b6")},
+                {   253,  uint256S("0x000000000001a9597538194df736eda73c35c17d78ec14ac99b9d392d0892ce3")},
+                { 44446,  uint256S("0x000000000004ddd47d2e6033af4d034e63171d61e4eaca2702f9e8b9a8ffdb5a")},
+                { 87757,  uint256S("0x000000000001356d0e351660b8356f8f6a12a5b029b2c10a5b47d753b8cd8f29")},
+                {174987,  uint256S("0x0000000000004a80520dfce6d2017d6f403a9def13fe99629d31f6b7a90b7c31")},
+                {214590,  uint256S("0x00000000000003886a3080ff818eb6027a98f1ac33c532b730fbe4c0fde704ca")},
+                {282595,  uint256S("0x00000000000000e335a60ca393eee3445f551d5bf6987e47d3a70e043b8dff5b")},
+                {300000,  uint256S("0x00000000000000c22e9be2faab7b2f05b0e834f434b0a82b0a12b55351b9d3c4")},
+                {327035,  uint256S("0x0000000000000072f4e5960b252d812991c4c13810b2324d623f824572cb5251")}, // last old chain height
+                {327036,  uint256S("0xfa2a1f17edbb39496a4d1c9ee643797bc2b0d72dd9038e3646872c0fd7d3fd56")}, // first hardfork chain block
+                {328101,  uint256S("0x320c067ac8c5cdebbd12df990556b1237f0b41c7dac54a232906f4ce7a180655")},
+                {500000,  uint256S("0xac8482b87e86587589e3c170dae61d6ac12567903c3c79beb4a9234c6f9b4760")},
+                {772759,  uint256S("0x225092228bdfe8be531bb889eddff6a9b4e2fa987a6ec075653c8b51274e1b29")}, // last hardfork 1 block
+                {772760,  uint256S("0x4a6c9ff09d78d7b83722429db684f9fa4b1a1d4ba9dbb0b4fedb80d078bb9efe")}, // first hardfork 2 chain block
+                {960000,  uint256S("0xddef3a7916b73edef49dbc5246814df6d9af590ebe2f1f8a53968dd8616a6036")},
+                {981992,  uint256S("0x370e07ba5368d13d538e3b3d424d3481ddd6cc079b1309fae4cd091adef58539")}, // last hardfork 2 block
+                {981993,  uint256S("0x2e191083505f98aff17d03f42faed9772075d66a4d17e1debf48dc08f81c3bc0")}, // first hardfork 3 block
+                {1000000, uint256S("0x58ef7f2ec6ad7add1cc76e988954d3ba3d951ef18dce0e1ae30fe01c1e41aa8d")}, // GlobalToken block 1,000,000
             }
         };
 
         chainTxData = ChainTxData{
-            // Data as of block 6cc68fdafbe8bd313a2827f439803fbc20a5c2466d10c8e1154f5170ecf64d1f (height 965072).
-            1576340720, // * UNIX timestamp of last known number of transactions
-            1656078,    // * total number of transactions between genesis and that timestamp
+            // Data as of block 29fc0ffabaeb48aa1f2bbd4586d5f73359bdeabbc350dea3f8f1ce2516ad5824 (height 1012111).
+            1579177023, // * UNIX timestamp of last known number of transactions
+            1763222,    // * total number of transactions between genesis and that timestamp
                         //   (the tx=... number in the SetBestChain debug.log lines)
-            0.0402827   // * estimated number of transactions per second after that timestamp
+            0.0373289   // * estimated number of transactions per second after that timestamp
         };
         
         /*
@@ -774,25 +758,6 @@ public:
 
         vSeeds.emplace_back("134.255.221.7");
         vSeeds.emplace_back("lameserver.de"); // GlobalToken Node by Astrali
-        // Hardfork Seednodes
-        vSeeds.emplace_back("185.206.144.200"); // GlobalToken Hardfork node: 01/18
-        vSeeds.emplace_back("185.206.145.201"); // GlobalToken Hardfork node: 02/18
-        vSeeds.emplace_back("185.206.146.200"); // GlobalToken Hardfork node: 03/18
-        vSeeds.emplace_back("185.206.147.203"); // GlobalToken Hardfork node: 04/18
-        vSeeds.emplace_back("185.205.209.67");  // GlobalToken Hardfork node: 05/18
-        vSeeds.emplace_back("185.206.147.202"); // GlobalToken Hardfork node: 06/18
-        vSeeds.emplace_back("185.205.209.137"); // GlobalToken Hardfork node: 07/18
-        vSeeds.emplace_back("185.203.119.194"); // GlobalToken Hardfork node: 08/18
-        vSeeds.emplace_back("185.203.119.195"); // GlobalToken Hardfork node: 09/18
-        vSeeds.emplace_back("185.206.144.201"); // GlobalToken Hardfork node: 10/18
-        vSeeds.emplace_back("185.141.62.86");   // GlobalToken Hardfork node: 11/18
-        vSeeds.emplace_back("185.141.62.87");   // GlobalToken Hardfork node: 12/18
-        vSeeds.emplace_back("185.141.62.88");   // GlobalToken Hardfork node: 13/18
-        vSeeds.emplace_back("185.141.62.89");   // GlobalToken Hardfork node: 14/18
-        vSeeds.emplace_back("185.141.62.90");   // GlobalToken Hardfork node: 15/18
-        vSeeds.emplace_back("185.141.62.91");   // GlobalToken Hardfork node: 16/18
-        vSeeds.emplace_back("185.141.62.92");   // GlobalToken Hardfork node: 17/18
-        vSeeds.emplace_back("185.203.118.117"); // GlobalToken Hardfork node: 18/18
 
         base58Prefixes[PUBKEY_ADDRESS]     = std::vector<unsigned char>(1,27);
         base58Prefixes[SCRIPT_ADDRESS_OLD] = std::vector<unsigned char>(1,196);
