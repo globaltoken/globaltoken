@@ -262,7 +262,7 @@ UniValue GetProposalTxInfo(const CTreasuryProposal* pProposal)
     return ret;
 }
 
-bool BroadcastSignedTreasuryProposalTransaction(CTreasuryProposal* pProposal, UniValue& result, const CAmount& nMaxRawTxFee)
+static bool BroadcastSignedTreasuryProposalTransaction(CTreasuryProposal* pProposal, UniValue& result, const CAmount& nMaxRawTxFee, const bool &bypass_limits)
 {    
     AssertLockHeld(cs_treasury);
     
@@ -289,7 +289,7 @@ bool BroadcastSignedTreasuryProposalTransaction(CTreasuryProposal* pProposal, Un
         CValidationState state;
         bool fMissingInputs;
         if (!AcceptToMemoryPool(mempool, state, std::move(tx), &fMissingInputs,
-                                nullptr /* plTxnReplaced */, false /* bypass_limits */, nMaxRawTxFee)) {
+                                nullptr /* plTxnReplaced */, bypass_limits /* bypass_limits */, nMaxRawTxFee)) {
             if (state.IsInvalid()) {
                 ret.pushKV("txid", hashTx.GetHex());
                 ret.pushKV("sent", fSent);
@@ -349,13 +349,14 @@ bool BroadcastSignedTreasuryProposalTransaction(CTreasuryProposal* pProposal, Un
 
 UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
 {
-    if (request.fHelp || (request.params.size() != 0 && request.params.size() != 1))
+    if (request.fHelp || request.params.size() > 2)
         throw std::runtime_error(
             "broadcastsignedproposal ( allowhighfees )\n"
             "\nSubmits signed treasury proposal transaction (serialized, hex-encoded) to local node and network.\n"
             "\nAlso see createrawtransaction, updateproposaltxfromhex and signtreasuryproposalswithwallet calls.\n"
             "\nArguments:\n"
             "1. allowhighfees    (boolean, optional, default=false) Allow high fees\n"
+            "2. bypass_limits    (boolean, optional, default=false) Don't check for min transaction fee and tx size, just skip it and accept to local mempool.\n"
             "\nResult:\n"
             "[\n"
             "  {\n"
@@ -375,7 +376,6 @@ UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
             + HelpExampleRpc("broadcastsignedproposal", "\"proposalid\"")
         );
         
-    RPCTypeCheck(request.params, {UniValue::VBOOL});
     UniValue ret(UniValue::VARR);
         
     LOCK(cs_treasury);
@@ -395,9 +395,13 @@ UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
     if(activeTreasury.vTreasuryProposals.empty())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "No treasury proposals in mempool.");
 
+    bool bypass_limits = false;
     CAmount nMaxRawTxFee = maxTxFee;
     if (!request.params[0].isNull() && request.params[0].get_bool())
         nMaxRawTxFee = 0;
+    
+    if (!request.params[1].isNull())
+        bypass_limits = request.params[1].get_bool();
     
     std::vector<CTreasuryProposal*> vPps;
 
@@ -439,7 +443,7 @@ UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
     {
         UniValue obj(UniValue::VOBJ);
         obj.pushKV("proposal", vPps[i]->hashID.GetHex());
-        BroadcastSignedTreasuryProposalTransaction(vPps[i], obj, nMaxRawTxFee);
+        BroadcastSignedTreasuryProposalTransaction(vPps[i], obj, nMaxRawTxFee, bypass_limits);
         ret.push_back(obj);
     }
     return ret;
@@ -447,7 +451,7 @@ UniValue broadcastallsignedproposals(const JSONRPCRequest& request)
 
 UniValue broadcastsignedproposal(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 3)
         throw std::runtime_error(
             "broadcastsignedproposal \"id\" ( allowhighfees )\n"
             "\nSubmits signed treasury proposal transaction (serialized, hex-encoded) to local node and network.\n"
@@ -455,6 +459,7 @@ UniValue broadcastsignedproposal(const JSONRPCRequest& request)
             "\nArguments:\n"
             "1. \"id\"           (string, required) The proposal ID, that has a signed transaction and now should be broadcasted via network.\n"
             "2. allowhighfees    (boolean, optional, default=false) Allow high fees\n"
+            "3. bypass_limits    (boolean, optional, default=false) Don't check for min transaction fee and tx size, just skip it and accept to local mempool.\n"
             "\nResult:\n"
             "\nThe transaction ID, if successful, otherwise it returns an error.\n"
             "\nCreate a transaction\n"
@@ -467,7 +472,6 @@ UniValue broadcastsignedproposal(const JSONRPCRequest& request)
             + HelpExampleRpc("broadcastsignedproposal", "\"proposalid\"")
         );
         
-    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VBOOL});
         
     LOCK(cs_treasury);
     UniValue obj(UniValue::VOBJ);
@@ -486,11 +490,14 @@ UniValue broadcastsignedproposal(const JSONRPCRequest& request)
     
     uint256 proposalHash = uint256S(request.params[0].get_str());
     size_t nIndex = 0;
-    bool fSigned = false;
+    bool fSigned = false, bypass_limits = false;
     
     CAmount nMaxRawTxFee = maxTxFee;
     if (!request.params[1].isNull() && request.params[1].get_bool())
         nMaxRawTxFee = 0;
+    
+    if (!request.params[2].isNull())
+        bypass_limits = request.params[2].get_bool();
     
     if(!activeTreasury.GetProposalvID(proposalHash, nIndex))
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Treasury proposal not found.");
@@ -521,7 +528,7 @@ UniValue broadcastsignedproposal(const JSONRPCRequest& request)
     } // cs_main
     
     if(fSigned)
-        BroadcastSignedTreasuryProposalTransaction(pProposal, obj, nMaxRawTxFee);
+        BroadcastSignedTreasuryProposalTransaction(pProposal, obj, nMaxRawTxFee, bypass_limits);
     else
         throw JSONRPCError(RPC_TRANSACTION_ERROR, "Treasury proposal transaction not signed yet!");
 
@@ -2699,8 +2706,8 @@ static const CRPCCommand commands[] =
     /** All treasury proposal transaction functions */
     { "treasury",           "updateproposaltxfromhex",      &updateproposaltxfromhex,      {"id","hextx"} },
     { "treasury",           "getproposaltxashex",           &getproposaltxashex,           {"id"} },
-    { "treasury",           "broadcastallsignedproposals",  &broadcastallsignedproposals,  {"allowhighfees"} },
-    { "treasury",           "broadcastsignedproposal",      &broadcastsignedproposal,      {"id","allowhighfees"} },
+    { "treasury",           "broadcastallsignedproposals",  &broadcastallsignedproposals,  {"allowhighfees","bypass_limits"} },
+    { "treasury",           "broadcastsignedproposal",      &broadcastsignedproposal,      {"id","allowhighfees","bypass_limits"} },
     { "treasury",           "createproposaltx",             &createproposaltx,             {"id","inputs","outputs","locktime","replaceable"} },
     { "treasury",           "clearproposaltx",              &clearproposaltx,              {"id"} },
     { "treasury",           "clearproposaltxrecipients",    &clearproposaltxrecipients,    {"id"} },
