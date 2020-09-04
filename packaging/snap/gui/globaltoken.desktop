@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Name=GlobalToken
+Comment=Connect to the GlobalToken P2P Network
+Comment[de]=Verbinde mit dem GlobalToken peer-to-peer Netzwerk
+Comment[fr]=GlobalToken, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=GlobalToken, eşten eşe kriptografik sanal para birimi
+Exec=globaltoken.qt %u
+Terminal=false
+Type=Application
+Icon=${SNAP}/meta/gui/globaltoken.png
+MimeType=x-scheme-handler/globaltoken;
+Categories=Office;Finance;P2P;Network;Qt;
+StartupWMClass=GlobalToken-qt
