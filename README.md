@@ -6,6 +6,7 @@ GlobalToken Official Development Repository
 Now available in the Snap Store!
 ----------------
 <a href="https://snapcraft.io/globaltoken" target="_blank"><img src="https://raw.githubusercontent.com/snapcore/snap-store-badges/master/EN/%5BEN%5D-snap-store-white%401x.png" alt="GLT Snap"></a>
+
 ```snap install globaltoken```
 
 What is GlobalToken?
