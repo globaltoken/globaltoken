@@ -3,6 +3,12 @@ GlobalToken Official Development Repository
 
 [![Build Status](https://travis-ci.org/globaltoken/globaltoken.svg?branch=master)](https://travis-ci.org/globaltoken/globaltoken)
 
+Now available in the Snap Store!
+----------------
+<a href="https://snapcraft.io/globaltoken" target="_blank"><img src="https://raw.githubusercontent.com/snapcore/snap-store-badges/master/EN/%5BEN%5D-snap-store-white%401x.png" alt="GLT Snap"></a>
+
+```snap install globaltoken```
+
 What is GlobalToken?
 ----------------
 GlobalToken (GLT) is the world's largest proof of work cryptocurrency with support for 60 mining algorithms. GlobalToken uses peer-to-peer technology to operate with no central authority: managing transactions and issuing money are carried out collectively by the network. GlobalToken Core is the name of open source software which enables the use of this currency.

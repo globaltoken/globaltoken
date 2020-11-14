@@ -1,0 +1,56 @@
+name: globaltoken
+version: 3.2.1
+summary:   Multi-Algorithm Cryptocurrency - 60 ways to mine
+description: |
+  GlobalToken (GLT) is the world’s largest proof-of-work cryptocurrency with support for 60 mining algorithms, the most algorithms of any cryptocurrency.
+  This optimizes for mining, which increases transaction speed and lowers costs, making GLT ideal for daily use.
+  Founded in 2016, GlobalToken uses peer-to-peer technology to operate with no central authority: managing transactions and issuing money are carried out collectively by the network.
+  The core team maintains an official mining pool for all algorithms at all times to support the network on 7 continents, increasing access and reducing latency to the network.
+  Masternodes are available for 50,000 GLT to contribute to the network.
+
+grade: stable
+confinement: strict
+
+apps:
+  daemon:
+    command: globaltokend
+    plugs: [home, removable-media, network, network-bind]
+    environment:
+      # Override HOME so the datadir is located at
+      # ~/snap/bitcoin-core/common/.bitcoin/ instead of
+      # ~/snap/bitcoin-core/current/.bitcoin/, and each new version of the
+      # snap won't have a different data directory:
+      # https://docs.snapcraft.io/environment-variables/7983
+      HOME: $SNAP_USER_COMMON
+  qt:
+    command: desktop-launch globaltoken-qt
+    plugs: [home, removable-media, network, network-bind, desktop, x11]
+    environment:
+      HOME: $SNAP_USER_COMMON
+      DISABLE_WAYLAND: 1
+  cli:
+    command: globaltoken-cli
+    plugs: [home, removable-media, network]
+    environment:
+      HOME: $SNAP_USER_COMMON
+  tx:
+    command: globaltoken-tx
+    plugs: [home, removable-media, network]
+    environment:
+      HOME: $SNAP_USER_COMMON
+
+parts:
+  globaltoken:
+    plugin: nil
+    override-build: |
+      env | grep SNAP
+      wget https://github.com/globaltoken/globaltoken/releases/download/3.2.1/globaltoken-3.2.1-x86_64-linux-gnu.tar.gz
+      tar -xvf globaltoken-${SNAPCRAFT_PROJECT_VERSION}-x86_64-linux-gnu.tar.gz
+      install -m 0755 -D -t $SNAPCRAFT_PART_INSTALL/bin bin/globaltokend
+      install -m 0755 -D -t $SNAPCRAFT_PART_INSTALL/bin bin/globaltoken-qt
+      install -m 0755 -D -t $SNAPCRAFT_PART_INSTALL/bin bin/globaltoken-cli
+      install -m 0755 -D -t $SNAPCRAFT_PART_INSTALL/bin bin/globaltoken-tx
+    build-packages:
+      - wget
+    after: 
+      - desktop-qt5
